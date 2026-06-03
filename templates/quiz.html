@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% set hide_navbar = True %}
 
-{% block title %}Level 1 Quiz - English Winglish{% endblock %}
+{% block title %}Level {{ level }} Quiz - English Winglish{% endblock %}
 
 {% block content %}
 <!-- Header Bar -->
@@ -111,7 +111,7 @@
         </div>
 
         <h1 class="results-title" id="results-title">Quiz Completed!</h1>
-        <p class="results-subtitle" id="results-subtitle">Here is how you performed in Level 1 - English Basics</p>
+        <p class="results-subtitle" id="results-subtitle">Here is how you performed in Level {{ level }} Quiz</p>
 
         <!-- unlocked badge -->
         <div class="result-badge-container" id="result-badge-container">
@@ -180,6 +180,7 @@
 {% block scripts %}
 <!-- Exposing the URL for endpoints so JS files don't need hardcoding -->
 <script>
+    const QUIZ_LEVEL = {{ level }};
     const QUESTIONS_API_URL = "{{ url_for('quiz.get_questions') }}";
     const SUBMIT_QUIZ_API_URL = "{{ url_for('quiz.submit_quiz') }}";
     const DASHBOARD_URL = "{{ url_for('dashboard.home') }}";

@@ -449,3 +449,603 @@ def get_all_passed_levels(student_id):
     except Exception as e:
         print(f"Supabase get passed levels error: {e}")
         return set()
+
+
+# ==========================================================================
+# PHASE 3: FACULTY MANAGEMENT AND ANALYTICS FUNCTIONS
+# ==========================================================================
+
+def get_faculty_by_email_or_emp_id(email_or_emp_id):
+    """
+    Retrieve faculty details using email OR employee ID from Supabase.
+    """
+    try:
+        response = supabase.table("faculty") \
+            .select("*") \
+            .or_(f"email.eq.{email_or_emp_id},employee_id.eq.{email_or_emp_id}") \
+            .execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Supabase get faculty error: {e}")
+        return None
+
+def create_faculty(employee_id, name, email, password_hash, department):
+    """
+    Insert a new faculty member into Supabase.
+    """
+    try:
+        data = {
+            "employee_id": employee_id,
+            "name": name,
+            "email": email,
+            "password_hash": password_hash,
+            "department": department
+        }
+        response = supabase.table("faculty").insert(data).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Supabase create faculty error: {e}")
+        raise e
+
+def seed_default_faculty():
+    """
+    Seeds a default faculty member (faculty@college.edu / faculty123) if none exist.
+    """
+    try:
+        response = supabase.table("faculty").select("id").limit(1).execute()
+        if not response.data:
+            from werkzeug.security import generate_password_hash
+            default_faculty = {
+                "employee_id": "FAC001",
+                "name": "Default Faculty",
+                "email": "faculty@college.edu",
+                "password_hash": generate_password_hash("faculty123"),
+                "department": "English Language"
+            }
+            supabase.table("faculty").insert(default_faculty).execute()
+            print("Successfully seeded default faculty member: faculty@college.edu / faculty123")
+    except Exception as e:
+        print(f"Error seeding default faculty: {e}")
+
+# Run the seeding dynamically when database is loaded
+seed_default_faculty()
+
+def get_total_students_count():
+    """
+    Returns the total count of registered students.
+    """
+    try:
+        response = supabase.table("students").select("id", count="exact").execute()
+        if hasattr(response, "count") and response.count is not None:
+            return response.count
+        return len(response.data) if response.data else 0
+    except Exception as e:
+        print(f"Error getting total student count: {e}")
+        return 0
+
+def get_active_students_count():
+    """
+    Returns the number of students active in the last 7 days (based on activity logs).
+    """
+    try:
+        from datetime import datetime, timedelta
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        seven_days_ago_iso = seven_days_ago.isoformat()
+        
+        response = supabase.table("activity_logs") \
+            .select("student_id") \
+            .gte("created_at", seven_days_ago_iso) \
+            .execute()
+            
+        if response.data:
+            student_ids = {item["student_id"] for item in response.data}
+            return len(student_ids)
+        return 0
+    except Exception as e:
+        print(f"Error getting active student count: {e}")
+        return 0
+
+def get_average_quiz_accuracy():
+    """
+    Calculates average accuracy across all quiz attempts. Fallbacks to progress table if empty.
+    """
+    try:
+        response = supabase.table("quiz_attempts").select("percentage").execute()
+        if response.data:
+            percentages = [r["percentage"] for r in response.data]
+            return round(sum(percentages) / len(percentages), 1)
+            
+        # Fallback to progress
+        response_prog = supabase.table("progress").select("percentage").execute()
+        if response_prog.data:
+            percentages = [r["percentage"] for r in response_prog.data]
+            return round(sum(percentages) / len(percentages), 1)
+            
+        return 0.0
+    except Exception as e:
+        print(f"Error getting average quiz accuracy: {e}")
+        return 0.0
+
+def get_total_quiz_attempts():
+    """
+    Returns total number of quiz attempts. Fallbacks to progress table if empty.
+    """
+    try:
+        response = supabase.table("quiz_attempts").select("id", count="exact").execute()
+        count = response.count if hasattr(response, "count") and response.count is not None else (len(response.data) if response.data else 0)
+        
+        if count == 0:
+            response_prog = supabase.table("progress").select("id", count="exact").execute()
+            count = response_prog.count if hasattr(response_prog, "count") and response_prog.count is not None else (len(response_prog.data) if response_prog.data else 0)
+            
+        return count
+    except Exception as e:
+        print(f"Error getting total quiz attempts: {e}")
+        return 0
+
+def get_total_levels_completed_count():
+    """
+    Returns count of unique level completions across all students.
+    """
+    try:
+        response = supabase.table("progress") \
+            .select("student_id,level") \
+            .eq("status", "passed") \
+            .execute()
+        if response.data:
+            completions = {(r["student_id"], r["level"]) for r in response.data}
+            return len(completions)
+        return 0
+    except Exception as e:
+        print(f"Error getting total levels completed: {e}")
+        return 0
+
+def get_top_performing_student():
+    """
+    Returns student with highest XP.
+    """
+    try:
+        response = supabase.table("students") \
+            .select("*") \
+            .order("xp", desc=True) \
+            .limit(1) \
+            .execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting top performing student: {e}")
+        return None
+
+def get_students_list(branch=None, year=None, level=None, search_query=None):
+    """
+    Retrieve filterable, searchable student list.
+    """
+    try:
+        query = supabase.table("students").select("*")
+        if branch and branch != "All":
+            query = query.eq("branch", branch)
+        if year and year != "All":
+            query = query.eq("year", int(year))
+        if level and level != "All":
+            query = query.eq("current_level", int(level))
+        
+        response = query.execute()
+        students = response.data or []
+        
+        if search_query:
+            search_query = search_query.lower().strip()
+            filtered = []
+            for s in students:
+                name_match = search_query in s.get("full_name", "").lower()
+                roll_match = search_query in s.get("roll_number", "").lower()
+                email_match = search_query in s.get("email", "").lower()
+                if name_match or roll_match or email_match:
+                    filtered.append(s)
+            students = filtered
+            
+        # Sort by name
+        students = sorted(students, key=lambda x: x.get("full_name", "").lower())
+        
+        for s in students:
+            s["created_at"] = parse_date(s.get("created_at"))
+        return students
+    except Exception as e:
+        print(f"Error getting students list: {e}")
+        return []
+
+def get_student_quiz_accuracy_trend(student_id):
+    """
+    Gets quiz percentages in chronological order for Chart.js.
+    """
+    try:
+        response = supabase.table("quiz_attempts") \
+            .select("percentage,completed_at,level") \
+            .eq("student_id", student_id) \
+            .order("completed_at", desc=False) \
+            .execute()
+            
+        records = response.data or []
+        if not records:
+            response_prog = supabase.table("progress") \
+                .select("percentage,completed_at,level") \
+                .eq("student_id", student_id) \
+                .order("completed_at", desc=False) \
+                .execute()
+            records = response_prog.data or []
+            
+        data = []
+        for idx, r in enumerate(records):
+            dt = parse_date(r.get("completed_at"))
+            data.append({
+                "label": f"L{r.get('level')} Q{idx+1}",
+                "percentage": r.get("percentage"),
+                "date": dt.strftime("%Y-%m-%d")
+            })
+        return data
+    except Exception as e:
+        print(f"Error getting student accuracy trend: {e}")
+        return []
+
+def get_student_xp_growth(student_id):
+    """
+    Gets cumulative XP growth over time.
+    """
+    try:
+        response = supabase.table("progress") \
+            .select("score,completed_at") \
+            .eq("student_id", student_id) \
+            .order("completed_at", desc=False) \
+            .execute()
+            
+        records = response.data or []
+        xp_growth = []
+        cumulative_xp = 0
+        for r in records:
+            dt = parse_date(r.get("completed_at"))
+            earned = r.get("score", 0) * 10
+            cumulative_xp += earned
+            xp_growth.append({
+                "date": dt.strftime("%Y-%m-%d"),
+                "xp": cumulative_xp
+            })
+        return xp_growth
+    except Exception as e:
+        print(f"Error getting student XP growth: {e}")
+        return []
+
+def get_student_weekly_activity(student_id):
+    """
+    Gets activity count for last 7 days, grouped by day.
+    """
+    try:
+        from datetime import datetime, timedelta
+        import calendar
+        
+        days = list(calendar.day_name)
+        counts = {day: 0 for day in days}
+        
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        response = supabase.table("activity_logs") \
+            .select("created_at") \
+            .eq("student_id", student_id) \
+            .gte("created_at", seven_days_ago.isoformat()) \
+            .execute()
+            
+        records = response.data or []
+        for r in records:
+            dt = parse_date(r.get("created_at"))
+            day_name = dt.strftime("%A")
+            if day_name in counts:
+                counts[day_name] += 1
+                
+        return [{"day": day, "count": counts[day]} for day in days]
+    except Exception as e:
+        print(f"Error getting student weekly activity: {e}")
+        return []
+
+def get_student_level_completions(student_id):
+    """
+    Gets list of completed levels for student detail.
+    """
+    try:
+        response = supabase.table("progress") \
+            .select("*") \
+            .eq("student_id", student_id) \
+            .eq("status", "passed") \
+            .order("completed_at", desc=False) \
+            .execute()
+            
+        records = response.data or []
+        for r in records:
+            r["completed_at"] = parse_date(r.get("completed_at"))
+        return records
+    except Exception as e:
+        print(f"Error getting student level completions: {e}")
+        return []
+
+def create_question(level, category, question, option_a, option_b, option_c, option_d, correct_answer):
+    """
+    Insert a new question into Supabase.
+    """
+    try:
+        data = {
+            "level": int(level),
+            "category": category,
+            "question": question,
+            "option_a": option_a,
+            "option_b": option_b,
+            "option_c": option_c,
+            "option_d": option_d,
+            "correct_answer": int(correct_answer)
+        }
+        response = supabase.table("questions").insert(data).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error creating question: {e}")
+        raise e
+
+def update_question(question_id, level, category, question, option_a, option_b, option_c, option_d, correct_answer):
+    """
+    Update an existing question in Supabase.
+    """
+    try:
+        data = {
+            "level": int(level),
+            "category": category,
+            "question": question,
+            "option_a": option_a,
+            "option_b": option_b,
+            "option_c": option_c,
+            "option_d": option_d,
+            "correct_answer": int(correct_answer)
+        }
+        response = supabase.table("questions").update(data).eq("id", int(question_id)).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error updating question: {e}")
+        raise e
+
+def delete_question(question_id):
+    """
+    Delete a question from Supabase.
+    """
+    try:
+        response = supabase.table("questions").delete().eq("id", int(question_id)).execute()
+        return True
+    except Exception as e:
+        print(f"Error deleting question: {e}")
+        return False
+
+def get_question_by_id(question_id):
+    """
+    Retrieve a single question by its ID.
+    """
+    try:
+        response = supabase.table("questions").select("*").eq("id", int(question_id)).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting question by id: {e}")
+        return None
+
+def get_all_questions(search_query=None, level=None):
+    """
+    Get all questions, with optional search and level filter.
+    """
+    try:
+        query = supabase.table("questions").select("*")
+        if level and level != "All":
+            query = query.eq("level", int(level))
+        response = query.execute()
+        questions = response.data or []
+        
+        if search_query:
+            search_query = search_query.lower().strip()
+            filtered = []
+            for q in questions:
+                q_text = q.get("question", "").lower()
+                q_cat = q.get("category", "").lower()
+                if search_query in q_text or search_query in q_cat:
+                    filtered.append(q)
+            questions = filtered
+            
+        return sorted(questions, key=lambda x: x.get("id", 0))
+    except Exception as e:
+        print(f"Error getting all questions: {e}")
+        return []
+
+def detect_weak_students():
+    """
+    Identify students with:
+      - Average accuracy < 50%
+      - No activity in last 7 days
+      - Failed a level quiz >= 3 times
+    """
+    try:
+        students = get_students_list()
+        weak_students = []
+        
+        from datetime import datetime, timedelta
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        
+        for student in students:
+            student_id = student["id"]
+            reasons = []
+            
+            # Fetch all attempts
+            attempts_resp = supabase.table("progress") \
+                .select("percentage,status,level") \
+                .eq("student_id", student_id) \
+                .execute()
+            attempts = attempts_resp.data or []
+            
+            # 1. Average accuracy < 50%
+            if attempts:
+                pcts = [a["percentage"] for a in attempts]
+                avg_pct = sum(pcts) / len(pcts)
+                if avg_pct < 50:
+                    reasons.append(f"Low average accuracy ({round(avg_pct, 1)}%)")
+            
+            # 2. Inactive for last 7 days
+            logs_resp = supabase.table("activity_logs") \
+                .select("created_at") \
+                .eq("student_id", student_id) \
+                .order("created_at", desc=True) \
+                .limit(1) \
+                .execute()
+            
+            last_activity = None
+            if logs_resp.data:
+                last_activity = parse_date(logs_resp.data[0]["created_at"])
+            else:
+                prog_resp = supabase.table("progress") \
+                    .select("completed_at") \
+                    .eq("student_id", student_id) \
+                    .order("completed_at", desc=True) \
+                    .limit(1) \
+                    .execute()
+                if prog_resp.data:
+                    last_activity = parse_date(prog_resp.data[0]["completed_at"])
+                    
+            if last_activity:
+                if last_activity.replace(tzinfo=None) < seven_days_ago:
+                    days_inactive = (datetime.utcnow() - last_activity.replace(tzinfo=None)).days
+                    reasons.append(f"Inactive for {days_inactive} days")
+            else:
+                reasons.append("No active logs recorded")
+                
+            # 3. Failed a quiz level >= 3 times
+            if attempts:
+                fail_counts = {}
+                for a in attempts:
+                    if a["status"] == "failed":
+                        lvl = a["level"]
+                        fail_counts[lvl] = fail_counts.get(lvl, 0) + 1
+                for lvl, cnt in fail_counts.items():
+                    if cnt >= 3:
+                        reasons.append(f"Failed Level {lvl} quiz {cnt} times")
+            
+            if reasons:
+                weak_students.append({
+                    "id": student["id"],
+                    "full_name": student["full_name"],
+                    "roll_number": student["roll_number"],
+                    "branch": student["branch"],
+                    "year": student["year"],
+                    "reasons": reasons
+                })
+        return weak_students
+    except Exception as e:
+        print(f"Error detecting weak students: {e}")
+        return []
+
+def log_student_activity(student_id, activity_type, description):
+    """
+    Inserts a row into activity_logs. Fail-safe, does not crash user request on failure.
+    """
+    try:
+        data = {
+            "student_id": int(student_id),
+            "activity_type": activity_type,
+            "description": description
+        }
+        supabase.table("activity_logs").insert(data).execute()
+        return True
+    except Exception as e:
+        print(f"Error logging student activity: {e}")
+        return False
+
+def create_notification(title, message, created_by):
+    """
+    Create announcement notifications from faculty.
+    """
+    try:
+        data = {
+            "title": title,
+            "message": message,
+            "created_by": int(created_by)
+        }
+        response = supabase.table("notifications").insert(data).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error creating notification: {e}")
+        raise e
+
+def get_notifications(limit=10):
+    """
+    Retrieve announcements sorted by date descending, with faculty name.
+    """
+    try:
+        response = supabase.table("notifications") \
+            .select("*") \
+            .order("created_at", desc=True) \
+            .limit(limit) \
+            .execute()
+            
+        notifications = response.data or []
+        for n in notifications:
+            n["created_at"] = parse_date(n.get("created_at"))
+            if n.get("created_by"):
+                fac = supabase.table("faculty").select("name").eq("id", n["created_by"]).execute()
+                if fac.data:
+                    n["faculty_name"] = fac.data[0]["name"]
+                else:
+                    n["faculty_name"] = "Unknown Faculty"
+            else:
+                n["faculty_name"] = "System"
+        return notifications
+    except Exception as e:
+        print(f"Error getting notifications: {e}")
+        return []
+
+def get_top_students(limit=10):
+    """
+    Gets leaderboard standings.
+    """
+    try:
+        response = supabase.table("students") \
+            .select("*") \
+            .order("xp", desc=True) \
+            .limit(limit) \
+            .execute()
+        records = response.data or []
+        for idx, r in enumerate(records):
+            r["rank"] = idx + 1
+            r["levels_completed"] = get_levels_completed_count(r["id"])
+        return records
+    except Exception as e:
+        print(f"Error getting top students: {e}")
+        return []
+
+def add_quiz_attempt(student_id, level, score, percentage, time_taken):
+    """
+    Log detailed quiz attempt with duration.
+    """
+    try:
+        data = {
+            "student_id": int(student_id),
+            "level": int(level),
+            "score": int(score),
+            "percentage": int(percentage),
+            "time_taken": int(time_taken)
+        }
+        response = supabase.table("quiz_attempts").insert(data).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error adding quiz attempt: {e}")
+        return None
+

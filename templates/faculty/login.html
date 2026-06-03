@@ -1,0 +1,57 @@
+{% extends 'faculty/base.html' %}
+
+{% block title %}Faculty Login - English Winglish{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="p-5 bg-white">
+                    <div class="text-center mb-4">
+                        <div class="text-green mb-2 d-inline-block p-3 rounded-circle" style="background-color: rgba(16, 185, 129, 0.1);">
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                        </div>
+                        <h2 class="fw-bold">Faculty Portal</h2>
+                        <p class="text-muted small">English Winglish Learning Management</p>
+                    </div>
+                    
+                    <form action="{{ url_for('faculty_auth.login') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="email_or_emp" class="form-label fw-semibold text-secondary">Email or Employee ID</label>
+                            <input type="text" class="form-control form-control-lg border-2" id="email_or_emp" name="email_or_emp" placeholder="e.g. faculty@college.edu or FAC001" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold text-secondary">Password</label>
+                            <input type="password" class="form-control form-control-lg border-2" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+                        
+                        <button type="submit" class="w-100 btn btn-green-primary btn-lg py-3 rounded-3 shadow">
+                            Sign In
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted small mb-0">Default Seed Account:<br><strong>faculty@college.edu</strong> / <strong>faculty123</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Hide sidebar on login screen */
+    .faculty-sidebar {
+        display: none !important;
+    }
+    .faculty-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+</style>
+{% endblock %}

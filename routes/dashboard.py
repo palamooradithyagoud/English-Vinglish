@@ -3,7 +3,8 @@ from database import (
     get_student_by_id, 
     get_levels_completed_count, 
     get_recent_progress, 
-    get_all_passed_levels
+    get_all_passed_levels,
+    get_notifications
 )
 from routes.auth import login_required
 from datetime import datetime, timedelta
@@ -92,7 +93,8 @@ def home():
         'levels_completed': levels_completed
     }
     
-    return render_template('dashboard.html', student=student_data, history=history)
+    announcements = get_notifications(limit=5)
+    return render_template('dashboard.html', student=student_data, history=history, announcements=announcements)
 
 @dashboard_bp.route('/progress')
 @login_required

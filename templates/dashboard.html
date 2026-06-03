@@ -115,6 +115,29 @@
         </div>
     </div>
 
+    <!-- Announcements Feed Section -->
+    <section class="dashboard-overview-section" style="margin-bottom: 30px;">
+        <h2 class="section-title">Campus Announcements</h2>
+        {% if announcements %}
+            <div class="announcements-container" style="display: flex; flex-direction: column; gap: 15px;">
+                {% for ann in announcements %}
+                    <div class="announcement-card-student" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 6px solid #10b981;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">{{ ann.title }}</h3>
+                        <p style="margin: 0 0 12px 0; color: #475569; font-size: 0.95rem; line-height: 1.5; white-space: pre-line;">{{ ann.message }}</p>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; font-weight: 500;">
+                            <span>By: {{ ann.faculty_name }}</span>
+                            <span>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-history-card" style="background: white; border-radius: 16px; padding: 30px; text-align: center; color: #94a3b8;">
+                <p style="margin: 0;">No active announcements from the faculty.</p>
+            </div>
+        {% endif %}
+    </section>
+
     <!-- Recent Progress Overview Section -->
     <section class="dashboard-overview-section">
         <h2 class="section-title">Quiz History & Overview</h2>

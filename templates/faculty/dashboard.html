@@ -1,0 +1,173 @@
+{% extends 'faculty/base.html' %}
+
+{% block title %}Faculty Dashboard - English Winglish{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold h2 mb-1">Analytics Dashboard</h1>
+            <p class="text-muted mb-0">Welcome, {{ session.faculty_name }}. Here is the current academic overview.</p>
+        </div>
+        <a href="{{ url_for('faculty_dashboard.notifications') }}" class="btn btn-green-primary shadow">
+            + Post Announcement
+        </a>
+    </div>
+    
+    <!-- Stats Cards Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4 col-lg-2 col-sm-6">
+            <div class="card card-stat bg-white h-100">
+                <div class="card-body p-4 text-center">
+                    <span class="d-block text-muted text-uppercase small fw-bold mb-2">Total Students</span>
+                    <span class="h2 fw-extrabold text-dark d-block mb-1">{{ stats.total_students }}</span>
+                    <span class="badge bg-success-subtle text-success">Active Enrolled</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2 col-sm-6">
+            <div class="card card-stat bg-white h-100">
+                <div class="card-body p-4 text-center">
+                    <span class="d-block text-muted text-uppercase small fw-bold mb-2">Active Students</span>
+                    <span class="h2 fw-extrabold text-dark d-block mb-1">{{ stats.active_students }}</span>
+                    <span class="badge bg-info-subtle text-info">Last 7 Days</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2 col-sm-6">
+            <div class="card card-stat bg-white h-100">
+                <div class="card-body p-4 text-center">
+                    <span class="d-block text-muted text-uppercase small fw-bold mb-2">Avg Accuracy</span>
+                    <span class="h2 fw-extrabold text-dark d-block mb-1">{{ stats.avg_accuracy }}%</span>
+                    <span class="badge bg-warning-subtle text-warning">Overall Quiz</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2 col-sm-6">
+            <div class="card card-stat bg-white h-100">
+                <div class="card-body p-4 text-center">
+                    <span class="d-block text-muted text-uppercase small fw-bold mb-2">Total Attempts</span>
+                    <span class="h2 fw-extrabold text-dark d-block mb-1">{{ stats.total_attempts }}</span>
+                    <span class="badge bg-primary-subtle text-primary">Submissions</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2 col-sm-6">
+            <div class="card card-stat bg-white h-100">
+                <div class="card-body p-4 text-center">
+                    <span class="d-block text-muted text-uppercase small fw-bold mb-2">Levels Passed</span>
+                    <span class="h2 fw-extrabold text-dark d-block mb-1">{{ stats.levels_completed }}</span>
+                    <span class="badge bg-secondary-subtle text-secondary">Milestones</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2 col-sm-6">
+            <div class="card card-stat bg-white h-100">
+                <div class="card-body p-4 text-center">
+                    <span class="d-block text-muted text-uppercase small fw-bold mb-2">Top Performer</span>
+                    <span class="h5 fw-bold text-dark d-block mb-1 mt-2 text-truncate" title="{{ stats.top_performer }}">{{ stats.top_performer }}</span>
+                    <span class="badge bg-danger-subtle text-danger">Leaderboard 👑</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Weak Students Panel -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center">
+                    <span class="p-2 bg-danger-subtle rounded-3 me-3 text-danger">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                    </span>
+                    <h3 class="h5 fw-bold mb-0">Students Requiring Attention</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if weak_students %}
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover">
+                                <thead>
+                                    <tr class="text-secondary small fw-bold">
+                                        <th>Name</th>
+                                        <th>Roll Number</th>
+                                        <th>Branch</th>
+                                        <th>Attention Reason</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ws in weak_students %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">{{ ws.full_name }}</div>
+                                                <div class="text-muted small">Year {{ ws.year }}</div>
+                                            </td>
+                                            <td class="text-secondary">{{ ws.roll_number }}</td>
+                                            <td><span class="badge bg-secondary-subtle text-secondary">{{ ws.branch }}</span></td>
+                                            <td>
+                                                {% for r in ws.reasons %}
+                                                    <span class="badge bg-danger-subtle text-danger d-block mb-1 text-wrap text-start">{{ r }}</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('faculty_dashboard.student_detail', student_id=ws.id) }}" class="btn btn-sm btn-outline-secondary rounded-3">
+                                                    View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0">All students are meeting the performance targets!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Announcements Feed Panel -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center">
+                    <span class="p-2 bg-success-subtle rounded-3 me-3 text-success">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                        </svg>
+                    </span>
+                    <h3 class="h5 fw-bold mb-0">Recent Announcements</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if announcements %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for ann in announcements %}
+                                <div class="p-3 bg-light rounded-3 border-start border-4 border-success">
+                                    <h4 class="h6 fw-bold mb-1">{{ ann.title }}</h4>
+                                    <p class="text-muted small mb-2">{{ ann.message }}</p>
+                                    <div class="d-flex justify-content-between text-secondary small" style="font-size: 0.75rem;">
+                                        <span>By: {{ ann.faculty_name }}</span>
+                                        <span>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('faculty_dashboard.notifications') }}" class="text-success small fw-semibold text-decoration-none">
+                                View All Announcements &rarr;
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0">No announcements have been published yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

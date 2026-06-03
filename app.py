@@ -3,6 +3,10 @@ from config import Config
 from routes.auth import auth_bp
 from routes.dashboard import dashboard_bp
 from routes.quiz import quiz_bp
+from routes.faculty_auth import faculty_auth_bp
+from routes.faculty_dashboard import faculty_dashboard_bp
+from routes.questions import questions_bp
+from routes.reports import reports_bp
 
 def create_app():
     app = Flask(__name__)
@@ -12,6 +16,10 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(quiz_bp)
+    app.register_blueprint(faculty_auth_bp)
+    app.register_blueprint(faculty_dashboard_bp)
+    app.register_blueprint(questions_bp)
+    app.register_blueprint(reports_bp)
     
     return app
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import get_student_by_email_or_roll, create_student
+from database import get_student_by_email_or_roll, create_student, log_student_activity
 import functools
 
 auth_bp = Blueprint('auth', __name__)
@@ -89,7 +89,7 @@ def login():
         
         if not (email_or_roll and password):
             flash("Please enter both credentials.", "error")
-            return render_template('login.html')
+            return render_template('login.html', active_tab='student')
             
         try:
             student = get_student_by_email_or_roll(email_or_roll)
@@ -99,6 +99,7 @@ def login():
                     session['student_id'] = student['id']
                     session['student_name'] = student['full_name']
                     session['show_greeting'] = True
+                    log_student_activity(student['id'], 'LOGIN', f"Student {student['full_name']} logged in successfully")
                     flash(f"Welcome back, {student['full_name']}!", "success")
                     return redirect(url_for('dashboard.home'))
             
@@ -106,10 +107,14 @@ def login():
         except Exception as e:
             flash(f"An error occurred during login: {e}", 'error')
             
-    return render_template('login.html')
+    return render_template('login.html', active_tab='student')
 
 @auth_bp.route('/logout')
 def logout():
+    student_id = session.get('student_id')
+    student_name = session.get('student_name', 'Student')
+    if student_id:
+        log_student_activity(student_id, 'LOGOUT', f"Student {student_name} logged out")
     session.clear()
     flash("You have been logged out.", "success")
     return redirect(url_for('auth.login'))

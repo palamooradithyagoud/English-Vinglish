@@ -1,0 +1,69 @@
+{% extends 'faculty/base.html' %}
+
+{% block title %}Announcements - English Winglish{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="fw-bold h2 mb-1">Campus Announcements</h1>
+        <p class="text-muted mb-0">Publish notices, system alerts, or exam updates for students.</p>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Publish Form Card -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 border-0">
+                    <h3 class="h5 fw-bold mb-0">Post New Announcement</h3>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <form action="{{ url_for('faculty_dashboard.notifications') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold text-secondary small">Announcement Title</label>
+                            <input type="text" class="form-control border-2" id="title" name="title" placeholder="e.g. Midterm Examination Schedule" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label fw-semibold text-secondary small">Announcement Message</label>
+                            <textarea class="form-control border-2" id="message" name="message" rows="5" placeholder="Write message details..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-green-primary w-100 py-3 font-weight-bold rounded-3">
+                            Publish Announcement
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Past Feed Card -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 border-0">
+                    <h3 class="h5 fw-bold mb-0">Announcement Broadcast History</h3>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    {% if announcements %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for ann in announcements %}
+                                <div class="p-3 bg-white border border-light-subtle rounded-3 border-start border-4 border-success shadow-sm">
+                                    <h4 class="h6 fw-bold mb-1 text-dark">{{ ann.title }}</h4>
+                                    <p class="text-secondary small mb-2 text-wrap">{{ ann.message }}</p>
+                                    <div class="d-flex justify-content-between text-secondary small" style="font-size: 0.75rem;">
+                                        <span class="fw-semibold">Published by: {{ ann.faculty_name }}</span>
+                                        <span>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0">No past announcements found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

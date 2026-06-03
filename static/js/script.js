@@ -72,6 +72,10 @@ const reviewList = document.getElementById("review-list");
  */
 async function initQuiz() {
     try {
+        const level = typeof QUIZ_LEVEL !== 'undefined' ? QUIZ_LEVEL : 1;
+        mascotPrompts["WELCOME"] = `Bujji online. Level ${level} quiz loaded. Ready to test English skills! Make your selection.`;
+        mascotPrompts["PASS"] = `Level ${level} cleared! Excellent performance. System authorization granted for Level ${level + 1}!`;
+        
         const response = await fetch(QUESTIONS_API_URL);
         if (!response.ok) {
             throw new Error("Failed to fetch questions from the server.");
@@ -80,7 +84,7 @@ async function initQuiz() {
         questions = await response.json();
         
         if (questions.length === 0) {
-            mascotBubble.textContent = "Error: No questions found for Level 1.";
+            mascotBubble.textContent = `Error: No questions found for Level ${level}.`;
             return;
         }
         
@@ -324,8 +328,9 @@ async function submitQuiz() {
         
         // Level Unlock / Retry logic UI modifications
         if (hasPassed) {
+            const level = typeof QUIZ_LEVEL !== 'undefined' ? QUIZ_LEVEL : 1;
             resultsTitle.textContent = "Congratulations!";
-            resultsSubtitle.textContent = result.levelUnlocked ? "Level 2 Unlocked Successfully!" : "You have passed this level!";
+            resultsSubtitle.textContent = result.levelUnlocked ? `Level ${level + 1} Unlocked Successfully!` : "You have passed this level!";
             resultsSubtitle.style.color = "var(--color-primary-press)";
             
             resultBadgeContainer.classList.remove("hidden");
@@ -416,7 +421,8 @@ async function submitQuiz() {
                 <rect x="165" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
             `;
             
-            btnResultAction.textContent = "Retry Level 1";
+            const level = typeof QUIZ_LEVEL !== 'undefined' ? QUIZ_LEVEL : 1;
+            btnResultAction.textContent = `Retry Level ${level}`;
             btnResultAction.className = "btn-secondary";
             btnResultAction.onclick = () => {
                 window.location.reload();

@@ -2,7 +2,57 @@
 
 {% block title %}Login - English Winglish{% endblock %}
 
+{% block head %}
+<style>
+    .auth-tabs-container {
+        display: flex;
+        margin-bottom: 24px;
+        border-bottom: 2px solid var(--color-border);
+        width: 100%;
+    }
+
+    .auth-tab-button {
+        flex: 1;
+        padding: 14px 8px;
+        border: none;
+        background: none;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+    }
+
+    .auth-tab-button:hover {
+        color: var(--color-text-main);
+    }
+
+    .auth-tab-button.active {
+        color: var(--color-primary);
+        border-bottom: 3px solid var(--color-primary);
+    }
+
+    .auth-form-wrapper.hidden {
+        display: none !important;
+    }
+    
+    .role-helper {
+        margin-top: 15px;
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        background-color: var(--color-secondary-hover);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% set active = active_tab|default('student') %}
+
 <div class="auth-container">
     <div class="auth-card">
         <!-- Welcoming Robot Mascot -->
@@ -35,26 +85,89 @@
         </div>
         
         <h2 class="auth-title">Welcome Back!</h2>
-        <p class="auth-subtitle">Log in to continue your English learning path</p>
+        <p class="auth-subtitle" id="auth-subtitle-text">Log in to continue your English learning path</p>
         
-        <form action="{{ url_for('auth.login') }}" method="POST" class="auth-form">
-            <div class="form-group">
-                <label for="email_or_roll">Email Address or Roll Number</label>
-                <input type="text" id="email_or_roll" name="email_or_roll" required placeholder="Enter Email or Roll Number" class="form-input">
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Enter Password" class="form-input">
-            </div>
-            
-            <button type="submit" class="btn-primary auth-submit-btn">Log In</button>
-        </form>
-        
-        <div class="auth-footer">
-            <span>Don't have an account?</span>
-            <a href="{{ url_for('auth.register') }}">Create one now</a>
+        <!-- Tab Switcher -->
+        <div class="auth-tabs-container">
+            <button id="tab-student" class="auth-tab-button {% if active == 'student' %}active{% endif %}" onclick="switchTab('student')">Student Login</button>
+            <button id="tab-faculty" class="auth-tab-button {% if active == 'faculty' %}active{% endif %}" onclick="switchTab('faculty')">Faculty Login</button>
         </div>
+        
+        <!-- Student Form Container -->
+        <div id="form-student-wrapper" class="auth-form-wrapper {% if active != 'student' %}hidden{% endif %}">
+            <form action="{{ url_for('auth.login') }}" method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="email_or_roll">Email Address or Roll Number</label>
+                    <input type="text" id="email_or_roll" name="email_or_roll" required placeholder="Enter Email or Roll Number" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="student_password">Password</label>
+                    <input type="password" id="student_password" name="password" required placeholder="Enter Password" class="form-input">
+                </div>
+                
+                <button type="submit" class="btn-primary auth-submit-btn">Log In as Student</button>
+            </form>
+            
+            <div class="auth-footer">
+                <span>Don't have an account?</span>
+                <a href="{{ url_for('auth.register') }}">Create one now</a>
+            </div>
+        </div>
+        
+        <!-- Faculty Form Container -->
+        <div id="form-faculty-wrapper" class="auth-form-wrapper {% if active != 'faculty' %}hidden{% endif %}">
+            <form action="{{ url_for('faculty_auth.login') }}" method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="email_or_emp">Email Address or Employee ID</label>
+                    <input type="text" id="email_or_emp" name="email_or_emp" required placeholder="Enter Email or Employee ID" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="faculty_password">Password</label>
+                    <input type="password" id="faculty_password" name="password" required placeholder="Enter Password" class="form-input">
+                </div>
+                
+                <button type="submit" class="btn-primary auth-submit-btn" style="background-color: var(--color-blue); box-shadow: 0 4px 0 0 var(--color-blue-press);">Log In as Faculty</button>
+            </form>
+            
+            <div class="role-helper text-center">
+                <span>Default Seed Account:</span><br>
+                <strong>faculty@college.edu</strong> / <strong>faculty123</strong>
+            </div>
+        </div>
+        
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function switchTab(role) {
+        const tabStudent = document.getElementById("tab-student");
+        const tabFaculty = document.getElementById("tab-faculty");
+        const formStudent = document.getElementById("form-student-wrapper");
+        const formFaculty = document.getElementById("form-faculty-wrapper");
+        const subtitleText = document.getElementById("auth-subtitle-text");
+        
+        if (role === 'student') {
+            tabStudent.classList.add("active");
+            tabFaculty.classList.remove("active");
+            formStudent.classList.remove("hidden");
+            formFaculty.classList.add("hidden");
+            subtitleText.textContent = "Log in to continue your English learning path";
+        } else {
+            tabStudent.classList.remove("active");
+            tabFaculty.classList.add("active");
+            formStudent.classList.add("hidden");
+            formFaculty.classList.remove("hidden");
+            subtitleText.textContent = "Log in to access your Faculty Management portal";
+        }
+    }
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        const activeTab = "{{ active }}";
+        switchTab(activeTab);
+    });
+</script>
 {% endblock %}

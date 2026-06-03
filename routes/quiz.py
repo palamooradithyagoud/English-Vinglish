@@ -1,9 +1,12 @@
+import time
 from flask import Blueprint, render_template, jsonify, request, session
 from database import (
     get_student_by_id, 
     get_questions_for_level, 
     update_student_xp_and_level, 
-    add_progress_record
+    add_progress_record,
+    add_quiz_attempt,
+    log_student_activity
 )
 from routes.auth import login_required
 
@@ -12,14 +15,23 @@ quiz_bp = Blueprint('quiz', __name__)
 @quiz_bp.route('/quiz')
 @login_required
 def quiz_page():
-    return render_template('quiz.html')
+    level = request.args.get('level', 1, type=int)
+    # Store requested level in session
+    session['quiz_level'] = level
+    # Start timer
+    session['quiz_start_time'] = time.time()
+    
+    student_id = session['student_id']
+    log_student_activity(student_id, 'QUIZ_START', f"Started quiz for Level {level}")
+    
+    return render_template('quiz.html', level=level)
 
 @quiz_bp.route('/api/questions')
 @login_required
 def get_questions():
     try:
-        # Fetch Level 1 questions from in-memory datastore
-        db_questions = get_questions_for_level(1)
+        level = session.get('quiz_level', 1)
+        db_questions = get_questions_for_level(level)
         
         questions = []
         for q in db_questions:
@@ -51,8 +63,14 @@ def submit_quiz():
         return jsonify({'error': 'Invalid format'}), 400
         
     try:
+        level = session.get('quiz_level', 1)
+        
+        # Calculate duration
+        start_time = session.get('quiz_start_time')
+        duration = int(time.time() - start_time) if start_time else 0
+        
         # Fetch original questions to grade
-        db_questions = get_questions_for_level(1)
+        db_questions = get_questions_for_level(level)
         correct_answers = [q['correct_answer'] for q in db_questions]
         total_questions = len(correct_answers)
         
@@ -69,7 +87,6 @@ def submit_quiz():
         status = 'passed' if has_passed else 'failed'
         xp_earned = correct_count * 10
         
-        # Get active level details
         student = get_student_by_id(student_id)
         if not student:
             return jsonify({'error': 'Student not found'}), 404
@@ -79,16 +96,24 @@ def submit_quiz():
         # Determine level unlocks
         next_level = None
         level_unlocked = False
-        if has_passed and current_level == 1:
-            next_level = 2
+        if has_passed and level == current_level:
+            next_level = current_level + 1
             level_unlocked = True
             
-        # 1. Update Student details (XP and level in-memory)
+        # 1. Update Student details (XP and level)
         update_student_xp_and_level(student_id, xp_earned, next_level)
         
         # 2. Add progress log record
-        add_progress_record(student_id, 1, correct_count, percentage, status)
+        add_progress_record(student_id, level, correct_count, percentage, status)
         
+        # 3. Add detailed quiz attempt
+        add_quiz_attempt(student_id, level, correct_count, percentage, duration)
+        
+        # 4. Log activities
+        log_student_activity(student_id, 'QUIZ_COMPLETE', f"Completed Level {level} quiz with score {correct_count}/{total_questions} ({percentage}%) in {duration}s")
+        if level_unlocked:
+            log_student_activity(student_id, 'LEVEL_UNLOCK', f"Unlocked Level {next_level}")
+            
         return jsonify({
             'success': True,
             'totalQuestions': total_questions,
@@ -97,10 +122,12 @@ def submit_quiz():
             'percentage': percentage,
             'status': status,
             'xpEarned': xp_earned,
-            'levelUnlocked': level_unlocked or (current_level >= 2),
+            'levelUnlocked': level_unlocked or (current_level > level),
+            'nextLevel': next_level or (level + 1),
             'correctAnswers': correct_answers
         })
         
     except Exception as e:
         print(f"Error grading quiz: {e}")
         return jsonify({'error': 'Failed to process quiz submission'}), 500
+

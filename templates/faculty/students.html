@@ -1,0 +1,131 @@
+{% extends 'faculty/base.html' %}
+
+{% block title %}Students Roster - English Winglish{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold h2 mb-1">Students Management</h1>
+            <p class="text-muted mb-0">Monitor student progress, analyze individual metrics, and export class reports.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('reports.class_pdf', branch=selected_branch, year=selected_year, level=selected_level) }}" class="btn btn-danger d-flex align-items-center gap-1 shadow-sm">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Export PDF
+            </a>
+            <a href="{{ url_for('reports.class_excel', branch=selected_branch, year=selected_year, level=selected_level) }}" class="btn btn-success d-flex align-items-center gap-1 shadow-sm">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Export CSV
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form action="{{ url_for('faculty_dashboard.students') }}" method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="search" class="form-label fw-semibold text-secondary small">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Name, Roll, Email..." value="{{ search_query }}">
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="branch" class="form-label fw-semibold text-secondary small">Branch</label>
+                    <select class="form-select" id="branch" name="branch">
+                        <option value="All" {% if selected_branch == 'All' %}selected{% endif %}>All Branches</option>
+                        {% for b in branches %}
+                            <option value="{{ b }}" {% if selected_branch == b %}selected{% endif %}>{{ b }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="year" class="form-label fw-semibold text-secondary small">Academic Year</label>
+                    <select class="form-select" id="year" name="year">
+                        <option value="All" {% if selected_year == 'All' %}selected{% endif %}>All Years</option>
+                        {% for y in years %}
+                            <option value="{{ y }}" {% if selected_year == y|string %}selected{% endif %}>Year {{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="level" class="form-label fw-semibold text-secondary small">Current Level</label>
+                    <select class="form-select" id="level" name="level">
+                        <option value="All" {% if selected_level == 'All' %}selected{% endif %}>All Levels</option>
+                        {% for l in levels %}
+                            <option value="{{ l }}" {% if selected_level == l|string %}selected{% endif %}>Level {{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-green-primary w-100 py-2">
+                        Filter
+                    </button>
+                    <a href="{{ url_for('faculty_dashboard.students') }}" class="btn btn-outline-secondary w-100 py-2">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Student Grid List -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            {% if students %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead>
+                            <tr class="text-secondary small fw-bold bg-light">
+                                <th class="py-3 px-4">Student Name</th>
+                                <th class="py-3">Roll Number</th>
+                                <th class="py-3">Branch & Year</th>
+                                <th class="py-3">Email</th>
+                                <th class="py-3 text-center">XP Points</th>
+                                <th class="py-3 text-center">Current Level</th>
+                                <th class="py-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in students %}
+                                <tr>
+                                    <td class="py-3 px-4">
+                                        <div class="fw-semibold text-dark">{{ s.full_name }}</div>
+                                        <div class="text-muted small" style="font-size: 0.75rem;">Registered: {{ s.created_at.strftime('%Y-%m-%d') }}</div>
+                                    </td>
+                                    <td>{{ s.roll_number }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary">{{ s.branch }}</span>
+                                        <span class="badge bg-light text-dark">Yr {{ s.year }}</span>
+                                    </td>
+                                    <td class="text-secondary small">{{ s.email }}</td>
+                                    <td class="text-center fw-bold text-success">{{ s.xp }} XP</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success-subtle text-success">Lvl {{ s.current_level }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('faculty_dashboard.student_detail', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary rounded-3">
+                                            View Analytics
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted mb-0">No student records found matching the filters.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
