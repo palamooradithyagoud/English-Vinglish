@@ -64,7 +64,7 @@ def students():
     )
     
     # Extra branch list for dropdowns
-    branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT']
+    branches = ['CSE', 'CSE AIML', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'Chemical']
     years = [1, 2, 3, 4]
     levels = [1, 2, 3, 4, 5]
     
