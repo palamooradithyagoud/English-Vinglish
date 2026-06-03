@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - English Vinglish{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card register-card">
+        <h2 class="auth-title">Create Account</h2>
+        <p class="auth-subtitle">Join college students in mastering English basics</p>
+        
+        <form action="{{ url_for('auth.register') }}" method="POST" class="auth-form grid-form">
+            <div class="form-group span-2">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required placeholder="John Doe" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="roll_number">Roll Number</label>
+                <input type="text" id="roll_number" name="roll_number" required placeholder="e.g. 21X01A0501" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="branch">Branch / Department</label>
+                <select id="branch" name="branch" required class="form-input select-input">
+                    <option value="" disabled selected>Select Branch</option>
+                    <option value="Computer Science (CSE)">Computer Science (CSE)</option>
+                    <option value="Information Technology (IT)">Information Technology (IT)</option>
+                    <option value="Electronics & Communication (ECE)">Electronics & Comm (ECE)</option>
+                    <option value="Electrical & Electronics (EEE)">Electrical & Elect (EEE)</option>
+                    <option value="Mechanical Engineering (ME)">Mechanical Eng (ME)</option>
+                    <option value="Civil Engineering (CE)">Civil Eng (CE)</option>
+                    <option value="Chemical Engineering">Chemical Engineering</option>
+                    <option value="Other">Other Branch</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="year">Year of Study</label>
+                <select id="year" name="year" required class="form-input select-input">
+                    <option value="" disabled selected>Select Year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year (Integrated)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="student@college.edu" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password (min 8 chars)</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••" class="form-input" minlength="8">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="••••••••" class="form-input" minlength="8">
+            </div>
+            
+            <button type="submit" class="btn-primary auth-submit-btn span-2">Sign Up & Start Learning</button>
+        </form>
+        
+        <div class="auth-footer">
+            <span>Already have an account?</span>
+            <a href="{{ url_for('auth.login') }}">Log in here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

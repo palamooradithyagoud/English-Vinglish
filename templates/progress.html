@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Progress Map - English Vinglish{% endblock %}
+
+{% block content %}
+<main class="progress-workspace">
+    <div class="progress-map-card">
+        <h2 class="map-title">My Learning Path</h2>
+        <p class="map-subtitle">Clear each quiz with 70% or more to unlock the next level!</p>
+
+        <!-- Dynamic Roadmap Path -->
+        <div class="roadmap-container">
+            {% for lvl in levels %}
+                <div class="roadmap-step step-{{ lvl.status }}">
+                    <!-- Connector Line between nodes -->
+                    {% if not loop.first %}
+                        <div class="connector-line line-to-{{ lvl.number }} {% if lvl.status != 'locked' %}line-active{% endif %}"></div>
+                    {% endif %}
+                    
+                    <div class="step-node-container">
+                        <!-- Node Icon Wrapper -->
+                        <div class="step-node" title="Level {{ lvl.number }} - {% if lvl.status == 'completed' %}Completed{% elif lvl.status == 'unlocked' %}Unlocked{% else %}Locked{% endif %}">
+                            <span class="step-icon">
+                                {% if lvl.status == 'completed' %}
+                                    <!-- Green Check -->
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                    </svg>
+                                {% elif lvl.status == 'unlocked' %}
+                                    <!-- Unlocked Lock -->
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6-5c1.66 0 3 1.34 3 3v2H9V6c0-1.66 1.34-3 3-3z"/>
+                                    </svg>
+                                {% else %}
+                                    <!-- Locked Lock -->
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                    </svg>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Step Info Label -->
+                        <div class="step-label">
+                            <span class="lvl-title">Level {{ lvl.number }}</span>
+                            {% if lvl.number == 1 %}
+                                <span class="lvl-name">English Basics</span>
+                            {% elif lvl.number == 2 %}
+                                <span class="lvl-name">Grammar & Syntax</span>
+                            {% elif lvl.number == 3 %}
+                                <span class="lvl-name">Advanced Vocabulary</span>
+                            {% elif lvl.number == 4 %}
+                                <span class="lvl-name">Comprehension</span>
+                            {% else %}
+                                <span class="lvl-name">Professional Comm</span>
+                            {% endif %}
+                            
+                            <span class="lvl-status-text">
+                                {% if lvl.status == 'completed' %}
+                                    Completed ✅
+                                {% elif lvl.status == 'unlocked' %}
+                                    Unlocked 🔓
+                                {% else %}
+                                    Locked 🔒
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action Link -->
+                    {% if lvl.status == 'unlocked' or lvl.status == 'completed' %}
+                        {% if lvl.number == 1 %}
+                            <a href="{{ url_for('quiz.quiz_page') }}" class="btn-primary step-action-btn">
+                                {% if lvl.status == 'completed' %}Retry{% else %}Attempt{% endif %}
+                            </a>
+                        {% else %}
+                            <button class="btn-primary step-action-btn" onclick="alert('Level {{ lvl.number }} quiz content is currently in development. Well done for unlocking it!');">
+                                Attempt
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn-primary step-action-btn" disabled>Locked</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="map-footer-nav">
+            <a href="{{ url_for('dashboard.home') }}" class="btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

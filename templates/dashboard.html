@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - English Vinglish{% endblock %}
+
+{% block content %}
+<main class="dashboard-workspace">
+    <!-- Welcome Header -->
+    <header class="dashboard-header">
+        <h1 class="welcome-text">Welcome, {{ student.full_name }}! 👋</h1>
+        <p class="welcome-subtitle">Keep up the momentum. Let's learn some English basics today!</p>
+    </header>
+
+    <!-- Stat Cards Grid -->
+    <div class="dashboard-stats-grid">
+        <!-- Card 1: Current Level -->
+        <div class="dashboard-stat-card level-card">
+            <div class="card-icon">🎯</div>
+            <div class="card-info">
+                <span class="card-label">Current Level</span>
+                <span class="card-value">Level {{ student.current_level }}</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Total XP -->
+        <div class="dashboard-stat-card xp-card">
+            <div class="card-icon">⚡</div>
+            <div class="card-info">
+                <span class="card-label">Total XP</span>
+                <span class="card-value">{{ student.xp }} XP</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Streak -->
+        <div class="dashboard-stat-card streak-card {% if student.streak > 0 %}active-streak{% endif %}">
+            <div class="card-icon">🔥</div>
+            <div class="card-info">
+                <span class="card-label">Daily Streak</span>
+                <span class="card-value">{{ student.streak }} Days</span>
+            </div>
+        </div>
+
+        <!-- Card 4: Levels Completed -->
+        <div class="dashboard-stat-card completed-card">
+            <div class="card-icon">🏆</div>
+            <div class="card-info">
+                <span class="card-label">Levels Cleared</span>
+                <span class="card-value">{{ student.levels_completed }} / 5</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-actions-section">
+        <div class="actions-buttons">
+            {% if student.current_level == 1 %}
+                <a href="{{ url_for('quiz.quiz_page') }}" class="btn-primary ripple-btn action-btn font-weight-bold">Start Learning</a>
+            {% else %}
+                <a href="{{ url_for('quiz.quiz_page') }}" class="btn-primary ripple-btn action-btn font-weight-bold">Continue Level {{ student.current_level }}</a>
+            {% endif %}
+            
+            <a href="{{ url_for('dashboard.progress') }}" class="btn-secondary action-btn">View Progress Path</a>
+            <button class="btn-secondary action-btn" id="btn-toggle-profile">View Profile Details</button>
+        </div>
+
+        <!-- Hidden Profile Info Card (toggles on click) -->
+        <div class="profile-details-card hidden" id="profile-details-card">
+            <h3>Student Profile</h3>
+            <hr>
+            <div class="profile-grid">
+                <div><strong>Full Name:</strong> <span>{{ student.full_name }}</span></div>
+                <div><strong>Roll Number:</strong> <span>{{ student.roll_number }}</span></div>
+                <div><strong>Branch:</strong> <span>{{ student.branch }}</span></div>
+                <div><strong>Year of Study:</strong> <span>{{ student.year }} Year</span></div>
+                <div><strong>Email Address:</strong> <span>{{ student.email }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Progress Overview Section -->
+    <section class="dashboard-overview-section">
+        <h2 class="section-title">Quiz History & Overview</h2>
+        {% if history %}
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                            <th>Completion Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in history %}
+                            <tr class="status-row-{{ attempt.status }}">
+                                <td>Level {{ attempt.level }}</td>
+                                <td>{{ attempt.score }} / 20</td>
+                                <td>
+                                    <div class="percent-badge-container">
+                                        <span class="percent-num">{{ attempt.percentage }}%</span>
+                                        <div class="mini-progress-track">
+                                            <div class="mini-progress-fill" style="width: {{ attempt.percentage }}%; background-color: {% if attempt.status == 'passed' %}var(--color-primary){% else %}var(--color-red){% endif %};"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ attempt.status }}">
+                                        {{ attempt.status.upper() }}
+                                    </span>
+                                </td>
+                                <td>{{ attempt.completed_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-history-card">
+                <p>No quiz attempts logged yet. Start a quiz to track your progress!</p>
+            </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const toggleBtn = document.getElementById("btn-toggle-profile");
+        const profileCard = document.getElementById("profile-details-card");
+        
+        if (toggleBtn && profileCard) {
+            toggleBtn.addEventListener("click", () => {
+                profileCard.classList.toggle("hidden");
+                if (profileCard.classList.contains("hidden")) {
+                    toggleBtn.textContent = "View Profile Details";
+                } else {
+                    toggleBtn.textContent = "Hide Profile Details";
+                    profileCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}English Vinglish{% endblock %}</title>
+    <!-- Google Fonts: Outfit for clean friendly aesthetics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Top Navigation -->
+        {% if not hide_navbar %}
+        <nav class="nav-bar">
+            <a href="{{ url_for('dashboard.home') }}" class="nav-logo">
+                <span class="logo-emoji">🦉</span>
+                <span class="logo-text">English Vinglish</span>
+            </a>
+            
+            <div class="nav-links">
+                {% if session.student_id %}
+                    <a href="{{ url_for('dashboard.home') }}" class="nav-item">Dashboard</a>
+                    <a href="{{ url_for('dashboard.progress') }}" class="nav-item">My Path</a>
+                    <a href="{{ url_for('quiz.quiz_page') }}" class="nav-item start-badge">Quiz</a>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-item logout-link">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="nav-item">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="nav-item register-btn">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+        {% endif %}
+
+        <!-- Flash Messages for Errors, Success, Warning Alerts -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-alert flash-{{ category }} shake">
+                            <span class="alert-icon">
+                                {% if category == 'success' %}✅
+                                {% elif category == 'error' %}⚠️
+                                {% else %}ℹ️{% endif %}
+                            </span>
+                            <span class="alert-text">{{ message }}</span>
+                            <button class="btn-close-alert" onclick="this.parentElement.remove();">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Content Area -->
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
