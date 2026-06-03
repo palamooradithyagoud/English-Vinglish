@@ -209,6 +209,9 @@
         const navBujji = document.getElementById("nav-bujji-logo");
         
         if (overlay && navBujji) {
+            if (typeof BujjiSynth !== 'undefined') {
+                BujjiSynth.playWelcomeTune();
+            }
             // Hide the real navbar Bujji icon initially (make it invisible)
             navBujji.style.opacity = "0";
             

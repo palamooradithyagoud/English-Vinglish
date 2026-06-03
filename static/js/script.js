@@ -328,6 +328,7 @@ async function submitQuiz() {
         
         // Level Unlock / Retry logic UI modifications
         if (hasPassed) {
+            if (typeof BujjiSynth !== 'undefined') BujjiSynth.playSuccess();
             const level = typeof QUIZ_LEVEL !== 'undefined' ? QUIZ_LEVEL : 1;
             resultsTitle.textContent = "Congratulations!";
             resultsSubtitle.textContent = result.levelUnlocked ? `Level ${level + 1} Unlocked Successfully!` : "You have passed this level!";
@@ -378,6 +379,7 @@ async function submitQuiz() {
                 window.location.href = DASHBOARD_URL;
             };
         } else {
+            if (typeof BujjiSynth !== 'undefined') BujjiSynth.playFailure();
             resultsTitle.textContent = "Keep Practicing!";
             resultsSubtitle.textContent = "You need 70% or higher to unlock the next level.";
             resultsSubtitle.style.color = "var(--color-red)";

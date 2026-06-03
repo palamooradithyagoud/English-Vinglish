@@ -1935,3 +1935,225 @@ body {
     color: var(--color-text-main);
 }
 
+/* ==========================================================================
+   INTERACTIVE BUJJI COMPANION WIDGET
+   ========================================================================== */
+.bujji-companion-container {
+    width: 110px;
+    height: 120px;
+    transition: left 1.5s cubic-bezier(0.25, 1, 0.5, 1), top 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.12));
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.bujji-mascot-wrapper {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    transform-origin: bottom center;
+    transition: transform 0.25s ease-out;
+}
+
+.bujji-companion-container.dragging .bujji-mascot-wrapper {
+    cursor: grabbing;
+    animation: none !important;
+}
+
+.bujji-companion-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Floating animation inside companion if not dragging */
+.bujji-companion-container:not(.dragging) .bujji-companion-svg {
+    animation: floatHover 3.5s ease-in-out infinite;
+}
+
+/* Rocket booster flame flicker */
+.bujji-flame {
+    transform-origin: 100px 160px;
+    animation: bujjiFlameFlicker 0.1s ease-in-out infinite alternate;
+}
+
+@keyframes bujjiFlameFlicker {
+    0% {
+        transform: scaleY(0.85) scaleX(0.92);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scaleY(1.15) scaleX(1.08);
+        opacity: 1;
+    }
+}
+
+/* Ambient shadow resizing */
+.bujji-companion-container:not(.dragging) .bujji-shadow {
+    transform-origin: 100px 210px;
+    animation: bujjiShadowResize 3.5s ease-in-out infinite;
+}
+
+@keyframes bujjiShadowResize {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.15;
+    }
+    50% {
+        transform: scale(0.75);
+        opacity: 0.07;
+    }
+}
+
+/* Glassmorphism Speech Bubble */
+.bujji-companion-bubble {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    border-radius: 18px;
+    padding: 14px 24px 14px 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 2px 2px rgba(255, 255, 255, 0.6);
+    color: var(--color-text-main);
+    position: absolute;
+    bottom: 120px;
+    right: -40px;
+    width: 220px;
+    z-index: 10002;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.bujji-companion-bubble.hidden-bubble {
+    display: none !important;
+}
+
+/* Bubble speech arrow pointing down */
+.bujji-companion-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 75px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.8) transparent transparent transparent;
+}
+
+.bujji-companion-bubble::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 74px;
+    border-width: 11px;
+    border-style: solid;
+    border-color: rgba(229, 229, 229, 0.5) transparent transparent transparent;
+    z-index: -1;
+}
+
+.bujji-bubble-text {
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.45;
+    margin: 0;
+    color: var(--color-text-main);
+}
+
+.bujji-bubble-close {
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.bujji-bubble-close:hover {
+    color: var(--color-red);
+}
+
+/* Interactive Click Particles */
+.bujji-particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10001;
+    box-shadow: 0 0 8px currentColor;
+    animation: bujjiParticleAnim 0.75s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes bujjiParticleAnim {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Summons Pulse Indicator for Navbar Logo when Bujji is dismissed */
+.bujji-pulse-cue {
+    position: relative;
+}
+
+.bujji-pulse-cue::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-yellow);
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.8);
+    animation: bujjiPulseCue 1.5s infinite;
+    pointer-events: none;
+}
+
+@keyframes bujjiPulseCue {
+    0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 8px rgba(255, 200, 0, 0);
+    }
+    100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(255, 200, 0, 0);
+    }
+}
+
+/* Antenna bulb pulse */
+.bujji-antenna-bulb {
+    animation: antennaPulse 2s infinite alternate;
+}
+
+@keyframes antennaPulse {
+    0% {
+        fill: #FFC800;
+        filter: drop-shadow(0 0 2px #FFC800);
+    }
+    100% {
+        fill: #FF9600;
+        filter: drop-shadow(0 0 8px #FFC800);
+    }
+}
+
+/* Blush cheeks slow breathe */
+.bujji-companion-svg circle[fill="#FF8E8E"] {
+    animation: blushBreathe 4s infinite ease-in-out;
+}
+
+@keyframes blushBreathe {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.75; }
+}
+
