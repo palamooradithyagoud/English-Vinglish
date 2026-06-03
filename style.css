@@ -802,6 +802,80 @@ body {
     }
 }
 
+/* Bujji animated eyes (idle shift + blinking) */
+.bujji-eyes {
+    transform-origin: 100px 104px;
+    animation: bujjiEyesAnimation 8s ease-in-out infinite;
+}
+
+@keyframes bujjiEyesAnimation {
+    /* Idle state, looking forward */
+    0%, 20%, 40%, 60%, 80%, 100% {
+        transform: translateX(0) scaleY(1);
+        opacity: 1;
+    }
+    /* Fast Blinks */
+    22% {
+        opacity: 0.1;
+        transform: translateX(0) scaleY(0.1);
+    }
+    24% {
+        opacity: 1;
+        transform: translateX(0) scaleY(1);
+    }
+    /* Shift view left */
+    43%, 57% {
+        transform: translateX(-5px) scaleY(1);
+    }
+    /* Shift view right */
+    83%, 97% {
+        transform: translateX(5px) scaleY(1);
+    }
+    /* Second blink */
+    88% {
+        opacity: 0.1;
+        transform: translateX(5px) scaleY(0.1);
+    }
+    90% {
+        opacity: 1;
+        transform: translateX(5px) scaleY(1);
+    }
+}
+
+/* Bujji jump-spin active action */
+.spin-active {
+    animation: spinBujji 0.7s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+@keyframes spinBujji {
+    0% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    30% {
+        transform: translateY(-15px) rotate(-15deg) scale(1.15);
+    }
+    100% {
+        transform: translateY(0px) rotate(360deg) scale(1);
+    }
+}
+
+/* Bujji speaking/dialogue nod */
+.speaking-active {
+    animation: speakNod 0.5s ease-in-out 2 !important;
+}
+
+@keyframes speakNod {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-6px) rotate(-4deg);
+    }
+    75% {
+        transform: translateY(-3px) rotate(4deg);
+    }
+}
+
 /* ==========================================================================
    MEDIA QUERIES (RESPONSIVENESS)
    ========================================================================== */

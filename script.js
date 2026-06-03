@@ -428,11 +428,11 @@ function selectOption(optionIdx) {
     // Enable next navigation
     btnNext.disabled = false;
     
-    // Animate mascot jump to celebrate selection feedback
-    mascotGraphic.style.transform = "scale(1.1) translateY(-10px)";
+    // Animate mascot jump-spin to celebrate selection feedback
+    mascotGraphic.classList.add("spin-active");
     setTimeout(() => {
-        mascotGraphic.style.transform = "scale(1) translateY(0)";
-    }, 150);
+        mascotGraphic.classList.remove("spin-active");
+    }, 700);
 
     // Update XP score counter based on completed questions count
     updateHeaderHUD();
@@ -466,6 +466,12 @@ function updateMascotSpeech(key) {
     // Force reflow to restart CSS animations
     void bubble.offsetWidth;
     bubble.style.animation = "popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards";
+
+    // Trigger Bujji speaking nod animation
+    mascotGraphic.classList.add("speaking-active");
+    setTimeout(() => {
+        mascotGraphic.classList.remove("speaking-active");
+    }, 1000);
 }
 
 /**
