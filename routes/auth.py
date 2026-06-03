@@ -98,6 +98,7 @@ def login():
                 if check_password_hash(student['password_hash'], password):
                     session['student_id'] = student['id']
                     session['student_name'] = student['full_name']
+                    session['show_greeting'] = True
                     flash(f"Welcome back, {student['full_name']}!", "success")
                     return redirect(url_for('dashboard.home'))
             

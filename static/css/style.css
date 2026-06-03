@@ -1853,3 +1853,85 @@ body {
     }
 }
 
+/* ==========================================================================
+   BUJJI NAVBAR & GREETING GLIDE ANIMATIONS
+   ========================================================================== */
+.nav-bujji-logo {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+    flex-shrink: 0;
+}
+
+.mascot-svg-nav {
+    width: 42px;
+    height: 42px;
+    animation: floatHover 3s ease-in-out infinite;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+}
+
+.bujji-greeting-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.8s ease;
+    pointer-events: all;
+}
+
+.bujji-greeting-overlay.fade-overlay {
+    background-color: rgba(255, 255, 255, 0);
+    pointer-events: none;
+}
+
+.greeting-mascot-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    transition: all 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 10000;
+}
+
+.mascot-svg-greeting {
+    width: 180px;
+    height: 180px;
+    animation: floatHover 4s ease-in-out infinite;
+    transition: width 1.2s cubic-bezier(0.25, 1, 0.5, 1), height 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+}
+
+.greeting-speech-bubble {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 16px 24px;
+    box-shadow: 0 4px 0 0 var(--color-border);
+    max-width: 300px;
+    text-align: center;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+}
+
+.greeting-speech-bubble p {
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+

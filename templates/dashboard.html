@@ -3,6 +3,45 @@
 {% block title %}Dashboard - English Winglish{% endblock %}
 
 {% block content %}
+{% if session.pop('show_greeting', None) %}
+<div id="bujji-greeting-overlay" class="bujji-greeting-overlay">
+    <div class="greeting-mascot-container">
+        <svg viewBox="0 0 200 200" class="mascot-svg-greeting" id="greeting-bujji">
+            <defs>
+                <linearGradient id="metal-grad-greeting" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#4A5568"/>
+                    <stop offset="50%" stop-color="#2D3748"/>
+                    <stop offset="100%" stop-color="#1A202C"/>
+                </linearGradient>
+                <filter id="neon-glow-greeting" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                        <feMergeNode in="blur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <ellipse cx="100" cy="180" rx="55" ry="10" fill="#E2E8F0"/>
+            <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#1A202C" />
+            <rect x="75" y="165" width="50" height="10" rx="5" fill="#4A5568" />
+            <circle cx="100" cy="100" r="65" fill="url(#metal-grad-greeting)" stroke="#1A202C" stroke-width="4" />
+            <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#1A202C" stroke-width="2" />
+            <g class="bujji-eyes">
+                <polygon points="52,100 85,100 81,108 55,108" fill="#81E6D9" filter="url(#neon-glow-greeting)" />
+                <polygon points="54,101 83,101 80,107 56,107" fill="#EBF8FF" />
+                <polygon points="115,100 148,100 145,108 119,108" fill="#81E6D9" filter="url(#neon-glow-greeting)" />
+                <polygon points="117,101 146,101 144,107 119,107" fill="#EBF8FF" />
+            </g>
+            <circle cx="100" cy="65" r="7" fill="#1A202C" />
+            <circle cx="100" cy="65" r="4" fill="#FFC800" />
+        </svg>
+        <div class="greeting-speech-bubble" id="greeting-bubble">
+            <p>Welcome back, {{ student.full_name }}! Ready to level up your English skills?</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <main class="dashboard-workspace">
     <!-- Welcome Header -->
     <header class="dashboard-header">
@@ -140,6 +179,66 @@
                     profileCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             });
+        }
+
+        // Bujji Welcome Glide Animation Logic
+        const overlay = document.getElementById("bujji-greeting-overlay");
+        const navBujji = document.getElementById("nav-bujji-logo");
+        
+        if (overlay && navBujji) {
+            // Hide the real navbar Bujji icon initially (make it invisible)
+            navBujji.style.opacity = "0";
+            
+            const mascot = overlay.querySelector(".greeting-mascot-container");
+            const bubble = overlay.querySelector(".greeting-speech-bubble");
+            
+            setTimeout(() => {
+                // 1. Fade out the greeting text bubble
+                if (bubble) {
+                    bubble.style.opacity = "0";
+                    bubble.style.transform = "scale(0.8)";
+                }
+                
+                // 2. Clear overlay background opacity
+                overlay.classList.add("fade-overlay");
+                
+                // 3. Get exact target landing bounding box (navbar logo)
+                const targetRect = navBujji.getBoundingClientRect();
+                
+                // 4. Get starting coordinates of the centered mascot
+                const startRect = mascot.getBoundingClientRect();
+                
+                // 5. Remove relative layout properties and set coordinates explicitly
+                mascot.style.transform = "none";
+                mascot.style.margin = "0";
+                mascot.style.top = startRect.top + "px";
+                mascot.style.left = startRect.left + "px";
+                mascot.style.width = startRect.width + "px";
+                mascot.style.height = startRect.height + "px";
+                
+                // Force a browser paint update
+                void mascot.offsetWidth;
+                
+                // 6. Transition mascot container to target coordinates and size
+                mascot.style.top = targetRect.top + "px";
+                mascot.style.left = targetRect.left + "px";
+                mascot.style.width = targetRect.width + "px";
+                mascot.style.height = targetRect.height + "px";
+                
+                // 7. Scale down the SVG inside the container synchronously
+                const svg = mascot.querySelector(".mascot-svg-greeting");
+                if (svg) {
+                    svg.style.width = targetRect.width + "px";
+                    svg.style.height = targetRect.height + "px";
+                    svg.style.animation = "none"; // disable hover floating during transition
+                }
+                
+                // 8. Swap the greeting overlay mascot for the actual navbar logo when transition ends
+                setTimeout(() => {
+                    navBujji.style.opacity = "1";
+                    overlay.remove();
+                }, 1200); // matches CSS transition duration
+            }, 2500); // greeting delay (2.5 seconds)
         }
     });
 </script>
