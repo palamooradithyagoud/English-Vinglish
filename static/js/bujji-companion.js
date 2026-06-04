@@ -469,9 +469,53 @@ class BujjiCompanion {
             svg.classList.remove("spin-active");
         }, 700);
         
-        // 3. Update speech bubble with random phrase
-        const randomPhrase = bujjiCompanionPhrases[Math.floor(Math.random() * bujjiCompanionPhrases.length)];
-        this.say(randomPhrase);
+        // 3. Ask question: Joke or Quote of the day
+        this.askQuestion("Hey there! Would you like to hear a joke or get a quote of the day? 😊", [
+            {
+                label: "Joke ⚡",
+                className: "btn-primary",
+                callback: () => {
+                    const cleanJokes = [
+                        "Why don't scientists trust atoms? Because they make up everything! ⚛️",
+                        "Why did the scarecrow win an award? Because he was outstanding in his field! 🌾",
+                        "What do you call a fake noodle? An impasta! 🍝",
+                        "Why did the tomato turn red? Because it saw the salad dressing! 🍅",
+                        "What do you call a sleeping dinosaur? A dino-snore! 🦖",
+                        "Why do we tell actors to 'break a leg'? Because every play has a cast! 🎭",
+                        "How does a cucumber become a pickle? It goes through a jarring experience! 🥒",
+                        "What kind of key opens a banana? A mon-key! 🔑🐒",
+                        "Why did the math book look sad? Because it had too many problems! 📐",
+                        "Why was the belt arrested? For holding up some pants! 👖"
+                    ];
+                    const randomJoke = cleanJokes[Math.floor(Math.random() * cleanJokes.length)];
+                    this.say(randomJoke);
+                    BujjiSynth.playSuccess();
+                    this.burstParticles();
+                }
+            },
+            {
+                label: "Quote of the Day 🌟",
+                className: "btn-blue",
+                callback: () => {
+                    const quotes = [
+                        "The beautiful thing about learning is that no one can take it away from you. — B.B. King 📚",
+                        "Live as if you were to die tomorrow. Learn as if you were to live forever. — Mahatma Gandhi 🕊️",
+                        "Success is not final, failure is not fatal: it is the courage to continue that counts. — Winston Churchill 🏆",
+                        "Believe you can and you're halfway there. — Theodore Roosevelt ✨",
+                        "The mind is not a vessel to be filled, but a fire to be kindled. — Plutarch 🔥",
+                        "It always seems impossible until it's done. — Nelson Mandela 🌍",
+                        "Learning is a treasure that will follow its owner everywhere. — Chinese Proverb 💎",
+                        "The only limit to our realization of tomorrow will be our doubts of today. — Franklin D. Roosevelt 🌅",
+                        "You don't have to be great to start, but you have to start to be great. — Zig Ziglar 🚀",
+                        "Education is the most powerful weapon which you can use to change the world. — Nelson Mandela 🎓"
+                    ];
+                    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                    this.say(randomQuote);
+                    BujjiSynth.playSuccess();
+                    this.burstParticles();
+                }
+            }
+        ]);
         
         // 4. Create particle burst effect!
         this.burstParticles();
@@ -480,7 +524,46 @@ class BujjiCompanion {
     say(text) {
         if (!this.speechText || !this.speechBubble) return;
         
+        // Remove any options container
+        const existingButtons = this.speechBubble.querySelectorAll(".bujji-options-container");
+        existingButtons.forEach(el => el.remove());
+        
         this.speechText.textContent = text;
+        this.speechBubble.classList.remove("hidden-bubble");
+        this.speechBubble.style.opacity = "1";
+        this.speechBubble.style.transform = "scale(1)";
+        
+        // Reset scale bounce animation
+        this.speechBubble.style.animation = "none";
+        void this.speechBubble.offsetWidth; // force paint
+        this.speechBubble.style.animation = "popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards";
+    }
+
+    askQuestion(questionText, options) {
+        if (!this.speechText || !this.speechBubble) return;
+        
+        // Remove any existing buttons first
+        const existingButtons = this.speechBubble.querySelectorAll(".bujji-options-container");
+        existingButtons.forEach(el => el.remove());
+        
+        this.speechText.textContent = questionText;
+        
+        const optionsContainer = document.createElement("div");
+        optionsContainer.className = "bujji-options-container";
+        
+        options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "bujji-option-btn" + (opt.className ? " " + opt.className : "");
+            btn.textContent = opt.label;
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation(); // prevent triggering companion click again
+                opt.callback();
+            });
+            optionsContainer.appendChild(btn);
+        });
+        
+        this.speechBubble.appendChild(optionsContainer);
+        
         this.speechBubble.classList.remove("hidden-bubble");
         this.speechBubble.style.opacity = "1";
         this.speechBubble.style.transform = "scale(1)";
