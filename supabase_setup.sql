@@ -79,3 +79,27 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+
+-- 8. Create class_quizzes table
+CREATE TABLE IF NOT EXISTS class_quizzes (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    target_type TEXT NOT NULL, -- 'all' or 'branch'
+    target_branch TEXT, -- branch name if 'branch'
+    created_by INTEGER REFERENCES faculty(id) ON DELETE CASCADE,
+    questions JSONB NOT NULL, -- array of quiz questions
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 9. Create class_quiz_attempts table
+CREATE TABLE IF NOT EXISTS class_quiz_attempts (
+    id SERIAL PRIMARY KEY,
+    class_quiz_id INTEGER REFERENCES class_quizzes(id) ON DELETE CASCADE,
+    student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+    score INTEGER NOT NULL,
+    total_questions INTEGER NOT NULL,
+    answers JSONB NOT NULL, -- student's selected answers
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+

@@ -17,7 +17,10 @@ from database import (
     get_notifications,
     get_top_students,
     get_levels_completed_count,
-    get_recent_progress
+    get_recent_progress,
+    create_class_quiz,
+    get_all_class_quizzes,
+    get_class_quiz_results_for_faculty
 )
 from routes.faculty_auth import faculty_login_required
 from routes.dashboard import calculate_streak
@@ -165,3 +168,47 @@ def notifications():
                 
     announcements = get_notifications(limit=20)
     return render_template('faculty/notifications.html', announcements=announcements)
+
+@faculty_dashboard_bp.route('/faculty/class_quizzes')
+@faculty_login_required
+def class_quizzes():
+    quizzes = get_all_class_quizzes()
+    results = get_class_quiz_results_for_faculty()
+    branches = ['CSE', 'CSE AIML', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'Chemical']
+    
+    return render_template(
+        'faculty/class_quizzes.html',
+        quizzes=quizzes,
+        results=results,
+        branches=branches
+    )
+
+@faculty_dashboard_bp.route('/faculty/class_quizzes/create', methods=['POST'])
+@faculty_login_required
+def create_class_quiz_route():
+    data = request.get_json() or {}
+    title = data.get('title', '').strip()
+    target_type = data.get('target_type', 'all')
+    target_branch = data.get('target_branch', '')
+    questions = data.get('questions', [])
+    
+    if not title or not questions:
+        return jsonify({'error': 'Title and questions are required'}), 400
+        
+    faculty_id = session['faculty_id']
+    
+    # Save the quiz
+    quiz = create_class_quiz(title, target_type, target_branch, faculty_id, questions)
+    if not quiz:
+        return jsonify({'error': 'Failed to save quiz in database'}), 500
+        
+    # Trigger notification/announcement
+    target_str = target_branch if target_type == 'branch' else 'all departments'
+    create_notification(
+        title=f"New Class Quiz: {title}",
+        message=f"A new custom class quiz has been posted for {target_str}. Go to your Class Quizzes section on the dashboard to attempt it!",
+        created_by=faculty_id
+    )
+    
+    return jsonify({'success': True})
+

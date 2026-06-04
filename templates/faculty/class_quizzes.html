@@ -1,0 +1,374 @@
+{% extends 'faculty/base.html' %}
+
+{% block title %}Class Quizzes - English Winglish{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold h2 mb-1">Class Quizzes</h1>
+            <p class="text-muted mb-0">Create custom quizzes and monitor student attempt results.</p>
+        </div>
+        <button class="btn btn-green-primary shadow" data-bs-toggle="modal" data-bs-target="#createQuizModal">
+            + Create Class Quiz
+        </button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="quizTabs" role="tablist" style="border-bottom: 2px solid #e5e7eb;">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold text-secondary px-4 py-2" id="active-quizzes-tab" data-bs-toggle="tab" data-bs-target="#active-quizzes" type="button" role="tab" aria-controls="active-quizzes" aria-selected="true" style="border: none; border-bottom: 3px solid transparent; background: transparent; transition: all 0.2s;">
+                Active Quizzes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold text-secondary px-4 py-2" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="false" style="border: none; border-bottom: 3px solid transparent; background: transparent; transition: all 0.2s;">
+                Student Results
+            </button>
+        </li>
+    </ul>
+
+    <style>
+        .nav-tabs .nav-link.active {
+            color: #10B981 !important;
+            border-bottom: 3px solid #10B981 !important;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #111827;
+            border-bottom: 3px solid #e5e7eb;
+        }
+    </style>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="quizTabsContent">
+        
+        <!-- Tab 1: Active Quizzes -->
+        <div class="tab-pane fade show active" id="active-quizzes" role="tabpanel" aria-labelledby="active-quizzes-tab">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-0">
+                    {% if quizzes %}
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover mb-0">
+                                <thead>
+                                    <tr class="text-secondary small fw-bold bg-light">
+                                        <th class="py-3 px-4" style="width: 80px;">ID</th>
+                                        <th class="py-3">Quiz Title</th>
+                                        <th class="py-3">Target Audience</th>
+                                        <th class="py-3 text-center" style="width: 150px;">Total Questions</th>
+                                        <th class="py-3" style="width: 200px;">Created Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for q in quizzes %}
+                                        <tr>
+                                            <td class="py-3 px-4 text-secondary">#{{ q.id }}</td>
+                                            <td class="fw-bold text-dark">{{ q.title }}</td>
+                                            <td>
+                                                {% if q.target_type == 'all' %}
+                                                    <span class="badge bg-success-subtle text-success">All Departments</span>
+                                                {% else %}
+                                                    <span class="badge bg-primary-subtle text-primary">{{ q.target_branch }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-semibold">{{ q.questions | length }}</td>
+                                            <td class="text-secondary small">{{ q.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0">No class quizzes have been created yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Student Results -->
+        <div class="tab-pane fade" id="results" role="tabpanel" aria-labelledby="results-tab">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-0">
+                    {% if results %}
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover mb-0">
+                                <thead>
+                                    <tr class="text-secondary small fw-bold bg-light">
+                                        <th class="py-3 px-4" style="width: 150px;">Roll Number</th>
+                                        <th class="py-3">Student Name</th>
+                                        <th class="py-3">Branch</th>
+                                        <th class="py-3">Quiz Title</th>
+                                        <th class="py-3 text-center" style="width: 150px;">Score</th>
+                                        <th class="py-3" style="width: 200px;">Attempted Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in results %}
+                                        <tr>
+                                            <td class="py-3 px-4 fw-semibold text-secondary">{{ r.student.roll_number }}</td>
+                                            <td class="fw-bold text-dark">{{ r.student.full_name }}</td>
+                                            <td>
+                                                <span class="badge bg-secondary-subtle text-secondary">{{ r.student.branch }}</span>
+                                            </td>
+                                            <td class="fw-semibold">{{ r.quiz.title if r.quiz else 'Deleted Quiz' }}</td>
+                                            <td class="text-center">
+                                                <span class="badge {% if r.score / r.total_questions >= 0.7 %}bg-success{% else %}bg-danger{% endif %} py-2 px-3 fs-6">
+                                                    {{ r.score }} / {{ r.total_questions }}
+                                                </span>
+                                            </td>
+                                            <td class="text-secondary small">{{ r.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0">No student attempt results recorded yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- CREATE QUIZ MODAL -->
+<div class="modal fade" id="createQuizModal" tabindex="-1" aria-labelledby="createQuizModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="createQuizModalLabel">Create Custom Class Quiz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label for="quiz_title" class="form-label fw-semibold text-secondary small">Quiz Title</label>
+                    <input type="text" class="form-control" id="quiz_title" placeholder="E.g., Weekly Vocabulary Check" required>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="target_type" class="form-label fw-semibold text-secondary small">Target Audience</label>
+                        <select class="form-select" id="target_type">
+                            <option value="all">All Departments / Branches</option>
+                            <option value="branch">Branch-specific</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="branch_selector_container" style="display: none;">
+                        <label for="target_branch" class="form-label fw-semibold text-secondary small">Select Branch</label>
+                        <select class="form-select" id="target_branch">
+                            {% for br in branches %}
+                                <option value="{{ br }}">{{ br }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0 text-dark">Quiz Questions</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-question-field">
+                        + Add Question
+                    </button>
+                </div>
+
+                <!-- Questions Container -->
+                <div id="questions-fields-container" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                    <!-- Question blocks appended here -->
+                </div>
+
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-green-primary rounded-3" id="btn-submit-quiz">Publish Quiz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const targetTypeSelect = document.getElementById("target_type");
+        const branchSelectorContainer = document.getElementById("branch_selector_container");
+        const questionsContainer = document.getElementById("questions-fields-container");
+        const btnAddQuestion = document.getElementById("btn-add-question-field");
+        const btnSubmitQuiz = document.getElementById("btn-submit-quiz");
+        
+        let questionCount = 0;
+
+        // Show/hide branch dropdown based on target selection
+        targetTypeSelect.addEventListener("change", () => {
+            if (targetTypeSelect.value === "branch") {
+                branchSelectorContainer.style.display = "block";
+            } else {
+                branchSelectorContainer.style.display = "none";
+            }
+        });
+
+        // Function to create a question block
+        function createQuestionBlock() {
+            questionCount++;
+            const blockId = `q-block-${questionCount}`;
+            
+            const div = document.createElement("div");
+            div.className = "card border p-3 rounded-3 mb-3 question-block position-relative";
+            div.id = blockId;
+            div.innerHTML = `
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-2 btn-remove-question" aria-label="Remove" style="font-size: 0.8rem;"></button>
+                
+                <h6 class="fw-bold mb-3 text-secondary">Question #${questionCount}</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Question Text</label>
+                    <textarea class="form-control q-text" rows="2" placeholder="Enter question description..." required></textarea>
+                </div>
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small text-secondary">Option A</label>
+                        <input type="text" class="form-control form-control-sm q-opt-a" placeholder="Option A" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-secondary">Option B</label>
+                        <input type="text" class="form-control form-control-sm q-opt-b" placeholder="Option B" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-secondary">Option C</label>
+                        <input type="text" class="form-control form-control-sm q-opt-c" placeholder="Option C" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-secondary">Option D</label>
+                        <input type="text" class="form-control form-control-sm q-opt-d" placeholder="Option D" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="form-label small fw-semibold text-secondary">Correct Answer Option</label>
+                    <select class="form-select form-select-sm q-correct">
+                        <option value="0">Option A</option>
+                        <option value="1">Option B</option>
+                        <option value="2">Option C</option>
+                        <option value="3">Option D</option>
+                    </select>
+                </div>
+            `;
+            
+            // Attach delete handler
+            div.querySelector(".btn-remove-question").addEventListener("click", () => {
+                div.remove();
+                reindexQuestionBlocks();
+            });
+            
+            questionsContainer.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Re-index headings after removal
+        function reindexQuestionBlocks() {
+            const blocks = questionsContainer.querySelectorAll(".question-block");
+            questionCount = 0;
+            blocks.forEach(block => {
+                questionCount++;
+                block.querySelector("h6").textContent = `Question #${questionCount}`;
+            });
+        }
+
+        // Add first question field by default
+        createQuestionBlock();
+
+        // Add question button event
+        btnAddQuestion.addEventListener("click", createQuestionBlock);
+
+        // Submit quiz JSON handler
+        btnSubmitQuiz.addEventListener("click", async () => {
+            const title = document.getElementById("quiz_title").value.trim();
+            const target_type = targetTypeSelect.value;
+            const target_branch = document.getElementById("target_branch").value;
+            
+            if (!title) {
+                alert("Please enter a quiz title.");
+                return;
+            }
+            
+            const questionBlocks = questionsContainer.querySelectorAll(".question-block");
+            if (questionBlocks.length === 0) {
+                alert("Please add at least one question.");
+                return;
+            }
+            
+            const questions = [];
+            let isValid = true;
+            
+            questionBlocks.forEach((block, idx) => {
+                const text = block.querySelector(".q-text").value.trim();
+                const a = block.querySelector(".q-opt-a").value.trim();
+                const b = block.querySelector(".q-opt-b").value.trim();
+                const c = block.querySelector(".q-opt-c").value.trim();
+                const d = block.querySelector(".q-opt-d").value.trim();
+                const correct = parseInt(block.querySelector(".q-correct").value);
+                
+                if (!text || !a || !b || !c || !d) {
+                    isValid = false;
+                    return;
+                }
+                
+                questions.push({
+                    question: text,
+                    option_a: a,
+                    option_b: b,
+                    option_c: c,
+                    option_d: d,
+                    correct_answer: correct
+                });
+            });
+            
+            if (!isValid) {
+                alert("Please fill in all fields for all questions.");
+                return;
+            }
+            
+            // Send payload to backend
+            btnSubmitQuiz.disabled = true;
+            btnSubmitQuiz.textContent = "Publishing...";
+            
+            try {
+                const response = await fetch("{{ url_for('faculty_dashboard.create_class_quiz_route') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        target_type: target_type,
+                        target_branch: target_branch,
+                        questions: questions
+                    })
+                });
+                
+                const resData = await response.json();
+                if (response.ok && resData.success) {
+                    alert("Quiz published and notifications sent successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error: " + (resData.error || "Failed to create quiz"));
+                    btnSubmitQuiz.disabled = false;
+                    btnSubmitQuiz.textContent = "Publish Quiz";
+                }
+            } catch (err) {
+                console.error(err);
+                alert("An error occurred during submission.");
+                btnSubmitQuiz.disabled = false;
+                btnSubmitQuiz.textContent = "Publish Quiz";
+            }
+        });
+
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,478 @@
+{% extends 'base.html' %}
+{% set hide_navbar = True %}
+
+{% block title %}Class Quiz: {{ quiz.title }} - English Winglish{% endblock %}
+
+{% block content %}
+<!-- Header Bar -->
+<header class="app-header">
+    <button class="btn-close" id="btn-close" title="Exit to Dashboard">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+            <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+    </button>
+    
+    <!-- Progress container -->
+    <div class="progress-container">
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progress-bar">
+                <div class="progress-bar-glow"></div>
+            </div>
+        </div>
+        <span class="progress-text" id="progress-text">1/20</span>
+    </div>
+
+    <!-- XP Counter -->
+    <div class="header-stats">
+        <div class="stat-item points" title="XP Score">
+            <svg class="icon-spin" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="#FFC800" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2-2 0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+            </svg>
+            <span id="score-counter">0</span>
+        </div>
+    </div>
+</header>
+
+<!-- Main Workspace -->
+<main class="quiz-workspace" id="quiz-workspace">
+    <!-- Left Mascot Area -->
+    <div class="mascot-section">
+        <div class="mascot-container">
+            <svg viewBox="0 0 200 200" class="mascot-svg" id="mascot-graphic">
+                <defs>
+                    <linearGradient id="metal-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#4A5568"/>
+                        <stop offset="50%" stop-color="#2D3748"/>
+                        <stop offset="100%" stop-color="#1A202C"/>
+                    </linearGradient>
+                    <linearGradient id="dome-highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#718096" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#2D3748" stop-opacity="0"/>
+                    </linearGradient>
+                    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                
+                <ellipse cx="100" cy="180" rx="55" ry="10" fill="#E2E8F0"/>
+                <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#1A202C" />
+                <rect x="75" y="165" width="50" height="10" rx="5" fill="#4A5568" />
+                
+                <circle cx="100" cy="100" r="65" fill="url(#metal-grad)" stroke="#1A202C" stroke-width="4" />
+                <path d="M37 90 C 37 45, 163 45, 163 90 Z" fill="url(#dome-highlight)" />
+                <path d="M35 100 L165 100" stroke="#1A202C" stroke-width="3" />
+                <path d="M38 80 C 60 70, 140 70, 162 80" stroke="#1A202C" stroke-width="2" fill="none" opacity="0.5" />
+                <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#1A202C" stroke-width="2" />
+                
+                <g class="bujji-eyes">
+                    <polygon points="52,100 85,100 81,108 55,108" fill="#81E6D9" filter="url(#neon-glow)" />
+                    <polygon points="54,101 83,101 80,107 56,107" fill="#EBF8FF" />
+                    
+                    <polygon points="115,100 148,100 145,108 119,108" fill="#81E6D9" filter="url(#neon-glow)" />
+                    <polygon points="117,101 146,101 144,107 119,107" fill="#EBF8FF" />
+                </g>
+                
+                <circle cx="100" cy="65" r="7" fill="#1A202C" />
+                <circle cx="100" cy="65" r="4" fill="#FFC800" />
+                <rect x="27" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
+                <rect x="165" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
+            </svg>
+            <div class="speech-bubble">
+                <p id="mascot-bubble">Bujji ready! Let's solve this custom quiz assigned by your faculty!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Card Container -->
+    <div class="question-container">
+        <div class="question-card" id="question-card">
+            <span class="category-badge" id="category-badge">CLASS QUIZ</span>
+            <h2 class="question-text" id="question-text">Loading question...</h2>
+            
+            <div class="options-grid" id="options-grid">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Final Results Page (hidden by default) -->
+<main class="results-container hidden" id="results-container">
+    <div class="results-card">
+        <div class="results-mascot">
+            <svg viewBox="0 0 200 200" class="mascot-svg-large" id="results-mascot-graphic">
+                <!-- Populated dynamically -->
+            </svg>
+        </div>
+
+        <h1 class="results-title" id="results-title">Quiz Completed!</h1>
+        <p class="results-subtitle" id="results-subtitle">Here is how you performed in: {{ quiz.title }}</p>
+
+        <!-- unlocked badge -->
+        <div class="result-badge-container" id="result-badge-container">
+            <div class="unlocked-badge" id="unlocked-badge">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Circular Progress SVG Ring -->
+        <div class="circular-progress-wrapper">
+            <svg viewBox="0 0 100 100" class="circular-svg">
+                <circle class="ring-bg" cx="50" cy="50" r="40" />
+                <circle class="ring-fill" id="circular-percentage-ring" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+            </svg>
+            <div class="circular-percentage-text" id="circular-percentage-text">0%</div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-num" id="stat-total">0</span>
+                <span class="stat-label">Total Questions</span>
+            </div>
+            <div class="stat-card correct">
+                <span class="stat-num" id="stat-correct">0</span>
+                <span class="stat-label">Correct</span>
+            </div>
+            <div class="stat-card wrong">
+                <span class="stat-num" id="stat-wrong">0</span>
+                <span class="stat-label">Wrong</span>
+            </div>
+        </div>
+
+        <!-- Action Button in card -->
+        <button class="btn-primary ripple-btn" id="btn-result-action">Continue</button>
+    </div>
+
+    <!-- Quiz Breakdown & Review Section -->
+    <div class="review-section">
+        <h3 class="review-header">Review Your Answers</h3>
+        <div class="review-list" id="review-list">
+            <!-- Loaded dynamically -->
+        </div>
+    </div>
+</main>
+
+<!-- Navigation Footer -->
+<footer class="app-footer" id="app-footer">
+    <div class="footer-buttons">
+        <button class="btn-secondary" id="btn-prev" disabled>
+            <svg viewBox="0 0 24 24" width="20" height="20" style="margin-right: 4px; vertical-align: middle;">
+                <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+            Previous
+        </button>
+        <button class="btn-primary" id="btn-next" disabled>
+            Next
+            <svg viewBox="0 0 24 24" width="20" height="20" style="margin-left: 4px; vertical-align: middle;">
+                <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+        </button>
+    </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const questions = {{ quiz.questions | tojson }};
+    const SUBMIT_QUIZ_API_URL = "{{ url_for('quiz.submit_class_quiz', quiz_id=quiz.id) }}";
+    const DASHBOARD_URL = "{{ url_for('dashboard.home') }}";
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let currentIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+
+        const progressBar = document.getElementById("progress-bar");
+        const progressText = document.getElementById("progress-text");
+        const scoreCounter = document.getElementById("score-counter");
+        const quizWorkspace = document.getElementById("quiz-workspace");
+        const resultsContainer = document.getElementById("results-container");
+        const mascotBubble = document.getElementById("mascot-bubble");
+        const mascotGraphic = document.getElementById("mascot-graphic");
+        const categoryBadge = document.getElementById("category-badge");
+        const questionText = document.getElementById("question-text");
+        const optionsGrid = document.getElementById("options-grid");
+        const btnPrev = document.getElementById("btn-prev");
+        const btnNext = document.getElementById("btn-next");
+        const btnClose = document.getElementById("btn-close");
+        const resultsTitle = document.getElementById("results-title");
+        const resultsSubtitle = document.getElementById("results-subtitle");
+        const resultsMascotGraphic = document.getElementById("results-mascot-graphic");
+        const resultBadgeContainer = document.getElementById("result-badge-container");
+        const unlockedBadge = document.getElementById("unlocked-badge");
+        const circularRing = document.getElementById("circular-percentage-ring");
+        const circularText = document.getElementById("circular-percentage-text");
+        const statTotal = document.getElementById("stat-total");
+        const statCorrect = document.getElementById("stat-correct");
+        const statWrong = document.getElementById("stat-wrong");
+        const btnResultAction = document.getElementById("btn-result-action");
+        const reviewList = document.getElementById("review-list");
+
+        // Mascot dialogues
+        const mascotPrompts = {
+            "WELCOME": "Bujji online. Class quiz loaded! Read carefully and choose the correct option.",
+            "MIDWAY": "Quiz progression: 50% complete. System temperature stable. Keep going!",
+            "ALMOST_DONE": "Quiz progression: 85% complete. Almost there. Let's finish strong!",
+            "PASS": "Class quiz completed! Data uploaded successfully. Let's review the results.",
+        };
+
+        function updateMascotSpeech(text) {
+            mascotBubble.textContent = text;
+            const bubble = document.querySelector(".speech-bubble");
+            if (bubble) {
+                bubble.style.animation = "none";
+                void bubble.offsetWidth;
+                bubble.style.animation = "popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards";
+            }
+            mascotGraphic.classList.add("speaking-active");
+            setTimeout(() => {
+                mascotGraphic.classList.remove("speaking-active");
+            }, 1000);
+        }
+
+        function updateHeaderHUD() {
+            const progressPercent = ((currentIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            progressText.textContent = `${currentIndex + 1}/${questions.length}`;
+            const answeredCount = userAnswers.filter(ans => ans !== null).length;
+            scoreCounter.textContent = answeredCount * 10;
+        }
+
+        function loadQuestion(index) {
+            if (questions.length === 0) return;
+            const q = questions[index];
+            questionText.textContent = q.question;
+            
+            // Mascot dialogues
+            if (index === 0) {
+                updateMascotSpeech(mascotPrompts["WELCOME"]);
+            } else if (index === Math.floor(questions.length / 2)) {
+                updateMascotSpeech(mascotPrompts["MIDWAY"]);
+            } else if (index === questions.length - 2) {
+                updateMascotSpeech(mascotPrompts["ALMOST_DONE"]);
+            }
+
+            optionsGrid.innerHTML = "";
+            const options = [q.option_a, q.option_b, q.option_c, q.option_d];
+            options.forEach((opt, idx) => {
+                const optBtn = document.createElement("button");
+                optBtn.className = "option-btn";
+                if (userAnswers[index] === idx) {
+                    optBtn.classList.add("selected");
+                }
+
+                const letterBadge = document.createElement("span");
+                letterBadge.className = "option-badge";
+                letterBadge.textContent = String.fromCharCode(65 + idx);
+
+                const textNode = document.createElement("span");
+                textNode.textContent = opt;
+
+                optBtn.appendChild(letterBadge);
+                optBtn.appendChild(textNode);
+                optBtn.addEventListener("click", () => selectOption(idx));
+                optionsGrid.appendChild(optBtn);
+            });
+
+            updateHeaderHUD();
+            btnPrev.disabled = index === 0;
+            btnNext.disabled = userAnswers[index] === null;
+
+            if (index === questions.length - 1) {
+                btnNext.innerHTML = `Finish 
+                    <svg viewBox="0 0 24 24" width="20" height="20" style="margin-left: 4px; vertical-align: middle;">
+                        <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>`;
+            } else {
+                btnNext.innerHTML = `Next 
+                    <svg viewBox="0 0 24 24" width="20" height="20" style="margin-left: 4px; vertical-align: middle;">
+                        <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>`;
+            }
+        }
+
+        function selectOption(optionIdx) {
+            userAnswers[currentIndex] = optionIdx;
+            const buttons = optionsGrid.querySelectorAll(".option-btn");
+            buttons.forEach((btn, idx) => {
+                if (idx === optionIdx) btn.classList.add("selected");
+                else btn.classList.remove("selected");
+            });
+            btnNext.disabled = false;
+            
+            mascotGraphic.classList.add("spin-active");
+            setTimeout(() => {
+                mascotGraphic.classList.remove("spin-active");
+            }, 700);
+
+            updateHeaderHUD();
+        }
+
+        function handleNext() {
+            if (userAnswers[currentIndex] === null) return;
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            } else {
+                submitQuiz();
+            }
+        }
+
+        function handlePrev() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion(currentIndex);
+            }
+        }
+
+        async function submitQuiz() {
+            btnNext.disabled = true;
+            btnNext.textContent = "Submitting...";
+
+            try {
+                const response = await fetch(SUBMIT_QUIZ_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ answers: userAnswers })
+                });
+
+                if (!response.ok) throw new Error("Failed to submit");
+                const result = await response.json();
+
+                quizWorkspace.classList.add("hidden");
+                document.getElementById("app-footer").classList.add("hidden");
+                resultsContainer.classList.remove("hidden");
+
+                statTotal.textContent = result.totalQuestions;
+                statCorrect.textContent = result.correctCount;
+                statWrong.textContent = result.wrongCount;
+
+                // Circular Progress Ring
+                const radius = 40;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (result.percentage / 100) * circumference;
+                circularRing.style.strokeDasharray = `${circumference}`;
+                circularRing.style.strokeDashoffset = `${offset}`;
+
+                let pctVal = 0;
+                const anim = setInterval(() => {
+                    if (pctVal >= result.percentage) {
+                        circularText.textContent = `${result.percentage}%`;
+                        clearInterval(anim);
+                    } else {
+                        pctVal++;
+                        circularText.textContent = `${pctVal}%`;
+                    }
+                }, 15);
+
+                // Show Badge / Mascot response
+                resultBadgeContainer.classList.remove("hidden");
+                unlockedBadge.style.backgroundColor = "var(--color-yellow)";
+                unlockedBadge.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="#FFFFFF">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                `;
+
+                resultsMascotGraphic.innerHTML = `
+                    <defs>
+                        <linearGradient id="metal-grad-success" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#4A5568"/>
+                            <stop offset="50%" stop-color="#2D3748"/>
+                            <stop offset="100%" stop-color="#1A202C"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="65" fill="url(#metal-grad-success)" stroke="#1A202C" stroke-width="4" />
+                    <path d="M52,106 Q68,96 84,106" stroke="#81E6D9" stroke-width="8" stroke-linecap="round" fill="none" />
+                    <path d="M116,106 Q132,96 148,106" stroke="#81E6D9" stroke-width="8" stroke-linecap="round" fill="none" />
+                    <circle cx="100" cy="65" r="7" fill="#1A202C" />
+                `;
+
+                btnResultAction.textContent = "Back to Dashboard";
+                btnResultAction.onclick = () => { window.location.href = DASHBOARD_URL; };
+
+                // Build review breakdown list
+                renderReviewBreakdown(result.correctAnswers);
+
+            } catch (err) {
+                console.error(err);
+                alert("Error submitting your quiz attempt. Please try again.");
+                btnNext.disabled = false;
+                btnNext.textContent = "Finish";
+            }
+        }
+
+        function renderReviewBreakdown(correctAnswers) {
+            reviewList.innerHTML = "";
+            questions.forEach((q, idx) => {
+                const userSel = userAnswers[idx];
+                const correctIdx = correctAnswers[idx];
+                const isCorrect = userSel === correctIdx;
+
+                const item = document.createElement("div");
+                item.className = `review-item ${isCorrect ? 'correct' : 'incorrect'}`;
+
+                const statusIcon = document.createElement("div");
+                statusIcon.className = "review-status-icon";
+                statusIcon.innerHTML = isCorrect ? `
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>` : `
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>`;
+
+                const details = document.createElement("div");
+                details.className = "review-details";
+
+                const cat = document.createElement("span");
+                cat.className = "review-category";
+                cat.textContent = `Question ${idx + 1}`;
+
+                const qText = document.createElement("p");
+                qText.className = "review-question";
+                qText.textContent = q.question;
+
+                const optionsList = [q.option_a, q.option_b, q.option_c, q.option_d];
+
+                const ansWrapper = document.createElement("div");
+                ansWrapper.className = "review-answers";
+
+                const userRow = document.createElement("div");
+                userRow.className = "review-ans-row selected";
+                userRow.innerHTML = `<span class="review-ans-label">Your Answer:</span> <span class="review-ans-val">${optionsList[userSel]}</span>`;
+                ansWrapper.appendChild(userRow);
+
+                if (!isCorrect) {
+                    const correctRow = document.createElement("div");
+                    correctRow.className = "review-ans-row correct";
+                    correctRow.innerHTML = `<span class="review-ans-label">Correct Answer:</span> <span class="review-ans-val">${optionsList[correctIdx]}</span>`;
+                    ansWrapper.appendChild(correctRow);
+                }
+
+                details.appendChild(cat);
+                details.appendChild(qText);
+                details.appendChild(ansWrapper);
+                item.appendChild(statusIcon);
+                item.appendChild(details);
+                reviewList.appendChild(item);
+            });
+        }
+
+        btnNext.addEventListener("click", handleNext);
+        btnPrev.addEventListener("click", handlePrev);
+        btnClose.addEventListener("click", () => {
+            if (confirm("Are you sure you want to exit? Your answers will not be saved.")) {
+                window.location.href = DASHBOARD_URL;
+            }
+        });
+
+        loadQuestion(0);
+    });
+</script>
+{% endblock %}

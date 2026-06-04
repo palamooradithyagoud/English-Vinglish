@@ -22,7 +22,10 @@ def list_questions():
     )
     
     levels = [1, 2, 3, 4, 5]
-    categories = ['VOCABULARY', 'SYNONYMS', 'ANTONYMS', 'ARTICLES', 'FILL IN THE BLANKS', 'GRAMMAR']
+    categories = [
+        'VOCABULARY', 'SYNONYMS', 'ANTONYMS', 'ARTICLES', 'FILL IN THE BLANKS', 'GRAMMAR',
+        'TENSES', 'ERROR DETECTION', 'SENTENCE REARRANGEMENT', 'PREPOSITIONS', 'CONJUNCTIONS', 'READING COMPREHENSION'
+    ]
     
     return render_template(
         'faculty/questions.html',

@@ -805,3 +805,136 @@ def add_quiz_attempt(student_id, level, score, percentage, time_taken):
         print(f"Error adding quiz attempt: {e}")
         return None
 
+
+# ==========================================================================
+# CLASS QUIZ MANAGEMENT DATABASE INTERFACE
+# ==========================================================================
+
+def create_class_quiz(title, target_type, target_branch, created_by, questions):
+    """
+    Creates a new class quiz in the database.
+    """
+    try:
+        data = {
+            "title": title,
+            "target_type": target_type,
+            "target_branch": target_branch if target_type == "branch" else None,
+            "created_by": int(created_by),
+            "questions": questions
+        }
+        response = supabase.table("class_quizzes").insert(data).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error creating class quiz: {e}")
+        return None
+
+def get_class_quiz_by_id(quiz_id):
+    """
+    Retrieves a single class quiz by its ID.
+    """
+    try:
+        response = supabase.table("class_quizzes").select("*").eq("id", int(quiz_id)).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting class quiz by id: {e}")
+        return None
+
+def get_all_class_quizzes():
+    """
+    Retrieves all class quizzes for the faculty view.
+    """
+    try:
+        response = supabase.table("class_quizzes").select("*").order("created_at", desc=True).execute()
+        records = response.data or []
+        for r in records:
+            r['created_at'] = parse_date(r.get('created_at'))
+        return records
+    except Exception as e:
+        print(f"Error getting all class quizzes: {e}")
+        return []
+
+def get_class_quizzes_for_student(student_id, student_branch):
+    """
+    Retrieves all class quizzes that target this student (either all or branch-specific).
+    Includes information on whether they have attempted it.
+    """
+    try:
+        # Fetch quizzes
+        response = supabase.table("class_quizzes") \
+            .select("*") \
+            .or_(f"target_type.eq.all,target_branch.eq.{student_branch}") \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        quizzes = response.data or []
+        
+        # Fetch attempts by this student
+        attempts_resp = supabase.table("class_quiz_attempts") \
+            .select("*") \
+            .eq("student_id", int(student_id)) \
+            .execute()
+        
+        attempts = {a['class_quiz_id']: a for a in (attempts_resp.data or [])}
+        
+        result_quizzes = []
+        for q in quizzes:
+            q['created_at'] = parse_date(q.get('created_at'))
+            attempt = attempts.get(q['id'])
+            if attempt:
+                q['attempted'] = True
+                q['score'] = attempt['score']
+                q['total_questions'] = attempt['total_questions']
+            else:
+                q['attempted'] = False
+            result_quizzes.append(q)
+            
+        return result_quizzes
+    except Exception as e:
+        print(f"Error getting class quizzes for student: {e}")
+        return []
+
+def submit_class_quiz_attempt(class_quiz_id, student_id, score, total_questions, answers):
+    """
+    Inserts a student's attempt for a class quiz.
+    """
+    try:
+        data = {
+            "class_quiz_id": int(class_quiz_id),
+            "student_id": int(student_id),
+            "score": int(score),
+            "total_questions": int(total_questions),
+            "answers": answers
+        }
+        response = supabase.table("class_quiz_attempts").insert(data).execute()
+        if response.data:
+            res_record = response.data[0]
+            res_record['completed_at'] = parse_date(res_record.get('completed_at'))
+            return res_record
+        return None
+    except Exception as e:
+        print(f"Error submitting class quiz attempt: {e}")
+        return None
+
+def get_class_quiz_results_for_faculty():
+    """
+    Retrieves all class quiz results/attempts for the faculty view.
+    """
+    try:
+        response = supabase.table("class_quiz_attempts") \
+            .select("*, student:students(full_name, roll_number, branch), quiz:class_quizzes(title)") \
+            .order("completed_at", desc=True) \
+            .execute()
+        
+        records = response.data or []
+        for r in records:
+            r['completed_at'] = parse_date(r.get('completed_at'))
+        return records
+    except Exception as e:
+        print(f"Error getting class quiz results for faculty: {e}")
+        return []
+
+

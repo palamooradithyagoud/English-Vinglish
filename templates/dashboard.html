@@ -115,6 +115,41 @@
         </div>
     </div>
 
+    <!-- Class Quizzes Section -->
+    <section class="dashboard-overview-section" style="margin-bottom: 30px;">
+        <h2 class="section-title">Class Quizzes</h2>
+        {% if class_quizzes %}
+            <div class="class-quizzes-container" style="display: flex; flex-direction: column; gap: 15px;">
+                {% for q in class_quizzes %}
+                    <div class="class-quiz-card" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #10b981;">
+                        <div>
+                            <h3 style="margin: 0 0 5px 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">{{ q.title }}</h3>
+                            <p style="margin: 0 0 5px 0; color: #64748b; font-size: 0.9rem;">
+                                Target: {% if q.target_type == 'all' %}All Departments{% else %}{{ q.target_branch }}{% endif %} • Created by Faculty
+                            </p>
+                            <span style="font-size: 0.8rem; color: #94a3b8;">Posted on {{ q.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <div>
+                            {% if q.attempted %}
+                                <span class="badge bg-success-subtle text-success" style="padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    Attempted: {{ q.score }}/{{ q.total_questions }}
+                                </span>
+                            {% else %}
+                                <a href="{{ url_for('quiz.solve_class_quiz', quiz_id=q.id) }}" class="btn-primary ripple-btn" style="padding: 10px 20px; font-weight: 600; text-decoration: none; border-radius: 8px; font-size: 0.95rem; display: inline-block;">
+                                    Attempt Quiz
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-history-card" style="background: white; border-radius: 16px; padding: 30px; text-align: center; color: #94a3b8;">
+                <p style="margin: 0;">No active class quizzes assigned to you.</p>
+            </div>
+        {% endif %}
+    </section>
+
     <!-- Announcements Feed Section -->
     <section class="dashboard-overview-section" style="margin-bottom: 30px;">
         <h2 class="section-title">Campus Announcements</h2>

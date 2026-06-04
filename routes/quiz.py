@@ -6,7 +6,9 @@ from database import (
     update_student_xp_and_level, 
     add_progress_record,
     add_quiz_attempt,
-    log_student_activity
+    log_student_activity,
+    get_class_quiz_by_id,
+    submit_class_quiz_attempt
 )
 from routes.auth import login_required
 
@@ -130,4 +132,68 @@ def submit_quiz():
     except Exception as e:
         print(f"Error grading quiz: {e}")
         return jsonify({'error': 'Failed to process quiz submission'}), 500
+
+@quiz_bp.route('/class_quiz/<int:quiz_id>')
+@login_required
+def solve_class_quiz(quiz_id):
+    student_id = session['student_id']
+    quiz = get_class_quiz_by_id(quiz_id)
+    if not quiz:
+        return "Quiz not found", 404
+        
+    log_student_activity(student_id, 'CLASS_QUIZ_START', f"Started Class Quiz: {quiz['title']}")
+    
+    return render_template('class_quiz.html', quiz=quiz)
+
+@quiz_bp.route('/api/submit_class_quiz/<int:quiz_id>', methods=['POST'])
+@login_required
+def submit_class_quiz(quiz_id):
+    student_id = session['student_id']
+    data = request.get_json() or {}
+    user_answers = data.get('answers', [])
+    
+    quiz = get_class_quiz_by_id(quiz_id)
+    if not quiz:
+        return jsonify({'error': 'Quiz not found'}), 404
+        
+    try:
+        questions = quiz['questions']
+        total_questions = len(questions)
+        
+        if len(user_answers) < total_questions:
+            return jsonify({'error': 'Missing answers'}), 400
+            
+        correct_count = 0
+        correct_answers = [int(q['correct_answer']) for q in questions]
+        
+        for idx in range(total_questions):
+            if int(user_answers[idx]) == correct_answers[idx]:
+                correct_count += 1
+                
+        percentage = round((correct_count / total_questions) * 100)
+        xp_earned = correct_count * 10
+        
+        # 1. Update Student XP
+        update_student_xp_and_level(student_id, xp_earned)
+        
+        # 2. Record the Class Quiz attempt
+        submit_class_quiz_attempt(quiz_id, student_id, correct_count, total_questions, user_answers)
+        
+        # 3. Log activity
+        log_student_activity(student_id, 'CLASS_QUIZ_COMPLETE', f"Completed Class Quiz: {quiz['title']} with score {correct_count}/{total_questions} ({percentage}%)")
+        
+        return jsonify({
+            'success': True,
+            'totalQuestions': total_questions,
+            'correctCount': correct_count,
+            'wrongCount': total_questions - correct_count,
+            'percentage': percentage,
+            'xpEarned': xp_earned,
+            'correctAnswers': correct_answers
+        })
+        
+    except Exception as e:
+        print(f"Error grading class quiz: {e}")
+        return jsonify({'error': 'Failed to process class quiz submission'}), 500
+
 
