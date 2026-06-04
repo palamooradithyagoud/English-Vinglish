@@ -69,8 +69,8 @@
 
                     <!-- Action Link -->
                     {% if lvl.status == 'unlocked' or lvl.status == 'completed' %}
-                        {% if lvl.number == 1 %}
-                            <a href="{{ url_for('quiz.quiz_page') }}" class="btn-primary step-action-btn">
+                        {% if lvl.number == 1 or lvl.number == 2 %}
+                            <a href="{{ url_for('quiz.quiz_page', level=lvl.number) }}" class="btn-primary step-action-btn">
                                 {% if lvl.status == 'completed' %}Retry{% else %}Attempt{% endif %}
                             </a>
                         {% else %}
