@@ -2148,7 +2148,7 @@ body {
 }
 
 /* Blush cheeks slow breathe */
-.bujji-companion-svg circle[fill="#FF8E8E"] {
+.bujji-companion-svg circle[fill="#FD847E"] {
     animation: blushBreathe 4s infinite ease-in-out;
 }
 

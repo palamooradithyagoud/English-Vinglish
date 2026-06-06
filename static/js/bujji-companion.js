@@ -279,9 +279,9 @@ class BujjiCompanion {
                 <svg viewBox="0 0 200 220" class="bujji-companion-svg">
                     <defs>
                         <linearGradient id="metal-grad-comp" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#5A6578"/>
-                            <stop offset="50%" stop-color="#3D4758"/>
-                            <stop offset="100%" stop-color="#2A303C"/>
+                            <stop offset="0%" stop-color="#FDE7B9"/>
+                            <stop offset="50%" stop-color="#EBAD45"/>
+                            <stop offset="100%" stop-color="#9C7026"/>
                         </linearGradient>
                         <linearGradient id="fire-grad" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stop-color="#FFD000"/>
@@ -298,22 +298,22 @@ class BujjiCompanion {
                     </defs>
                     <path class="bujji-flame" d="M85 160 Q100 210 100 215 Q100 210 115 160 Z" fill="url(#fire-grad)" />
                     <ellipse class="bujji-shadow" cx="100" cy="210" rx="30" ry="6" fill="rgba(0,0,0,0.15)"/>
-                    <path d="M90 140 L110 140 L105 165 L95 165 Z" fill="#1A202C" />
-                    <rect x="85" y="155" width="30" height="8" rx="4" fill="#4A5568" />
-                    <circle cx="100" cy="100" r="58" fill="url(#metal-grad-comp)" stroke="#1A202C" stroke-width="4" />
-                    <path d="M44 91 C 55 85, 145 85, 156 91 L154 112 C 145 119, 55 119, 46 112 Z" fill="#0D1117" stroke="#1A202C" stroke-width="2" />
+                    <path d="M90 140 L110 140 L105 165 L95 165 Z" fill="#5E400B" />
+                    <rect x="85" y="155" width="30" height="8" rx="4" fill="#EBAD45" />
+                    <circle cx="100" cy="100" r="58" fill="url(#metal-grad-comp)" stroke="#5E400B" stroke-width="4" />
+                    <path d="M44 91 C 55 85, 145 85, 156 91 L154 112 C 145 119, 55 119, 46 112 Z" fill="#0D1117" stroke="#5E400B" stroke-width="2" />
                     <g class="bujji-eyes">
-                        <polygon points="58,98 87,98 84,105 60,105" fill="#81E6D9" filter="url(#neon-glow-comp)" />
-                        <polygon points="60,99 85,99 83,104 61,104" fill="#EBF8FF" />
-                        <polygon points="113,98 142,98 139,105 115,105" fill="#81E6D9" filter="url(#neon-glow-comp)" />
-                        <polygon points="115,99 140,99 138,104 116,104" fill="#EBF8FF" />
+                        <polygon points="58,98 87,98 84,105 60,105" fill="#61D3D5" filter="url(#neon-glow-comp)" />
+                        <polygon points="60,99 85,99 83,104 61,104" fill="#E6FAFF" />
+                        <polygon points="113,98 142,98 139,105 115,105" fill="#61D3D5" filter="url(#neon-glow-comp)" />
+                        <polygon points="115,99 140,99 138,104 116,104" fill="#E6FAFF" />
                     </g>
-                    <circle cx="50" cy="112" r="6" fill="#FF8E8E" opacity="0.6" filter="blur(1px)" />
-                    <circle cx="150" cy="112" r="6" fill="#FF8E8E" opacity="0.6" filter="blur(1px)" />
-                    <circle cx="100" cy="65" r="7" fill="#1A202C" />
+                    <circle cx="50" cy="112" r="6" fill="#FD847E" opacity="0.6" filter="blur(1px)" />
+                    <circle cx="150" cy="112" r="6" fill="#FD847E" opacity="0.6" filter="blur(1px)" />
+                    <circle cx="100" cy="65" r="7" fill="#5E400B" />
                     <circle class="bujji-antenna-bulb" cx="100" cy="65" r="4" fill="#FFC800" filter="url(#neon-glow-comp)" />
-                    <rect x="36" y="90" width="7" height="18" rx="2" fill="#4A5568" stroke="#1A202C" stroke-width="1.5" />
-                    <rect x="157" y="90" width="7" height="18" rx="2" fill="#4A5568" stroke="#1A202C" stroke-width="1.5" />
+                    <rect x="36" y="90" width="7" height="18" rx="2" fill="#EBAD45" stroke="#5E400B" stroke-width="1.5" />
+                    <rect x="157" y="90" width="7" height="18" rx="2" fill="#EBAD45" stroke="#5E400B" stroke-width="1.5" />
                 </svg>
             </div>
         `;
@@ -711,7 +711,7 @@ class BujjiCompanion {
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
         
-        const colors = ["#FFC800", "#81E6D9", "#58CC02", "#1899D6"];
+        const colors = ["#EBAD45", "#FDE7B9", "#61D3D5", "#FD847E"];
         
         for (let i = 0; i < 12; i++) {
             const particle = document.createElement("div");

@@ -354,9 +354,9 @@ async function submitQuiz() {
             resultsMascotGraphic.innerHTML = `
                 <defs>
                     <linearGradient id="metal-grad-success" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#4A5568"/>
-                        <stop offset="50%" stop-color="#2D3748"/>
-                        <stop offset="100%" stop-color="#1A202C"/>
+                        <stop offset="0%" stop-color="#FDE7B9"/>
+                        <stop offset="50%" stop-color="#EBAD45"/>
+                        <stop offset="100%" stop-color="#9C7026"/>
                     </linearGradient>
                     <filter id="neon-glow-success" x="-20%" y="-20%" width="140%" height="140%">
                         <feGaussianBlur stdDeviation="3" result="blur" />
@@ -367,17 +367,17 @@ async function submitQuiz() {
                     </filter>
                 </defs>
                 <ellipse cx="100" cy="180" rx="60" ry="10" fill="#E2E8F0"/>
-                <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#1A202C" />
-                <rect x="75" y="165" width="50" height="10" rx="5" fill="#4A5568" />
-                <circle cx="100" cy="100" r="65" fill="url(#metal-grad-success)" stroke="#1A202C" stroke-width="4" />
-                <path d="M35 100 L165 100" stroke="#1A202C" stroke-width="3" />
-                <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#1A202C" stroke-width="2" />
-                <path d="M52,106 Q68,96 84,106" stroke="#81E6D9" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-success)" />
-                <path d="M116,106 Q132,96 148,106" stroke="#81E6D9" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-success)" />
-                <circle cx="100" cy="65" r="7" fill="#1A202C" />
+                <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#5E400B" />
+                <rect x="75" y="165" width="50" height="10" rx="5" fill="#EBAD45" />
+                <circle cx="100" cy="100" r="65" fill="url(#metal-grad-success)" stroke="#5E400B" stroke-width="4" />
+                <path d="M35 100 L165 100" stroke="#5E400B" stroke-width="3" />
+                <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#5E400B" stroke-width="2" />
+                <path d="M52,106 Q68,96 84,106" stroke="#61D3D5" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-success)" />
+                <path d="M116,106 Q132,96 148,106" stroke="#61D3D5" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-success)" />
+                <circle cx="100" cy="65" r="7" fill="#5E400B" />
                 <circle cx="100" cy="65" r="4" fill="#FFC800" filter="url(#neon-glow-success)" />
-                <rect x="27" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
-                <rect x="165" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
+                <rect x="27" y="90" width="8" height="20" rx="3" fill="#EBAD45" stroke="#5E400B" stroke-width="2" />
+                <rect x="165" y="90" width="8" height="20" rx="3" fill="#EBAD45" stroke="#5E400B" stroke-width="2" />
             `;
             
             btnResultAction.textContent = "Back to Dashboard";
@@ -404,9 +404,9 @@ async function submitQuiz() {
             resultsMascotGraphic.innerHTML = `
                 <defs>
                     <linearGradient id="metal-grad-fail" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#4A5568"/>
-                        <stop offset="50%" stop-color="#2D3748"/>
-                        <stop offset="100%" stop-color="#1A202C"/>
+                        <stop offset="0%" stop-color="#FDE7B9"/>
+                        <stop offset="50%" stop-color="#EBAD45"/>
+                        <stop offset="100%" stop-color="#9C7026"/>
                     </linearGradient>
                     <filter id="neon-glow-fail" x="-20%" y="-20%" width="140%" height="140%">
                         <feGaussianBlur stdDeviation="3" result="blur" />
@@ -417,17 +417,17 @@ async function submitQuiz() {
                     </filter>
                 </defs>
                 <ellipse cx="100" cy="180" rx="60" ry="10" fill="#E2E8F0"/>
-                <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#1A202C" />
-                <rect x="75" y="165" width="50" height="10" rx="5" fill="#4A5568" />
-                <circle cx="100" cy="100" r="65" fill="url(#metal-grad-fail)" stroke="#1A202C" stroke-width="4" />
-                <path d="M35 100 L165 100" stroke="#1A202C" stroke-width="3" />
-                <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#1A202C" stroke-width="2" />
-                <path d="M52,100 Q68,110 84,100" stroke="#FC8181" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-fail)" />
-                <path d="M116,100 Q132,110 148,100" stroke="#FC8181" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-fail)" />
-                <circle cx="100" cy="65" r="7" fill="#1A202C" />
-                <circle cx="100" cy="65" r="4" fill="#E53E3E" />
-                <rect x="27" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
-                <rect x="165" y="90" width="8" height="20" rx="3" fill="#4A5568" stroke="#1A202C" stroke-width="2" />
+                <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#5E400B" />
+                <rect x="75" y="165" width="50" height="10" rx="5" fill="#EBAD45" />
+                <circle cx="100" cy="100" r="65" fill="url(#metal-grad-fail)" stroke="#5E400B" stroke-width="4" />
+                <path d="M35 100 L165 100" stroke="#5E400B" stroke-width="3" />
+                <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#5E400B" stroke-width="2" />
+                <path d="M52,100 Q68,110 84,100" stroke="#FD847E" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-fail)" />
+                <path d="M116,100 Q132,110 148,100" stroke="#FD847E" stroke-width="8" stroke-linecap="round" fill="none" filter="url(#neon-glow-fail)" />
+                <circle cx="100" cy="65" r="7" fill="#5E400B" />
+                <circle cx="100" cy="65" r="4" fill="#FD847E" />
+                <rect x="27" y="90" width="8" height="20" rx="3" fill="#EBAD45" stroke="#5E400B" stroke-width="2" />
+                <rect x="165" y="90" width="8" height="20" rx="3" fill="#EBAD45" stroke="#5E400B" stroke-width="2" />
             `;
             
             const level = typeof QUIZ_LEVEL !== 'undefined' ? QUIZ_LEVEL : 1;
