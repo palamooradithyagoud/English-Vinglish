@@ -1,12 +1,17 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+import random
+from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
 from database import (
     get_student_by_id, 
     get_levels_completed_count, 
     get_recent_progress, 
     get_all_passed_levels,
     get_notifications,
-    get_class_quizzes_for_student
+    get_class_quizzes_for_student,
+    update_student_xp_and_level,
+    log_student_activity,
+    get_questions_for_level
 )
+from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS
 from routes.auth import login_required
 from datetime import datetime, timedelta
 
@@ -129,4 +134,76 @@ def progress():
             'status': status
         })
         
-    return render_template('progress.html', levels=levels)
+    return render_template(
+        'progress.html', 
+        levels=levels, 
+        lessons=GRAMMAR_LESSONS, 
+        stories=SHORT_STORIES, 
+        scramble_words=WORD_SCRAMBLE_WORDS,
+        student=student
+    )
+
+@dashboard_bp.route('/api/practice/questions')
+@login_required
+def get_practice_questions():
+    level = request.args.get('level', 1, type=int)
+    if level < 1 or level > 5:
+        return jsonify({'error': 'Invalid level'}), 400
+        
+    # Get questions for this level from DB
+    db_questions = get_questions_for_level(level)
+    
+    questions = []
+    if db_questions:
+        for q in db_questions:
+            questions.append({
+                'id': q['id'],
+                'category': q['category'],
+                'text': q['question'],
+                'options': [q['option_a'], q['option_b'], q['option_c'], q['option_d']],
+                'correct_answer': q['correct_answer']
+            })
+            
+    # Supplement or fallback to local questions to reach at least 20
+    if len(questions) < 20:
+        fallback_list = PRACTICE_QUESTIONS.get(level, [])
+        for q in fallback_list:
+            if not any(eq['text'] == q['question'] for eq in questions):
+                questions.append({
+                    'id': q['id'],
+                    'category': q['category'],
+                    'text': q['question'],
+                    'options': [q['option_a'], q['option_b'], q['option_c'], q['option_d']],
+                    'correct_answer': q['correct_answer']
+                })
+                
+    # Randomize and pick 20 questions
+    random.shuffle(questions)
+    selected_questions = questions[:20]
+    
+    return jsonify(selected_questions)
+
+@dashboard_bp.route('/api/earn-xp', methods=['POST'])
+@login_required
+def earn_xp():
+    student_id = session['student_id']
+    data = request.get_json() or {}
+    xp_to_earn = data.get('xp', 10)
+    activity_type = data.get('activity_type', 'GAME_PLAY')
+    description = data.get('description', 'Completed an activity')
+    
+    if xp_to_earn <= 0 or xp_to_earn > 50:
+        return jsonify({'error': 'Invalid XP value'}), 400
+        
+    student = get_student_by_id(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+        
+    update_student_xp_and_level(student_id, xp_to_earn)
+    log_student_activity(student_id, activity_type, description)
+    
+    updated_student = get_student_by_id(student_id)
+    return jsonify({
+        'success': True,
+        'new_xp': updated_student['xp']
+    })

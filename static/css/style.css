@@ -2223,3 +2223,888 @@ body {
     box-shadow: 0 1px 0 0 var(--color-blue-press);
 }
 
+/* ==========================================================================
+   EXTRA LEARNING ACTIVITIES STYLES
+   ========================================================================== */
+.extra-learning-section {
+    margin-bottom: 40px;
+    padding: 30px 20px;
+    background-color: #F7F7F7;
+    border-radius: 24px;
+    border: 2px solid var(--color-border);
+    text-align: center;
+    animation: slideUp var(--transition-normal);
+}
+
+.extra-section-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-text-main);
+    margin-bottom: 8px;
+}
+
+.extra-section-subtitle {
+    font-size: 15px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.extra-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.extra-card {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 24px 16px;
+    box-shadow: 0 6px 0 0 var(--color-border);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.extra-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-blue);
+    box-shadow: 0 10px 0 0 var(--color-blue-press);
+}
+
+.extra-card:active {
+    transform: translateY(2px);
+    box-shadow: 0 4px 0 0 var(--color-blue-press);
+}
+
+.extra-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    background: var(--color-primary-light);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+}
+
+.grammar-icon { background: #EAF8DB; }
+.games-icon { background: #DDF4FF; }
+.stories-icon { background: #FFF4E5; }
+.practice-icon { background: #FEEFF0; }
+
+.extra-card h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-text-main);
+}
+
+.extra-card p {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+    font-weight: 600;
+    flex-grow: 1;
+}
+
+.btn-extra-go {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--color-blue);
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    transition: color var(--transition-fast);
+}
+
+.extra-card:hover .btn-extra-go {
+    color: var(--color-blue-press);
+}
+
+/* ==========================================================================
+   OVERLAY PANELS (MODAL SYSTEMS)
+   ========================================================================== */
+.overlay-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+}
+
+.overlay-page.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.overlay-container {
+    width: 90%;
+    max-width: 800px;
+    height: 85vh;
+    background-color: #FFFFFF;
+    border: 3px solid var(--color-border);
+    border-radius: 24px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform var(--transition-normal);
+}
+
+.overlay-page.active .overlay-container {
+    transform: scale(1);
+}
+
+.overlay-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FFFFFF;
+}
+
+.overlay-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.overlay-title-icon {
+    font-size: 24px;
+}
+
+.overlay-title-group h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-text-main);
+}
+
+.btn-overlay-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-overlay-close:hover {
+    background-color: var(--color-secondary-hover);
+    color: var(--color-text-main);
+}
+
+.overlay-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background-color: #FAFAFA;
+}
+
+/* ==========================================================================
+   1. LEARN GRAMMAR OVERLAY STYLES
+   ========================================================================== */
+.grammar-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    height: 100%;
+}
+
+.grammar-sidebar {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+.grammar-tab-btn {
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    background: none;
+    border: 2px solid transparent;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.grammar-tab-btn:hover {
+    background-color: var(--color-secondary-hover);
+}
+
+.grammar-tab-btn.active {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-press);
+    border-color: var(--color-primary);
+}
+
+.grammar-content-card {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 24px;
+    overflow-y: auto;
+    box-shadow: 0 4px 0 0 var(--color-border);
+}
+
+.grammar-lesson-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-text-main);
+    margin-bottom: 12px;
+}
+
+.grammar-lesson-intro {
+    font-size: 15px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.grammar-lesson-body {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text-main);
+}
+
+.grammar-lesson-body h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    color: var(--color-blue-press);
+}
+
+.grammar-lesson-body p {
+    margin-bottom: 16px;
+}
+
+.grammar-lesson-body ul, .grammar-lesson-body ol {
+    margin-left: 20px;
+    margin-bottom: 16px;
+}
+
+.grammar-lesson-body li {
+    margin-bottom: 6px;
+}
+
+.grammar-lesson-body strong {
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+.grammar-lesson-body em {
+    font-style: italic;
+    background-color: var(--color-primary-light);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--color-primary-press);
+}
+
+/* ==========================================================================
+   2. PLAY GAMES (WORD SCRAMBLE) OVERLAY STYLES
+   ========================================================================== */
+.game-workspace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 20px;
+    height: 100%;
+}
+
+.game-hud {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 0 0 var(--color-border);
+}
+
+.hud-item {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hud-item.xp { color: var(--color-yellow); }
+.hud-item.streak { color: var(--color-orange); }
+
+.game-board-card {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    box-shadow: 0 6px 0 0 var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+.scrambled-tiles-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.letter-tile {
+    width: 44px;
+    height: 48px;
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 0 4px 0 0 var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-text-main);
+    user-select: none;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.hint-banner {
+    background-color: var(--color-blue-light);
+    border: 2px solid var(--color-blue);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-blue-press);
+    text-align: center;
+    line-height: 1.4;
+    width: 100%;
+}
+
+.game-input-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.input-scramble-guess {
+    flex-grow: 1;
+    font-family: var(--font-main);
+    font-size: 18px;
+    font-weight: 800;
+    padding: 14px 20px;
+    border-radius: 16px;
+    border: 2px solid var(--color-border);
+    background-color: var(--color-secondary-hover);
+    color: var(--color-text-main);
+    outline: none;
+    text-transform: uppercase;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.input-scramble-guess:focus {
+    border-color: var(--color-blue);
+    background-color: #FFFFFF;
+}
+
+.btn-game-submit {
+    padding: 14px 24px;
+}
+
+.feedback-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    width: 100%;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.feedback-banner.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.feedback-banner.success {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-press);
+    border: 2px solid var(--color-primary);
+}
+
+.feedback-banner.error {
+    background-color: var(--color-red-light);
+    color: var(--color-red-press);
+    border: 2px solid var(--color-red);
+}
+
+/* ==========================================================================
+   3. STORIES OVERLAY STYLES
+   ========================================================================== */
+.stories-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    height: 100%;
+}
+
+.stories-sidebar {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+.story-tab-btn {
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    background: none;
+    border: 2px solid transparent;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.story-tab-btn:hover {
+    background-color: var(--color-secondary-hover);
+}
+
+.story-tab-btn.active {
+    background-color: #FFF4E5;
+    color: var(--color-orange);
+    border-color: var(--color-orange);
+}
+
+.story-reader-card {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 4px 0 0 var(--color-border);
+    height: 100%;
+}
+
+.story-header-area {
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 12px;
+}
+
+.story-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-text-main);
+}
+
+.story-genre {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.story-body-split {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 20px;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.story-text-view {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--color-text-main);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.story-vocab-link {
+    color: var(--color-blue);
+    font-weight: 700;
+    text-decoration: underline dashed 2px var(--color-blue);
+    text-underline-offset: 4px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background-color var(--transition-fast);
+}
+
+.story-vocab-link:hover {
+    background-color: var(--color-blue-light);
+}
+
+.vocab-detail-sidebar {
+    background-color: #F8F9FA;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.vocab-placeholder {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.vocab-detail-content h4 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-blue-press);
+}
+
+.vocab-detail-content .word-tag {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    background-color: var(--color-blue);
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.vocab-detail-content p {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-text-main);
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* ==========================================================================
+   4. PRACTICE ARENA OVERLAY STYLES
+   ========================================================================== */
+.practice-lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 24px;
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.lobby-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-text-main);
+}
+
+.lobby-subtitle {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    margin-top: -12px;
+    line-height: 1.4;
+}
+
+.practice-levels-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-select-practice-lvl {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    border: 2px solid var(--color-border);
+    background-color: #FFFFFF;
+    font-family: var(--font-main);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-text-main);
+    cursor: pointer;
+    box-shadow: 0 4px 0 0 var(--color-border);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-select-practice-lvl:hover {
+    background-color: var(--color-secondary-hover);
+}
+
+.btn-select-practice-lvl.lvl-active {
+    background-color: var(--color-primary-light);
+    border-color: var(--color-primary);
+    color: var(--color-primary-press);
+    box-shadow: 0 4px 0 0 var(--color-primary-press);
+}
+
+.btn-select-practice-lvl:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 0 var(--color-border);
+}
+
+.btn-select-practice-lvl.lvl-active:active {
+    box-shadow: 0 2px 0 0 var(--color-primary-press);
+}
+
+.btn-select-practice-lvl.practice-lvl-locked {
+    opacity: 0.5;
+    background-color: var(--color-secondary-press) !important;
+    border-color: var(--color-border) !important;
+    color: var(--color-text-muted) !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.practice-session-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 550px;
+    margin: 0 auto;
+    height: 100%;
+    justify-content: center;
+}
+
+.practice-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 0 0 var(--color-border);
+}
+
+.practice-progress-bar-track {
+    flex-grow: 1;
+    margin: 0 16px;
+    height: 12px;
+    background-color: #E5E5E5;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.practice-progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background-color: var(--color-blue);
+    border-radius: 6px;
+    transition: width var(--transition-normal);
+}
+
+.practice-hud-text {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--color-text-muted);
+}
+
+.practice-question-card {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 6px 0 0 var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.practice-option-btn {
+    width: 100%;
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-family: var(--font-main);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 4px 0 0 var(--color-border);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.practice-option-btn:hover:not(.checked) {
+    background-color: var(--color-secondary-hover);
+}
+
+.practice-option-btn:active:not(.checked) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 0 var(--color-border);
+}
+
+.practice-option-btn.practice-correct {
+    background-color: var(--color-primary-light);
+    border-color: var(--color-primary);
+    color: var(--color-primary-press);
+    box-shadow: 0 4px 0 0 var(--color-primary);
+}
+
+.practice-option-btn.practice-incorrect {
+    background-color: var(--color-red-light);
+    border-color: var(--color-red);
+    color: var(--color-red-press);
+    box-shadow: 0 4px 0 0 var(--color-red);
+}
+
+.practice-option-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--color-text-muted);
+}
+
+.practice-option-btn.practice-correct .practice-option-badge {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #FFFFFF;
+}
+
+.practice-option-btn.practice-incorrect .practice-option-badge {
+    background-color: var(--color-red);
+    border-color: var(--color-red);
+    color: #FFFFFF;
+}
+
+.practice-feedback-box {
+    background-color: #FAFAFA;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--color-text-main);
+    display: none;
+    animation: popIn 0.3s ease;
+}
+
+.practice-feedback-box.show {
+    display: block;
+}
+
+.practice-actions-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.practice-results-card {
+    background: #FFFFFF;
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 6px 0 0 var(--color-border);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.practice-results-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-text-main);
+}
+
+.practice-score-banner {
+    font-size: 40px;
+    font-weight: 800;
+    color: var(--color-blue);
+    margin: 10px 0;
+}
+
+.practice-results-desc {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* responsive adjust rules */
+@media (max-width: 600px) {
+    .grammar-layout, .stories-layout {
+        grid-template-columns: 1fr;
+    }
+    .grammar-sidebar, .stories-sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+    .story-body-split {
+        grid-template-columns: 1fr;
+    }
+}
+
