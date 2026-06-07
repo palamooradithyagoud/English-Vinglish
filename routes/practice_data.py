@@ -1057,7 +1057,34 @@ SHORT_STORIES = [
             "disorganized": "Messy or lacking systemized planning",
             "rectify": "Correct, fix, or set right",
             "achievement": "A proud success accomplished by effort"
-        }
+        },
+        "questions": [
+            {
+                "question": "Who was Bujji?",
+                "options": ["Teacher", "Robot helper", "Student", "Doctor"],
+                "correct_answer": 1
+            },
+            {
+                "question": "Why were the students struggling initially?",
+                "options": [
+                    "The databases were disorganized and clauses were complex",
+                    "The class was canceled",
+                    "The internet was down",
+                    "Bujji was behaving aggressively"
+                ],
+                "correct_answer": 0
+            },
+            {
+                "question": "What happens when a student clears a level?",
+                "options": [
+                    "Bujji plays a video",
+                    "Bujji's neon eyes glow with absolute joy",
+                    "Bujji prints a certificate",
+                    "Bujji shuts down"
+                ],
+                "correct_answer": 1
+            }
+        ]
     },
     {
         "id": "story_2",
@@ -1068,7 +1095,39 @@ SHORT_STORIES = [
             "meticulous": "Extremely careful, showing great attention to detail",
             "exonerate": "Clear someone from blame or suspicion",
             "timid": "Shy, lacking courage or confidence"
-        }
+        },
+        "questions": [
+            {
+                "question": "Who lived in harmony in the Sentence Kingdom?",
+                "options": ["Adverbs and adjectives", "Nouns and verbs", "Prepositions and conjunctions", "Pronouns and nouns"],
+                "correct_answer": 1
+            },
+            {
+                "question": "Who was hired to exonerate the verbs?",
+                "options": ["Detective Pronoun", "Detective Noun", "Officer Verb", "Judge Adjective"],
+                "correct_answer": 0
+            },
+            {
+                "question": "Where was the missing adjective 'vibrant' found?",
+                "options": [
+                    "In the palace of nouns",
+                    "Under a bridge of prepositions",
+                    "Inside a passive clause",
+                    "In a grammar dictionary"
+                ],
+                "correct_answer": 1
+            },
+            {
+                "question": "Why was the adjective hiding?",
+                "options": [
+                    "It wanted to play a prank",
+                    "It was lost in London",
+                    "It was timid and afraid of passive clauses",
+                    "It disliked Detective Pronoun"
+                ],
+                "correct_answer": 2
+            }
+        ]
     },
     {
         "id": "story_3",
@@ -1080,7 +1139,44 @@ SHORT_STORIES = [
             "shrewd": "Sharp, clever, showing practical intelligence",
             "courteous": "Polite, respectful, and considerate",
             "dissipated": "Disappeared, vanished, or dispersed"
-        }
+        },
+        "questions": [
+            {
+                "question": "How did Clara feel upon arriving at Heathrow?",
+                "options": [
+                    "Extremely excited and energetic",
+                    "An ephemeral wave of anxiety",
+                    "Completely lost and angry",
+                    "Sleepy and unmotivated"
+                ],
+                "correct_answer": 1
+            },
+            {
+                "question": "What did Clara observe about the London commuters?",
+                "options": [
+                    "They were very loud and disorganized",
+                    "They wore very strange clothes",
+                    "They spoke politely and used courteous language",
+                    "They refused to speak at all"
+                ],
+                "correct_answer": 2
+            },
+            {
+                "question": "What warning did the announcer give?",
+                "options": ["Mind the gap", "Tickets please", "No smoking", "Keep clear of doors"],
+                "correct_answer": 0
+            },
+            {
+                "question": "By evening, what happened to Clara's worries?",
+                "options": [
+                    "They became worse",
+                    "They stayed the same",
+                    "They completely dissipated",
+                    "She returned home because of them"
+                ],
+                "correct_answer": 2
+            }
+        ]
     }
 ]
 
