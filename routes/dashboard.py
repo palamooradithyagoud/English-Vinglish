@@ -207,3 +207,56 @@ def earn_xp():
         'success': True,
         'new_xp': updated_student['xp']
     })
+
+@dashboard_bp.route('/api/bujji/chat', methods=['POST'])
+@login_required
+def bujji_chat():
+    import os
+    import urllib.request
+    import json
+
+    data = request.get_json() or {}
+    user_message = data.get('message', '').strip()
+    
+    if not user_message:
+        return jsonify({'error': 'Message is required'}), 400
+        
+    api_key = os.environ.get('GROQ_API_KEY')
+    if not api_key:
+        return jsonify({'response': "Bleep boop! I am here, but my neural link is offline. Let's practice English basics!"})
+        
+    system_prompt = (
+        "You are Bujji, a helpful, encouraging, and slightly quirky robot assistant for English learning. "
+        "Your responses should be friendly, polite, contain emojis, and be limited to a maximum of 3 sentences. "
+        "Help the student with their English, explain grammar terms, write small jokes, or give encouraging quotes."
+    )
+    
+    payload = {
+        "model": "mixtral-8x7b-32768",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 150
+    }
+    
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=json.dumps(payload).encode('utf-8'),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        },
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            chat_response = res_data['choices'][0]['message']['content'].strip()
+            return jsonify({'response': chat_response})
+    except Exception as e:
+        print("Groq connection error:", e)
+        return jsonify({'response': "Bleep boop! I hit a cosmic glitch in my databases. Try asking again! 🤖"})
+

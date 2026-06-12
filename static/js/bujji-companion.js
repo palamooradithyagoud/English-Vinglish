@@ -270,9 +270,13 @@ class BujjiCompanion {
         // Add HTML content
         container.innerHTML = `
             <div class="bujji-speech-bubble-wrapper">
-                <div class="bujji-companion-bubble">
+                <div class="bujji-companion-bubble" style="padding: 12px !important; min-width: 200px; max-width: 260px;">
                     <span class="bujji-bubble-close">&times;</span>
-                    <p class="bujji-bubble-text">Bleep boop! Bujji is here to study English with you! 👋</p>
+                    <p class="bujji-bubble-text" style="margin-bottom: 8px !important; font-size: 13px !important; line-height: 1.45 !important; font-weight: 500 !important; color: #1E293B !important;">Bleep boop! Bujji is here to study English with you! 👋</p>
+                    <div class="bujji-chat-input-row" style="display: flex; gap: 6px; margin-top: 8px; border-top: 1px solid #E2E8F0; padding-top: 8px;">
+                        <input type="text" class="bujji-chat-input" placeholder="Ask me anything..." style="flex-grow: 1; border: 1px solid #CBD5E1; border-radius: 6px; padding: 6px 8px; font-size: 11.5px; outline: none; font-family: inherit; width: 100%; box-sizing: border-box; background: #FFFFFF; color: #1E293B;">
+                        <button class="bujji-chat-send" style="background: #0F172A; color: #FFFFFF; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background-color 0.15s ease;">Send</button>
+                    </div>
                 </div>
             </div>
             <div class="bujji-mascot-wrapper">
@@ -328,6 +332,30 @@ class BujjiCompanion {
         this.companionX = rect.left;
         this.companionY = rect.top;
         
+        // Setup Chat Input handlers
+        const chatInput = container.querySelector(".bujji-chat-input");
+        const sendBtn = container.querySelector(".bujji-chat-send");
+        
+        if (sendBtn) {
+            sendBtn.onmouseover = () => sendBtn.style.background = '#1E293B';
+            sendBtn.onmouseout = () => sendBtn.style.background = '#0F172A';
+            sendBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.handleChatSubmit(chatInput, sendBtn);
+            };
+        }
+        
+        if (chatInput) {
+            chatInput.onkeydown = (e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                    this.handleChatSubmit(chatInput, sendBtn);
+                }
+            };
+            chatInput.onmousedown = (e) => e.stopPropagation();
+            chatInput.ontouchstart = (e) => e.stopPropagation();
+        }
+        
         // Interactivity
         // Click on Bujji to trigger action
         container.querySelector(".bujji-mascot-wrapper").addEventListener("click", (e) => {
@@ -340,6 +368,47 @@ class BujjiCompanion {
             e.stopPropagation();
             this.dismiss();
         });
+    }
+
+    async handleChatSubmit(input, btn) {
+        if (!input || !btn) return;
+        const msg = input.value.trim();
+        if (!msg) return;
+        
+        input.value = '';
+        this.say("Bujji is thinking... 🧠");
+        
+        input.disabled = true;
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        
+        try {
+            const response = await fetch('/api/bujji/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: msg })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.say(data.response);
+                BujjiSynth.playChirp();
+            } else {
+                this.say("Bleep boop! Something went wrong. Let's try again! 🤖");
+                BujjiSynth.playFailure();
+            }
+        } catch (e) {
+            console.error("Chat error:", e);
+            this.say("Bleep boop! System offline. Check your network! 🚀");
+            BujjiSynth.playFailure();
+        } finally {
+            input.disabled = false;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            input.focus();
+        }
     }
 
     setupDragging() {
