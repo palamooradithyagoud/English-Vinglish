@@ -1197,3 +1197,17 @@ WORD_SCRAMBLE_WORDS = [
     {"scrambled": "SNOTNMAY", "word": "ANTONYMS", "hint": "Words that are opposite in meaning to another word."},
     {"scrambled": "PSEEISLNTSE", "word": "TENSES", "hint": "Verb forms indicating the time of action (past, present, future)."}
 ]
+
+WORD_JOINER_SENTENCES = [
+    {"sentence": "Always speak the truth", "hint": "A golden rule of honesty and integrity."},
+    {"sentence": "She is reading a book", "hint": "An ongoing action with a novel or storybook."},
+    {"sentence": "They completed the project successfully", "hint": "A description of a finished group task."},
+    {"sentence": "Bujji is a helpful companion", "hint": "A simple statement about our favorite AI robot helper."},
+    {"sentence": "Although she was tired she finished the quiz", "hint": "A complex sentence expressing persistence."},
+    {"sentence": "We are learning English today", "hint": "An active description of our current educational session."},
+    {"sentence": "Hardly had I arrived when the phone rang", "hint": "An advanced grammar syntax representing immediate sequence."},
+    {"sentence": "The sun rose over the quiet lake", "hint": "A peaceful description of a morning scenery."},
+    {"sentence": "Could you please provide the report by Friday", "hint": "A polite, professional business request."},
+    {"sentence": "We look forward to meeting you tomorrow", "hint": "A professional sign-off in a formal email."}
+]
+

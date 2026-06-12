@@ -1092,6 +1092,95 @@
             flex-direction: column !important;
         }
     }
+
+    /* Game Selector Tabs Styling */
+    .game-selector-tabs {
+        display: flex !important;
+        gap: 12px !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .game-tab-btn {
+        flex: 1 !important;
+        padding: 10px 16px !important;
+        font-family: inherit !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        border: 1px solid #E2E8F0 !important;
+        background-color: #FFFFFF !important;
+        color: #475569 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+    }
+    
+    .game-tab-btn:hover {
+        background-color: #F8FAFC !important;
+        border-color: #CBD5E1 !important;
+        color: #0F172A !important;
+    }
+    
+    .game-tab-btn.active {
+        background-color: #F1F5F9 !important;
+        border-color: #475569 !important;
+        color: #0F172A !important;
+    }
+
+    /* Word Joiner Game Styling */
+    .joiner-word-tile {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #0F172A !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        user-select: none !important;
+    }
+    
+    .joiner-word-tile:hover {
+        background-color: #F1F5F9 !important;
+        border-color: #CBD5E1 !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .joiner-word-tile:active {
+        transform: translateY(0) !important;
+    }
+    
+    .joiner-word-tile.selected-tile {
+        opacity: 0.4 !important;
+        pointer-events: none !important;
+    }
+    
+    .joiner-word-slot {
+        background: #F1F5F9 !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #0F172A !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        user-select: none !important;
+    }
+    
+    .joiner-word-slot:hover {
+        background-color: #E2E8F0 !important;
+        border-color: #94A3B8 !important;
+    }
 </style>
 {% endblock %}
 
@@ -1264,12 +1353,18 @@
             <div class="overlay-header">
                 <div class="overlay-title-group">
                     <span class="overlay-title-icon">🎮</span>
-                    <h2>Word Scramble</h2>
+                    <h2 id="game-overlay-title">Play Games</h2>
                 </div>
                 <button class="btn-overlay-close" onclick="closeOverlay('games')" title="Close Overlay">&times;</button>
             </div>
             <div class="overlay-body" style="display: flex; align-items: center; justify-content: center;">
                 <div class="game-workspace">
+                    <!-- Game Tab Selector -->
+                    <div class="game-selector-tabs">
+                        <button class="game-tab-btn active" id="btn-scramble" onclick="switchGameMode('scramble')">🔠 Word Scramble</button>
+                        <button class="game-tab-btn" id="btn-joiner" onclick="switchGameMode('joiner')">🔗 Word Joiner</button>
+                    </div>
+
                     <div class="game-hud">
                         <div class="hud-item xp">
                             <span>⚡</span> <span id="game-xp-score">0</span> XP
@@ -1278,7 +1373,9 @@
                             <span>🔥</span> <span id="game-streak-counter">0</span> Streak
                         </div>
                     </div>
-                    <div class="game-board-card">
+
+                    <!-- 1. Word Scramble Board -->
+                    <div class="game-board-card" id="scramble-game-board" style="display: flex; flex-direction: column; width: 100%;">
                         <div class="scrambled-tiles-container" id="scrambled-tiles">
                             <!-- Tiles dynamically populated -->
                         </div>
@@ -1290,6 +1387,26 @@
                             <button class="btn-primary btn-game-submit" onclick="submitScrambleGuess()">Submit</button>
                         </div>
                         <div class="feedback-banner" id="game-feedback-banner">
+                            Feedback
+                        </div>
+                    </div>
+
+                    <!-- 2. Word Joiner Board -->
+                    <div class="game-board-card" id="joiner-game-board" style="display: none; flex-direction: column; width: 100%; gap: 15px;">
+                        <div class="joiner-slots-container" id="joiner-slots" style="min-height: 50px; border: 1px dashed #E2E8F0; border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; background-color: #F8FAFC; width: 100%;">
+                            <!-- Joined words slots populated dynamically -->
+                        </div>
+                        <div class="joiner-tiles-container" id="joiner-tiles" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%;">
+                            <!-- Clickable word tiles populated dynamically -->
+                        </div>
+                        <div class="hint-banner" id="joiner-hint-text" style="width: 100%;">
+                            Sentence hint description
+                        </div>
+                        <div class="game-input-row" style="width: 100%; display: flex; gap: 10px;">
+                            <button class="btn-secondary" onclick="clearJoinerSlots()" style="flex: 1; padding: 10px !important; border-radius: 8px; font-weight: 600; font-size: 13.5px; border: 1px solid #D1D5DB; background: #fff; cursor: pointer;">Clear</button>
+                            <button class="btn-primary btn-game-submit" onclick="submitJoinerGuess()" style="flex: 2;">Check Sentence</button>
+                        </div>
+                        <div class="feedback-banner" id="joiner-feedback-banner">
                             Feedback
                         </div>
                     </div>
@@ -1499,6 +1616,7 @@
     const lessons = {{ lessons | tojson | safe }};
     const stories = {{ stories | tojson | safe }};
     const scrambleWords = {{ scramble_words | tojson | safe }};
+    const joinerSentences = {{ joiner_sentences | tojson | safe }};
     const student = {{ student | tojson | safe }};
 
     // ==========================================================================
@@ -1593,22 +1711,27 @@
     }
 
     // ==========================================================================
-    // 2. PLAY GAMES (WORD SCRAMBLE) LOGIC
+    // 2. PLAY GAMES (WORD SCRAMBLE & WORD JOINER) LOGIC
     // ==========================================================================
     let currentWordIndex = 0;
     let gameScore = 0;
     let gameStreak = 0;
     let activeWord = '';
+    let activeGameMode = 'scramble';
+
+    // Word Joiner specific state
+    let activeSentenceData = null;
+    let joinedWords = [];
+    let scrambledWordsList = [];
 
     function initGamesOverlay() {
         gameScore = 0;
         gameStreak = 0;
         document.getElementById('game-xp-score').textContent = gameScore;
         document.getElementById('game-streak-counter').textContent = gameStreak;
-        document.getElementById('game-feedback-banner').classList.remove('show');
-        loadScrambleWord();
+        switchGameMode('scramble');
         
-        // Bind Enter key press to submit guess
+        // Bind Enter key press to submit scramble guess
         const input = document.getElementById('input-scramble-guess');
         input.onkeydown = (e) => {
             if (e.key === 'Enter') {
@@ -1617,6 +1740,36 @@
         };
     }
 
+    function switchGameMode(mode) {
+        activeGameMode = mode;
+        const btnScramble = document.getElementById('btn-scramble');
+        const btnJoiner = document.getElementById('btn-joiner');
+        const boardScramble = document.getElementById('scramble-game-board');
+        const boardJoiner = document.getElementById('joiner-game-board');
+        
+        if (mode === 'scramble') {
+            btnScramble.classList.add('active');
+            btnJoiner.classList.remove('active');
+            boardScramble.style.display = 'flex';
+            boardJoiner.style.display = 'none';
+            document.getElementById('game-overlay-title').textContent = 'Word Scramble';
+            document.getElementById('game-feedback-banner').classList.remove('show');
+            loadScrambleWord();
+        } else {
+            btnScramble.classList.remove('active');
+            btnJoiner.classList.add('active');
+            boardScramble.style.display = 'none';
+            boardJoiner.style.display = 'flex';
+            document.getElementById('game-overlay-title').textContent = 'Word Joiner';
+            initJoinerGame();
+        }
+        
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    // --- WORD SCRAMBLE LOGIC ---
     function loadScrambleWord() {
         const wordData = scrambleWords[Math.floor(Math.random() * scrambleWords.length)];
         activeWord = wordData.word;
@@ -1693,6 +1846,183 @@
             
             input.classList.add('shake');
             setTimeout(() => input.classList.remove('shake'), 400);
+        }
+    }
+
+    // --- WORD JOINER LOGIC ---
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initJoinerGame() {
+        joinedWords = [];
+        const container = document.getElementById('joiner-slots');
+        container.innerHTML = `<span style="color: #94A3B8; font-style: italic; font-size: 13px; user-select: none;">Click word blocks below to join them...</span>`;
+        
+        document.getElementById('joiner-feedback-banner').classList.remove('show');
+        loadJoinerSentence();
+    }
+
+    function loadJoinerSentence() {
+        if (!joinerSentences || joinerSentences.length === 0) return;
+        activeSentenceData = joinerSentences[Math.floor(Math.random() * joinerSentences.length)];
+        
+        // Split sentence into words
+        const words = activeSentenceData.sentence.trim().split(/\s+/);
+        
+        scrambledWordsList = words.map((w, idx) => ({
+            id: idx,
+            word: w,
+            selected: false
+        }));
+        
+        // Shuffle the list
+        const shuffled = [...scrambledWordsList];
+        shuffleArray(shuffled);
+        
+        // Render scrambled word tiles
+        const tilesContainer = document.getElementById('joiner-tiles');
+        tilesContainer.innerHTML = '';
+        
+        shuffled.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'joiner-word-tile';
+            btn.id = `joiner-tile-${item.id}`;
+            btn.textContent = item.word;
+            btn.onclick = () => selectWordBlock(item.id);
+            tilesContainer.appendChild(btn);
+        });
+        
+        // Render hint
+        document.getElementById('joiner-hint-text').innerHTML = `<strong>Hint:</strong> ${activeSentenceData.hint}`;
+    }
+
+    function selectWordBlock(id) {
+        const item = scrambledWordsList.find(x => x.id === id);
+        if (!item || item.selected) return;
+        
+        item.selected = true;
+        const tile = document.getElementById(`joiner-tile-${id}`);
+        if (tile) {
+            tile.classList.add('selected-tile');
+        }
+        
+        joinedWords.push(item);
+        renderJoinedSlots();
+        
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playChirp();
+        }
+    }
+
+    function deselectWordBlock(id) {
+        const item = scrambledWordsList.find(x => x.id === id);
+        if (!item) return;
+        
+        item.selected = false;
+        const tile = document.getElementById(`joiner-tile-${id}`);
+        if (tile) {
+            tile.classList.remove('selected-tile');
+        }
+        
+        joinedWords = joinedWords.filter(x => x.id !== id);
+        renderJoinedSlots();
+        
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    function renderJoinedSlots() {
+        const container = document.getElementById('joiner-slots');
+        container.innerHTML = '';
+        
+        if (joinedWords.length === 0) {
+            container.innerHTML = `<span style="color: #94A3B8; font-style: italic; font-size: 13px; user-select: none;">Click word blocks below to join them...</span>`;
+            return;
+        }
+        
+        joinedWords.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'joiner-word-slot';
+            btn.innerHTML = `${item.word} <span style="font-size: 10px; opacity: 0.7;">&times;</span>`;
+            btn.onclick = () => deselectWordBlock(item.id);
+            container.appendChild(btn);
+        });
+    }
+
+    function clearJoinerSlots() {
+        joinedWords = [];
+        scrambledWordsList.forEach(item => {
+            item.selected = false;
+            const tile = document.getElementById(`joiner-tile-${item.id}`);
+            if (tile) {
+                tile.classList.remove('selected-tile');
+            }
+        });
+        renderJoinedSlots();
+        
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    async function submitJoinerGuess() {
+        const guess = joinedWords.map(x => x.word).join(' ');
+        const correct = activeSentenceData.sentence.trim();
+        const feedback = document.getElementById('joiner-feedback-banner');
+        
+        if (!guess) return;
+        
+        if (guess.toLowerCase() === correct.toLowerCase()) {
+            gameScore += 10;
+            gameStreak += 1;
+            document.getElementById('game-xp-score').textContent = gameScore;
+            document.getElementById('game-streak-counter').textContent = gameStreak;
+            
+            feedback.className = 'feedback-banner success show';
+            feedback.innerHTML = `🎉 Correct! <strong>${correct}</strong>. +10 XP awarded!`;
+            
+            if (typeof BujjiSynth !== 'undefined') {
+                BujjiSynth.playSuccess();
+            }
+            
+            try {
+                await fetch('/api/earn-xp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        xp: 10,
+                        activity_type: 'WORD_JOINER',
+                        description: `Joined sentence correctly: '${correct}'`
+                    })
+                });
+            } catch(e) {
+                console.error("Error rewarding XP:", e);
+            }
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+                initJoinerGame();
+            }, 2000);
+        } else {
+            gameStreak = 0;
+            document.getElementById('game-streak-counter').textContent = gameStreak;
+            
+            feedback.className = 'feedback-banner error show';
+            feedback.innerHTML = `❌ Incorrect order. Try again!`;
+            
+            if (typeof BujjiSynth !== 'undefined') {
+                BujjiSynth.playFailure();
+            }
+            
+            const slots = document.getElementById('joiner-slots');
+            slots.classList.add('shake');
+            setTimeout(() => slots.classList.remove('shake'), 400);
         }
     }
 

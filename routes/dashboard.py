@@ -11,7 +11,7 @@ from database import (
     log_student_activity,
     get_questions_for_level
 )
-from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS
+from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_JOINER_SENTENCES
 from routes.auth import login_required
 from datetime import datetime, timedelta
 
@@ -140,6 +140,7 @@ def progress():
         lessons=GRAMMAR_LESSONS, 
         stories=SHORT_STORIES, 
         scramble_words=WORD_SCRAMBLE_WORDS,
+        joiner_sentences=WORD_JOINER_SENTENCES,
         student=student
     )
 
