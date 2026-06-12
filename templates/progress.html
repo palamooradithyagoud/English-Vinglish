@@ -1409,20 +1409,16 @@
                             <!-- Word rows populated dynamically -->
                         </div>
 
-                        <!-- Letters Circle -->
-                        <div class="letter-circle-container" id="connect-letters-circle" style="position: relative; width: 150px; height: 150px; margin: 10px auto; border-radius: 50%; background-color: #F8FAFC; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                            <!-- Letters positioned absolutely inside this container dynamically -->
-                            <div id="connect-word-preview" style="font-size: 16px; font-weight: 800; color: #0F172A; text-transform: uppercase; background-color: rgba(255,255,255,0.9); padding: 4px 10px; border-radius: 12px; border: 1px solid #E2E8F0; min-width: 40px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">...</div>
+                        <!-- Letters Circle with Canvas -->
+                        <div class="letter-circle-container" id="connect-letters-circle" style="position: relative; width: 150px; height: 150px; margin: 10px auto; border-radius: 50%; background-color: #F8FAFC; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); touch-action: none; user-select: none;">
+                            <canvas id="connect-canvas" width="150" height="150" style="position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5;"></canvas>
+                            <div id="connect-word-preview" style="font-size: 16px; font-weight: 800; color: #0F172A; text-transform: uppercase; background-color: rgba(255,255,255,0.9); padding: 4px 10px; border-radius: 12px; border: 1px solid #E2E8F0; min-width: 40px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10; pointer-events: none; user-select: none;">...</div>
                         </div>
 
                         <div class="hint-banner" id="connect-hint-text" style="width: 100%;">
-                            Find all target words using the letters in the circle!
+                            Drag or swipe across the letters to connect them and form words!
                         </div>
 
-                        <div class="game-input-row" style="width: 100%; display: flex; gap: 10px;">
-                            <button class="btn-secondary" onclick="clearConnectSelection()" style="flex: 1; padding: 10px !important; border-radius: 8px; font-weight: 600; font-size: 13px; border: 1px solid #D1D5DB; background: #fff; cursor: pointer;">Clear</button>
-                            <button class="btn-primary btn-game-submit" onclick="submitConnectWord()" style="flex: 2;">Check Word</button>
-                        </div>
                         <div class="feedback-banner" id="connect-feedback-banner">
                             Feedback
                         </div>
@@ -1865,12 +1861,34 @@
     }
 
     // --- WORD CONNECT LOGIC ---
+    let isDrawing = false;
+    let buttonCenters = [];
+    let circleElement = null;
+    let canvasElement = null;
+    let canvasContext = null;
+
     function initConnectGame() {
         foundWords = [];
         selectedLetters = [];
         
+        // Grab elements
+        circleElement = document.getElementById('connect-letters-circle');
+        canvasElement = document.getElementById('connect-canvas');
+        canvasContext = canvasElement.getContext('2d');
+        
         document.getElementById('connect-feedback-banner').classList.remove('show');
         document.getElementById('connect-word-preview').textContent = '...';
+        
+        // Bind mouse & touch events for drag/swipe connection
+        circleElement.onmousedown = startDrawing;
+        circleElement.onmousemove = drawLine;
+        
+        circleElement.ontouchstart = startDrawing;
+        circleElement.ontouchmove = drawLine;
+        
+        // Global release listeners
+        window.onmouseup = stopDrawing;
+        window.ontouchend = stopDrawing;
         
         loadConnectLevel();
     }
@@ -1878,12 +1896,15 @@
     function loadConnectLevel() {
         if (!connectLevels || connectLevels.length === 0) return;
         
-        // Pick random connect level data
         activeLevelData = connectLevels[Math.floor(Math.random() * connectLevels.length)];
         foundWords = [];
         selectedLetters = [];
+        buttonCenters = [];
         
-        // 1. Build targets container slots
+        // Clear canvas
+        canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        // 1. Build targets slots
         const targetsContainer = document.getElementById('connect-targets-container');
         targetsContainer.innerHTML = '';
         
@@ -1904,54 +1925,160 @@
             targetsContainer.appendChild(row);
         });
         
-        // 2. Position letter buttons in circle
-        const circle = document.getElementById('connect-letters-circle');
-        circle.querySelectorAll('.circle-letter-btn').forEach(btn => btn.remove());
+        // 2. Build letter buttons inside circle
+        circleElement.querySelectorAll('.circle-letter-btn').forEach(btn => btn.remove());
         
         const letters = activeLevelData.letters;
         const total = letters.length;
-        const radius = 54; // distance from center in px
-        const center_x = 75; // center of circle width/2
-        const center_y = 75; // center of circle height/2
+        const radius = 54;
+        const center_x = 75;
+        const center_y = 75;
         
         letters.forEach((letter, i) => {
             const btn = document.createElement('button');
             btn.className = 'circle-letter-btn';
             btn.id = `circle-btn-${i}`;
             btn.textContent = letter;
+            btn.style.pointerEvents = 'none'; // Essential so pointer drag target remains circleElement
+            btn.style.zIndex = '15';
             
-            const angle = (360 / total) * i - 90; // start top
+            const angle = (360 / total) * i - 90;
             const rad = angle * Math.PI / 180;
-            const x = center_x + radius * Math.cos(rad) - 19; // radius subtract button_width/2
-            const y = center_y + radius * Math.sin(rad) - 19; // radius subtract button_height/2
+            const x = center_x + radius * Math.cos(rad);
+            const y = center_y + radius * Math.sin(rad);
             
-            btn.style.left = `${x}px`;
-            btn.style.top = `${y}px`;
-            btn.onclick = () => selectConnectLetter(letter, i);
+            btn.style.left = `${x - 19}px`;
+            btn.style.top = `${y - 19}px`;
             
-            circle.appendChild(btn);
+            circleElement.appendChild(btn);
+            
+            buttonCenters.push({
+                letter: letter,
+                index: i,
+                x: x,
+                y: y
+            });
         });
         
-        // 3. Setup hint
         document.getElementById('connect-hint-text').innerHTML = `<strong>Hint:</strong> ${activeLevelData.hint}`;
     }
 
-    function selectConnectLetter(letter, index) {
-        // Avoid selecting same letter button twice in the same word
-        if (selectedLetters.some(item => item.index === index)) return;
+    function getEventPos(e) {
+        const rect = circleElement.getBoundingClientRect();
+        let clientX, clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        selectedLetters = [];
         
-        selectedLetters.push({ letter, index });
+        const pos = getEventPos(e);
+        checkHoverLetter(pos);
+        drawConnectCanvas();
+    }
+
+    function drawLine(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
         
-        // Highlight button
-        const btn = document.getElementById(`circle-btn-${index}`);
-        if (btn) btn.classList.add('selected-letter');
+        const pos = getEventPos(e);
+        checkHoverLetter(pos);
+        drawConnectCanvas(pos);
+    }
+
+    function checkHoverLetter(pos) {
+        const threshold = 22; // collision radius
         
-        // Update preview
-        const currentWord = selectedLetters.map(x => x.letter).join('');
-        document.getElementById('connect-word-preview').textContent = currentWord;
+        for (let item of buttonCenters) {
+            const dx = pos.x - item.x;
+            const dy = pos.y - item.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < threshold) {
+                const alreadyIdx = selectedLetters.findIndex(x => x.index === item.index);
+                
+                if (alreadyIdx === -1) {
+                    selectedLetters.push(item);
+                    
+                    const btn = document.getElementById(`circle-btn-${item.index}`);
+                    if (btn) btn.classList.add('selected-letter');
+                    
+                    if (typeof BujjiSynth !== 'undefined') {
+                        BujjiSynth.playChirp();
+                    }
+                    
+                    updatePreview();
+                } else if (alreadyIdx === selectedLetters.length - 2) {
+                    // Undo last connection by dragging backward
+                    const popped = selectedLetters.pop();
+                    const btn = document.getElementById(`circle-btn-${popped.index}`);
+                    if (btn) btn.classList.remove('selected-letter');
+                    
+                    if (typeof BujjiSynth !== 'undefined') {
+                        BujjiSynth.playPop();
+                    }
+                    
+                    updatePreview();
+                }
+                break;
+            }
+        }
+    }
+
+    function updatePreview() {
+        const preview = document.getElementById('connect-word-preview');
+        if (selectedLetters.length > 0) {
+            preview.textContent = selectedLetters.map(x => x.letter).join('');
+        } else {
+            preview.textContent = '...';
+        }
+    }
+
+    function drawConnectCanvas(currentPos) {
+        canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        if (selectedLetters.length === 0) return;
         
-        if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playChirp();
+        canvasContext.beginPath();
+        canvasContext.strokeStyle = 'rgba(36, 160, 237, 0.6)'; // sky blue transparent line
+        canvasContext.lineWidth = 6;
+        canvasContext.lineCap = 'round';
+        canvasContext.lineJoin = 'round';
+        
+        selectedLetters.forEach((item, idx) => {
+            if (idx === 0) {
+                canvasContext.moveTo(item.x, item.y);
+            } else {
+                canvasContext.lineTo(item.x, item.y);
+            }
+        });
+        
+        if (isDrawing && currentPos) {
+            canvasContext.lineTo(currentPos.x, currentPos.y);
+        }
+        
+        canvasContext.stroke();
+    }
+
+    function stopDrawing() {
+        if (!isDrawing) return;
+        isDrawing = false;
+        
+        canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        if (selectedLetters.length > 0) {
+            submitConnectWord();
         }
     }
 
@@ -1962,10 +2089,6 @@
         });
         selectedLetters = [];
         document.getElementById('connect-word-preview').textContent = '...';
-        
-        if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playPop();
-        }
     }
 
     async function submitConnectWord() {
@@ -1977,11 +2100,9 @@
         const targets = activeLevelData.target_words;
         
         if (targets.includes(guess)) {
-            // Correct word!
             if (foundWords.includes(guess)) {
                 feedback.className = 'feedback-banner error show';
                 feedback.innerHTML = `⚠️ Already found: <strong>${guess}</strong>`;
-                clearConnectSelection();
                 
                 if (typeof BujjiSynth !== 'undefined') {
                     BujjiSynth.playFailure();
@@ -2001,14 +2122,11 @@
                     });
                 }
                 
-                // Play sounds
                 if (typeof BujjiSynth !== 'undefined') {
                     BujjiSynth.playSuccess();
                 }
                 
-                // Check if all found
                 if (foundWords.length === targets.length) {
-                    // Level fully complete!
                     gameScore += 20;
                     gameStreak += 1;
                     document.getElementById('game-xp-score').textContent = gameScore;
@@ -2036,7 +2154,6 @@
                         loadConnectLevel();
                     }, 2500);
                 } else {
-                    // Just one word found, keep going!
                     gameScore += 5;
                     document.getElementById('game-xp-score').textContent = gameScore;
                     
@@ -2059,14 +2176,10 @@
                     
                     setTimeout(() => feedback.classList.remove('show'), 1500);
                 }
-                
-                clearConnectSelection();
             }
         } else {
-            // Incorrect word
             feedback.className = 'feedback-banner error show';
             feedback.innerHTML = `❌ <strong>${guess}</strong> is not a target word. Try again!`;
-            clearConnectSelection();
             
             if (typeof BujjiSynth !== 'undefined') {
                 BujjiSynth.playFailure();
@@ -2078,6 +2191,8 @@
             
             setTimeout(() => feedback.classList.remove('show'), 1500);
         }
+        
+        clearConnectSelection();
     }
 
     // ==========================================================================
