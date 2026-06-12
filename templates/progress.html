@@ -1131,55 +1131,66 @@
         color: #0F172A !important;
     }
 
-    /* Word Joiner Game Styling */
-    .joiner-word-tile {
-        background: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
-        border-radius: 8px !important;
-        padding: 8px 16px !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: #0F172A !important;
-        cursor: pointer !important;
-        transition: all 0.15s ease !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-        user-select: none !important;
+    /* Word Connect Game Styling */
+    .connect-word-row {
+        display: flex !important;
+        gap: 6px !important;
+        justify-content: center !important;
     }
     
-    .joiner-word-tile:hover {
-        background-color: #F1F5F9 !important;
-        border-color: #CBD5E1 !important;
-        transform: translateY(-1px) !important;
-    }
-    
-    .joiner-word-tile:active {
-        transform: translateY(0) !important;
-    }
-    
-    .joiner-word-tile.selected-tile {
-        opacity: 0.4 !important;
-        pointer-events: none !important;
-    }
-    
-    .joiner-word-slot {
-        background: #F1F5F9 !important;
+    .connect-letter-box {
+        width: 28px !important;
+        height: 28px !important;
         border: 1px solid #CBD5E1 !important;
-        border-radius: 8px !important;
-        padding: 8px 16px !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: #0F172A !important;
-        cursor: pointer !important;
-        transition: all 0.15s ease !important;
+        border-radius: 6px !important;
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
-        user-select: none !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #0F172A !important;
+        background-color: #FFFFFF !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     }
     
-    .joiner-word-slot:hover {
-        background-color: #E2E8F0 !important;
+    .connect-letter-box.revealed {
+        background-color: #ECFDF5 !important;
+        border-color: #10B981 !important;
+        color: #065F46 !important;
+    }
+
+    .circle-letter-btn {
+        position: absolute !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 50% !important;
+        background-color: #FFFFFF !important;
+        border: 2px solid #E2E8F0 !important;
+        color: #0F172A !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+        transition: all 0.15s ease !important;
+        user-select: none !important;
+    }
+
+    .circle-letter-btn:hover {
+        background-color: #F8FAFC !important;
         border-color: #94A3B8 !important;
+        transform: scale(1.1) !important;
+    }
+
+    .circle-letter-btn.selected-letter {
+        background-color: #F1F5F9 !important;
+        border-color: #64748B !important;
+        color: #94A3B8 !important;
+        pointer-events: none !important;
+        box-shadow: none !important;
     }
 </style>
 {% endblock %}
@@ -1347,7 +1358,7 @@
         </div>
     </div>
 
-    <!-- 2. Play Games (Word Scramble) Overlay -->
+    <!-- 2. Play Games (Word Scramble & Word Connect) Overlay -->
     <div class="overlay-page" id="overlay-games">
         <div class="overlay-container">
             <div class="overlay-header">
@@ -1362,7 +1373,7 @@
                     <!-- Game Tab Selector -->
                     <div class="game-selector-tabs">
                         <button class="game-tab-btn active" id="btn-scramble" onclick="switchGameMode('scramble')">🔠 Word Scramble</button>
-                        <button class="game-tab-btn" id="btn-joiner" onclick="switchGameMode('joiner')">🔗 Word Joiner</button>
+                        <button class="game-tab-btn" id="btn-connect" onclick="switchGameMode('connect')">🔗 Word Connect</button>
                     </div>
 
                     <div class="game-hud">
@@ -1391,22 +1402,28 @@
                         </div>
                     </div>
 
-                    <!-- 2. Word Joiner Board -->
-                    <div class="game-board-card" id="joiner-game-board" style="display: none; flex-direction: column; width: 100%; gap: 15px;">
-                        <div class="joiner-slots-container" id="joiner-slots" style="min-height: 50px; border: 1px dashed #E2E8F0; border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; background-color: #F8FAFC; width: 100%;">
-                            <!-- Joined words slots populated dynamically -->
+                    <!-- 2. Word Connect Board -->
+                    <div class="game-board-card" id="connect-game-board" style="display: none; flex-direction: column; width: 100%; gap: 12px; align-items: center;">
+                        <!-- Slots grid for target words -->
+                        <div id="connect-targets-container" style="display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; max-height: 110px; overflow-y: auto; padding: 10px; border: 1px solid #E2E8F0; border-radius: 8px; background-color: #F8FAFC; box-sizing: border-box;">
+                            <!-- Word rows populated dynamically -->
                         </div>
-                        <div class="joiner-tiles-container" id="joiner-tiles" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%;">
-                            <!-- Clickable word tiles populated dynamically -->
+
+                        <!-- Letters Circle -->
+                        <div class="letter-circle-container" id="connect-letters-circle" style="position: relative; width: 150px; height: 150px; margin: 10px auto; border-radius: 50%; background-color: #F8FAFC; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                            <!-- Letters positioned absolutely inside this container dynamically -->
+                            <div id="connect-word-preview" style="font-size: 16px; font-weight: 800; color: #0F172A; text-transform: uppercase; background-color: rgba(255,255,255,0.9); padding: 4px 10px; border-radius: 12px; border: 1px solid #E2E8F0; min-width: 40px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">...</div>
                         </div>
-                        <div class="hint-banner" id="joiner-hint-text" style="width: 100%;">
-                            Sentence hint description
+
+                        <div class="hint-banner" id="connect-hint-text" style="width: 100%;">
+                            Find all target words using the letters in the circle!
                         </div>
+
                         <div class="game-input-row" style="width: 100%; display: flex; gap: 10px;">
-                            <button class="btn-secondary" onclick="clearJoinerSlots()" style="flex: 1; padding: 10px !important; border-radius: 8px; font-weight: 600; font-size: 13.5px; border: 1px solid #D1D5DB; background: #fff; cursor: pointer;">Clear</button>
-                            <button class="btn-primary btn-game-submit" onclick="submitJoinerGuess()" style="flex: 2;">Check Sentence</button>
+                            <button class="btn-secondary" onclick="clearConnectSelection()" style="flex: 1; padding: 10px !important; border-radius: 8px; font-weight: 600; font-size: 13px; border: 1px solid #D1D5DB; background: #fff; cursor: pointer;">Clear</button>
+                            <button class="btn-primary btn-game-submit" onclick="submitConnectWord()" style="flex: 2;">Check Word</button>
                         </div>
-                        <div class="feedback-banner" id="joiner-feedback-banner">
+                        <div class="feedback-banner" id="connect-feedback-banner">
                             Feedback
                         </div>
                     </div>
@@ -1616,7 +1633,8 @@
     const lessons = {{ lessons | tojson | safe }};
     const stories = {{ stories | tojson | safe }};
     const scrambleWords = {{ scramble_words | tojson | safe }};
-    const joinerSentences = {{ joiner_sentences | tojson | safe }};
+    const joinerSentences = null; // Removed
+    const connectLevels = {{ connect_levels | tojson | safe }};
     const student = {{ student | tojson | safe }};
 
     // ==========================================================================
@@ -1787,6 +1805,82 @@
         
         document.getElementById('game-hint-text').innerHTML = `<strong>Hint:</strong> ${wordData.hint}`;
         
+        const input = docum    // ==========================================================================
+    // 2. PLAY GAMES (WORD SCRAMBLE & WORD CONNECT) LOGIC
+    // ==========================================================================
+    let gameScore = 0;
+    let gameStreak = 0;
+    let activeWord = '';
+    let activeGameMode = 'scramble';
+
+    // Word Connect state
+    let activeLevelData = null;
+    let selectedLetters = []; // elements: { letter: string, index: number }
+    let foundWords = [];
+
+    function initGamesOverlay() {
+        gameScore = 0;
+        gameStreak = 0;
+        document.getElementById('game-xp-score').textContent = gameScore;
+        document.getElementById('game-streak-counter').textContent = gameStreak;
+        switchGameMode('scramble');
+        
+        // Bind Enter key press to submit scramble guess
+        const input = document.getElementById('input-scramble-guess');
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                submitScrambleGuess();
+            }
+        };
+    }
+
+    function switchGameMode(mode) {
+        activeGameMode = mode;
+        const btnScramble = document.getElementById('btn-scramble');
+        const btnConnect = document.getElementById('btn-connect');
+        const boardScramble = document.getElementById('scramble-game-board');
+        const boardConnect = document.getElementById('connect-game-board');
+        
+        if (mode === 'scramble') {
+            btnScramble.classList.add('active');
+            btnConnect.classList.remove('active');
+            boardScramble.style.display = 'flex';
+            boardConnect.style.display = 'none';
+            document.getElementById('game-overlay-title').textContent = 'Word Scramble';
+            document.getElementById('game-feedback-banner').classList.remove('show');
+            loadScrambleWord();
+        } else {
+            btnScramble.classList.remove('active');
+            btnConnect.classList.add('active');
+            boardScramble.style.display = 'none';
+            boardConnect.style.display = 'flex';
+            document.getElementById('game-overlay-title').textContent = 'Word Connect';
+            initConnectGame();
+        }
+        
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    // --- WORD SCRAMBLE LOGIC ---
+    function loadScrambleWord() {
+        const wordData = scrambleWords[Math.floor(Math.random() * scrambleWords.length)];
+        activeWord = wordData.word;
+        
+        const tilesContainer = document.getElementById('scrambled-tiles');
+        tilesContainer.innerHTML = '';
+        
+        // Build letters tiles
+        for (let char of wordData.scrambled) {
+            const tile = document.createElement('div');
+            tile.className = 'letter-tile';
+            tile.textContent = char;
+            tilesContainer.appendChild(tile);
+        }
+        
+        document.getElementById('game-hint-text').innerHTML = `<strong>Hint:</strong> ${wordData.hint}`;
+        
         const input = document.getElementById('input-scramble-guess');
         input.value = '';
         input.focus();
@@ -1813,7 +1907,6 @@
                 BujjiSynth.playSuccess();
             }
             
-            // Post XP earnings to backend API
             try {
                 await fetch('/api/earn-xp', {
                     method: 'POST',
@@ -1833,7 +1926,6 @@
                 loadScrambleWord();
             }, 2000);
         } else {
-            // Incorrect Answer
             gameStreak = 0;
             document.getElementById('game-streak-counter').textContent = gameStreak;
             
@@ -1849,180 +1941,219 @@
         }
     }
 
-    // --- WORD JOINER LOGIC ---
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
+    // --- WORD CONNECT LOGIC ---
+    function initConnectGame() {
+        foundWords = [];
+        selectedLetters = [];
+        
+        document.getElementById('connect-feedback-banner').classList.remove('show');
+        document.getElementById('connect-word-preview').textContent = '...';
+        
+        loadConnectLevel();
     }
 
-    function initJoinerGame() {
-        joinedWords = [];
-        const container = document.getElementById('joiner-slots');
-        container.innerHTML = `<span style="color: #94A3B8; font-style: italic; font-size: 13px; user-select: none;">Click word blocks below to join them...</span>`;
+    function loadConnectLevel() {
+        if (!connectLevels || connectLevels.length === 0) return;
         
-        document.getElementById('joiner-feedback-banner').classList.remove('show');
-        loadJoinerSentence();
-    }
-
-    function loadJoinerSentence() {
-        if (!joinerSentences || joinerSentences.length === 0) return;
-        activeSentenceData = joinerSentences[Math.floor(Math.random() * joinerSentences.length)];
+        // Pick random connect level data
+        activeLevelData = connectLevels[Math.floor(Math.random() * connectLevels.length)];
+        foundWords = [];
+        selectedLetters = [];
         
-        // Split sentence into words
-        const words = activeSentenceData.sentence.trim().split(/\s+/);
+        // 1. Build targets container slots
+        const targetsContainer = document.getElementById('connect-targets-container');
+        targetsContainer.innerHTML = '';
         
-        scrambledWordsList = words.map((w, idx) => ({
-            id: idx,
-            word: w,
-            selected: false
-        }));
-        
-        // Shuffle the list
-        const shuffled = [...scrambledWordsList];
-        shuffleArray(shuffled);
-        
-        // Render scrambled word tiles
-        const tilesContainer = document.getElementById('joiner-tiles');
-        tilesContainer.innerHTML = '';
-        
-        shuffled.forEach(item => {
-            const btn = document.createElement('button');
-            btn.className = 'joiner-word-tile';
-            btn.id = `joiner-tile-${item.id}`;
-            btn.textContent = item.word;
-            btn.onclick = () => selectWordBlock(item.id);
-            tilesContainer.appendChild(btn);
+        activeLevelData.target_words.forEach(word => {
+            const row = document.createElement('div');
+            row.className = 'connect-word-row';
+            row.style.display = 'flex';
+            row.style.gap = '4px';
+            row.setAttribute('data-word', word);
+            
+            for (let i = 0; i < word.length; i++) {
+                const box = document.createElement('span');
+                box.className = 'connect-letter-box';
+                box.textContent = ''; // hidden initially
+                row.appendChild(box);
+            }
+            
+            targetsContainer.appendChild(row);
         });
         
-        // Render hint
-        document.getElementById('joiner-hint-text').innerHTML = `<strong>Hint:</strong> ${activeSentenceData.hint}`;
+        // 2. Position letter buttons in circle
+        const circle = document.getElementById('connect-letters-circle');
+        circle.querySelectorAll('.circle-letter-btn').forEach(btn => btn.remove());
+        
+        const letters = activeLevelData.letters;
+        const total = letters.length;
+        const radius = 54; // distance from center in px
+        const center_x = 75; // center of circle width/2
+        const center_y = 75; // center of circle height/2
+        
+        letters.forEach((letter, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'circle-letter-btn';
+            btn.id = `circle-btn-${i}`;
+            btn.textContent = letter;
+            
+            const angle = (360 / total) * i - 90; // start top
+            const rad = angle * Math.PI / 180;
+            const x = center_x + radius * Math.cos(rad) - 19; // radius subtract button_width/2
+            const y = center_y + radius * Math.sin(rad) - 19; // radius subtract button_height/2
+            
+            btn.style.left = `${x}px`;
+            btn.style.top = `${y}px`;
+            btn.onclick = () => selectConnectLetter(letter, i);
+            
+            circle.appendChild(btn);
+        });
+        
+        // 3. Setup hint
+        document.getElementById('connect-hint-text').innerHTML = `<strong>Hint:</strong> ${activeLevelData.hint}`;
     }
 
-    function selectWordBlock(id) {
-        const item = scrambledWordsList.find(x => x.id === id);
-        if (!item || item.selected) return;
+    function selectConnectLetter(letter, index) {
+        // Avoid selecting same letter button twice in the same word
+        if (selectedLetters.some(item => item.index === index)) return;
         
-        item.selected = true;
-        const tile = document.getElementById(`joiner-tile-${id}`);
-        if (tile) {
-            tile.classList.add('selected-tile');
-        }
+        selectedLetters.push({ letter, index });
         
-        joinedWords.push(item);
-        renderJoinedSlots();
+        // Highlight button
+        const btn = document.getElementById(`circle-btn-${index}`);
+        if (btn) btn.classList.add('selected-letter');
+        
+        // Update preview
+        const currentWord = selectedLetters.map(x => x.letter).join('');
+        document.getElementById('connect-word-preview').textContent = currentWord;
         
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playChirp();
         }
     }
 
-    function deselectWordBlock(id) {
-        const item = scrambledWordsList.find(x => x.id === id);
-        if (!item) return;
-        
-        item.selected = false;
-        const tile = document.getElementById(`joiner-tile-${id}`);
-        if (tile) {
-            tile.classList.remove('selected-tile');
-        }
-        
-        joinedWords = joinedWords.filter(x => x.id !== id);
-        renderJoinedSlots();
+    function clearConnectSelection() {
+        selectedLetters.forEach(item => {
+            const btn = document.getElementById(`circle-btn-${item.index}`);
+            if (btn) btn.classList.remove('selected-letter');
+        });
+        selectedLetters = [];
+        document.getElementById('connect-word-preview').textContent = '...';
         
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playPop();
         }
     }
 
-    function renderJoinedSlots() {
-        const container = document.getElementById('joiner-slots');
-        container.innerHTML = '';
-        
-        if (joinedWords.length === 0) {
-            container.innerHTML = `<span style="color: #94A3B8; font-style: italic; font-size: 13px; user-select: none;">Click word blocks below to join them...</span>`;
-            return;
-        }
-        
-        joinedWords.forEach(item => {
-            const btn = document.createElement('button');
-            btn.className = 'joiner-word-slot';
-            btn.innerHTML = `${item.word} <span style="font-size: 10px; opacity: 0.7;">&times;</span>`;
-            btn.onclick = () => deselectWordBlock(item.id);
-            container.appendChild(btn);
-        });
-    }
-
-    function clearJoinerSlots() {
-        joinedWords = [];
-        scrambledWordsList.forEach(item => {
-            item.selected = false;
-            const tile = document.getElementById(`joiner-tile-${item.id}`);
-            if (tile) {
-                tile.classList.remove('selected-tile');
-            }
-        });
-        renderJoinedSlots();
-        
-        if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playPop();
-        }
-    }
-
-    async function submitJoinerGuess() {
-        const guess = joinedWords.map(x => x.word).join(' ');
-        const correct = activeSentenceData.sentence.trim();
-        const feedback = document.getElementById('joiner-feedback-banner');
+    async function submitConnectWord() {
+        const guess = selectedLetters.map(x => x.letter).join('').toUpperCase();
+        const feedback = document.getElementById('connect-feedback-banner');
         
         if (!guess) return;
         
-        if (guess.toLowerCase() === correct.toLowerCase()) {
-            gameScore += 10;
-            gameStreak += 1;
-            document.getElementById('game-xp-score').textContent = gameScore;
-            document.getElementById('game-streak-counter').textContent = gameStreak;
-            
-            feedback.className = 'feedback-banner success show';
-            feedback.innerHTML = `🎉 Correct! <strong>${correct}</strong>. +10 XP awarded!`;
-            
-            if (typeof BujjiSynth !== 'undefined') {
-                BujjiSynth.playSuccess();
+        const targets = activeLevelData.target_words;
+        
+        if (targets.includes(guess)) {
+            // Correct word!
+            if (foundWords.includes(guess)) {
+                feedback.className = 'feedback-banner error show';
+                feedback.innerHTML = `⚠️ Already found: <strong>${guess}</strong>`;
+                clearConnectSelection();
+                
+                if (typeof BujjiSynth !== 'undefined') {
+                    BujjiSynth.playFailure();
+                }
+                
+                setTimeout(() => feedback.classList.remove('show'), 1500);
+            } else {
+                foundWords.push(guess);
+                
+                // Reveal in slots grid
+                const row = document.querySelector(`.connect-word-row[data-word="${guess}"]`);
+                if (row) {
+                    const boxes = row.querySelectorAll('.connect-letter-box');
+                    boxes.forEach((box, idx) => {
+                        box.textContent = guess[idx];
+                        box.classList.add('revealed');
+                    });
+                }
+                
+                // Play sounds
+                if (typeof BujjiSynth !== 'undefined') {
+                    BujjiSynth.playSuccess();
+                }
+                
+                // Check if all found
+                if (foundWords.length === targets.length) {
+                    // Level fully complete!
+                    gameScore += 20;
+                    gameStreak += 1;
+                    document.getElementById('game-xp-score').textContent = gameScore;
+                    document.getElementById('game-streak-counter').textContent = gameStreak;
+                    
+                    feedback.className = 'feedback-banner success show';
+                    feedback.innerHTML = `🎉 Level Complete! Found all ${targets.length} words! +20 XP awarded!`;
+                    
+                    try {
+                        await fetch('/api/earn-xp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                xp: 20,
+                                activity_type: 'WORD_CONNECT',
+                                description: `Completed Word Connect level for: ${activeLevelData.letters.join('')}`
+                            })
+                        });
+                    } catch(e) {
+                        console.error("Error rewarding XP:", e);
+                    }
+                    
+                    setTimeout(() => {
+                        feedback.classList.remove('show');
+                        loadConnectLevel();
+                    }, 2500);
+                } else {
+                    // Just one word found, keep going!
+                    gameScore += 5;
+                    document.getElementById('game-xp-score').textContent = gameScore;
+                    
+                    feedback.className = 'feedback-banner success show';
+                    feedback.innerHTML = `🎉 Found word: <strong>${guess}</strong>! +5 XP awarded!`;
+                    
+                    try {
+                        await fetch('/api/earn-xp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                xp: 5,
+                                activity_type: 'WORD_CONNECT',
+                                description: `Found word '${guess}' in Word Connect`
+                            })
+                        });
+                    } catch(e) {
+                        console.error("Error rewarding XP:", e);
+                    }
+                    
+                    setTimeout(() => feedback.classList.remove('show'), 1500);
+                }
+                
+                clearConnectSelection();
             }
-            
-            try {
-                await fetch('/api/earn-xp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        xp: 10,
-                        activity_type: 'WORD_JOINER',
-                        description: `Joined sentence correctly: '${correct}'`
-                    })
-                });
-            } catch(e) {
-                console.error("Error rewarding XP:", e);
-            }
-            
-            setTimeout(() => {
-                feedback.classList.remove('show');
-                initJoinerGame();
-            }, 2000);
         } else {
-            gameStreak = 0;
-            document.getElementById('game-streak-counter').textContent = gameStreak;
-            
+            // Incorrect word
             feedback.className = 'feedback-banner error show';
-            feedback.innerHTML = `❌ Incorrect order. Try again!`;
+            feedback.innerHTML = `❌ <strong>${guess}</strong> is not a target word. Try again!`;
+            clearConnectSelection();
             
             if (typeof BujjiSynth !== 'undefined') {
                 BujjiSynth.playFailure();
             }
             
-            const slots = document.getElementById('joiner-slots');
-            slots.classList.add('shake');
-            setTimeout(() => slots.classList.remove('shake'), 400);
+            const circle = document.getElementById('connect-letters-circle');
+            circle.classList.add('shake');
+            setTimeout(() => circle.classList.remove('shake'), 400);
+            
+            setTimeout(() => feedback.classList.remove('show'), 1500);
         }
     }
 

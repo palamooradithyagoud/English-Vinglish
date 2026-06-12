@@ -1198,16 +1198,32 @@ WORD_SCRAMBLE_WORDS = [
     {"scrambled": "PSEEISLNTSE", "word": "TENSES", "hint": "Verb forms indicating the time of action (past, present, future)."}
 ]
 
-WORD_JOINER_SENTENCES = [
-    {"sentence": "Always speak the truth", "hint": "A golden rule of honesty and integrity."},
-    {"sentence": "She is reading a book", "hint": "An ongoing action with a novel or storybook."},
-    {"sentence": "They completed the project successfully", "hint": "A description of a finished group task."},
-    {"sentence": "Bujji is a helpful companion", "hint": "A simple statement about our favorite AI robot helper."},
-    {"sentence": "Although she was tired she finished the quiz", "hint": "A complex sentence expressing persistence."},
-    {"sentence": "We are learning English today", "hint": "An active description of our current educational session."},
-    {"sentence": "Hardly had I arrived when the phone rang", "hint": "An advanced grammar syntax representing immediate sequence."},
-    {"sentence": "The sun rose over the quiet lake", "hint": "A peaceful description of a morning scenery."},
-    {"sentence": "Could you please provide the report by Friday", "hint": "A polite, professional business request."},
-    {"sentence": "We look forward to meeting you tomorrow", "hint": "A professional sign-off in a formal email."}
+WORD_CONNECT_LEVELS = [
+    {
+        "letters": ["A", "C", "T", "S"],
+        "target_words": ["CATS", "CAST", "ACTS", "CAT", "ACT", "SAT"],
+        "hint": "Form words representing a feline companion, theater actors, and a verb in the past tense."
+    },
+    {
+        "letters": ["E", "A", "R", "T", "H"],
+        "target_words": ["HEART", "EARTH", "HATE", "HEAT", "TEAR", "RATE", "ART", "ERA", "ARE"],
+        "hint": "Form words representing our planet, the organ of love, intense warmth, or a drop of eye water."
+    },
+    {
+        "letters": ["O", "P", "S", "T", "R"],
+        "target_words": ["SPORT", "PORTS", "ROTS", "STOP", "POST", "SPOT", "PORT", "TOP", "POT"],
+        "hint": "Form words representing athletic play, harbor docks, a speck/blemish, or coming to a halt."
+    },
+    {
+        "letters": ["L", "I", "S", "T", "E", "N"],
+        "target_words": ["SILENT", "LISTEN", "LIST", "NEST", "LINE", "LENT", "NET", "TEN", "ITS"],
+        "hint": "Form words representing paying attention, keeping quiet, a bird's home, or a numbered list."
+    },
+    {
+        "letters": ["S", "T", "A", "R", "E"],
+        "target_words": ["STARE", "TEARS", "RATES", "TEAR", "RATE", "STAR", "REST", "EAST", "ART", "ERA", "SAT"],
+        "hint": "Form words representing looking fixedly, celestial bodies, relaxation, or the direction of sunrise."
+    }
 ]
+
 
