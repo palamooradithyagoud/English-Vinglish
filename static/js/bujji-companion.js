@@ -245,7 +245,7 @@ class BujjiCompanion {
 
         this.createWidget();
         this.setupDragging();
-        this.startWandering();
+        // this.startWandering(); // Disabled wandering as per request
         this.startIdleChirps();
         
         // Bind navbar Bujji logo to re-summon/interact
@@ -484,7 +484,7 @@ class BujjiCompanion {
             BujjiSynth.playPop();
             
             // Resume wandering
-            this.startWandering();
+            // this.startWandering(); // Disabled wandering as per request
         };
         
         // Mouse Listeners
