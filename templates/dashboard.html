@@ -2,6 +2,297 @@
 
 {% block title %}Dashboard - English Winglish{% endblock %}
 
+{% block head %}
+<style>
+    /* Clean SaaS Layout variables & styles */
+    .saas-dashboard-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        background-color: #FAFAFA;
+        color: #1E293B;
+    }
+
+    .saas-header {
+        margin-bottom: 8px;
+    }
+
+    .saas-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0F172A;
+        letter-spacing: -0.5px;
+    }
+
+    .saas-header p {
+        font-size: 15px;
+        color: #64748B;
+        margin-top: 4px;
+    }
+
+    /* Grid layout for stats cards */
+    .saas-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .saas-stat-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .saas-stat-card:hover {
+        transform: translateY(-2px);
+        border-color: #CBD5E1;
+    }
+
+    .saas-stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748B;
+    }
+
+    .saas-stat-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: #0F172A;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .saas-stat-icon {
+        font-size: 20px;
+    }
+
+    /* Two-column split layout */
+    .saas-split-layout {
+        display: grid;
+        grid-template-columns: 2fr 1.1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .saas-main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .saas-side-col {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        position: sticky;
+        top: 96px;
+    }
+
+    .saas-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .saas-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #F1F5F9;
+        padding-bottom: 12px;
+    }
+
+    .saas-btn-primary {
+        background-color: #0F172A;
+        color: #FFFFFF;
+        border: none;
+        padding: 10px 18px;
+        font-size: 13.5px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .saas-btn-primary:hover {
+        background-color: #1E293B;
+        color: #FFFFFF;
+    }
+
+    .saas-btn-secondary {
+        background-color: #FFFFFF;
+        color: #334155;
+        border: 1px solid #D1D5DB;
+        padding: 9px 17px;
+        font-size: 13.5px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .saas-btn-secondary:hover {
+        background-color: #F8FAFC;
+        border-color: #94A3B8;
+        color: #1E293B;
+    }
+
+    /* List layouts */
+    .saas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .saas-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background-color: #F8FAFC;
+        border: 1px solid #F1F5F9;
+        border-radius: 8px;
+        transition: border-color 0.15s ease;
+    }
+
+    .saas-list-item:hover {
+        border-color: #E2E8F0;
+    }
+
+    .saas-item-title {
+        font-weight: 600;
+        color: #0F172A;
+        font-size: 14.5px;
+    }
+
+    .saas-item-subtitle {
+        font-size: 12.5px;
+        color: #64748B;
+        margin-top: 4px;
+    }
+
+    .saas-badge {
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+
+    .saas-badge-success {
+        background-color: #DCFCE7;
+        color: #15803D;
+    }
+
+    .saas-badge-warning {
+        background-color: #FEF3C7;
+        color: #B45309;
+    }
+
+    .saas-badge-info {
+        background-color: #DBEAFE;
+        color: #1D4ED8;
+    }
+
+    /* Table styles */
+    .saas-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+    }
+
+    .saas-table th {
+        text-align: left;
+        color: #64748B;
+        font-weight: 600;
+        padding: 10px 12px;
+        border-bottom: 1px solid #E2E8F0;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+
+    .saas-table td {
+        padding: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #334155;
+    }
+
+    .saas-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Profile grid */
+    .saas-profile-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .saas-profile-row {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #E2E8F0;
+        font-size: 13.5px;
+    }
+
+    .saas-profile-label {
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .saas-profile-value {
+        color: #0F172A;
+        font-weight: 600;
+    }
+
+    @media (max-width: 991px) {
+        .saas-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .saas-split-layout {
+            grid-template-columns: 1fr;
+        }
+        .saas-side-col {
+            position: static;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .saas-stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 {% if session.pop('show_greeting', None) %}
 <div id="bujji-greeting-overlay" class="bujji-greeting-overlay">
@@ -42,182 +333,196 @@
 </div>
 {% endif %}
 
-<main class="dashboard-workspace">
-    <!-- Welcome Header -->
-    <header class="dashboard-header">
-        <h1 class="welcome-text">Welcome, {{ student.full_name }}! 👋</h1>
-        <p class="welcome-subtitle">Keep up the momentum. Let's learn some English basics today!</p>
+<main class="saas-dashboard-container">
+    <!-- Welcome Header & Main Quick Action -->
+    <header class="saas-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1>Good Evening, {{ student.full_name }} 👋</h1>
+            <p>Ready to level up your communication skills today?</p>
+        </div>
+        <div>
+            {% if student.current_level == 1 %}
+                <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary">Start Basic Learning</a>
+            {% else %}
+                <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary">Continue Level {{ student.current_level }}</a>
+            {% endif %}
+            <a href="{{ url_for('dashboard.progress') }}" class="saas-btn-secondary" style="margin-left: 8px;">View Journey Path</a>
+        </div>
     </header>
 
-    <!-- Stat Cards Grid -->
-    <div class="dashboard-stats-grid">
-        <!-- Card 1: Current Level -->
-        <div class="dashboard-stat-card level-card">
-            <div class="card-icon">🎯</div>
-            <div class="card-info">
-                <span class="card-label">Current Level</span>
-                <span class="card-value">Level {{ student.current_level }}</span>
+    <!-- Stats Cards Grid -->
+    <div class="saas-stats-grid">
+        <div class="saas-stat-card">
+            <span class="saas-stat-label">Current Level</span>
+            <div class="saas-stat-value">
+                <span class="saas-stat-icon">🎯</span>
+                <span>Level {{ student.current_level }}</span>
             </div>
         </div>
 
-        <!-- Card 2: Total XP -->
-        <div class="dashboard-stat-card xp-card">
-            <div class="card-icon">⚡</div>
-            <div class="card-info">
-                <span class="card-label">Total XP</span>
-                <span class="card-value">{{ student.xp }} XP</span>
+        <div class="saas-stat-card">
+            <span class="saas-stat-label">Total XP Points</span>
+            <div class="saas-stat-value">
+                <span class="saas-stat-icon">⚡</span>
+                <span>{{ student.xp }} XP</span>
             </div>
         </div>
 
-        <!-- Card 3: Streak -->
-        <div class="dashboard-stat-card streak-card {% if student.streak > 0 %}active-streak{% endif %}">
-            <div class="card-icon">🔥</div>
-            <div class="card-info">
-                <span class="card-label">Daily Streak</span>
-                <span class="card-value">{{ student.streak }} Days</span>
+        <div class="saas-stat-card">
+            <span class="saas-stat-label">Active Streak</span>
+            <div class="saas-stat-value" style="color: #F59E0B;">
+                <span class="saas-stat-icon">🔥</span>
+                <span>{{ student.streak }} Days</span>
             </div>
         </div>
 
-        <!-- Card 4: Levels Completed -->
-        <div class="dashboard-stat-card completed-card">
-            <div class="card-icon">🏆</div>
-            <div class="card-info">
-                <span class="card-label">Levels Cleared</span>
-                <span class="card-value">{{ student.levels_completed }} / 5</span>
+        <div class="saas-stat-card">
+            <span class="saas-stat-label">Milestones Cleared</span>
+            <div class="saas-stat-value" style="color: #10B981;">
+                <span class="saas-stat-icon">🏆</span>
+                <span>{{ student.levels_completed }} / 5</span>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="dashboard-actions-section">
-        <div class="actions-buttons">
-            {% if student.current_level == 1 %}
-                <a href="{{ url_for('quiz.quiz_page') }}" class="btn-primary ripple-btn action-btn font-weight-bold">Start Learning</a>
-            {% else %}
-                <a href="{{ url_for('quiz.quiz_page') }}" class="btn-primary ripple-btn action-btn font-weight-bold">Continue Level {{ student.current_level }}</a>
-            {% endif %}
-            
-            <a href="{{ url_for('dashboard.progress') }}" class="btn-secondary action-btn">View Progress Path</a>
-            <button class="btn-secondary action-btn" id="btn-toggle-profile">View Profile Details</button>
-        </div>
-
-        <!-- Hidden Profile Info Card (toggles on click) -->
-        <div class="profile-details-card hidden" id="profile-details-card">
-            <h3>Student Profile</h3>
-            <hr>
-            <div class="profile-grid">
-                <div><strong>Full Name:</strong> <span>{{ student.full_name }}</span></div>
-                <div><strong>Roll Number:</strong> <span>{{ student.roll_number }}</span></div>
-                <div><strong>Branch:</strong> <span>{{ student.branch }}</span></div>
-                <div><strong>Year of Study:</strong> <span>{{ student.year }} Year</span></div>
-                <div><strong>Email Address:</strong> <span>{{ student.email }}</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Class Quizzes Section -->
-    <section class="dashboard-overview-section" style="margin-bottom: 30px;">
-        <h2 class="section-title">Class Quizzes</h2>
-        {% if class_quizzes %}
-            <div class="class-quizzes-container" style="display: flex; flex-direction: column; gap: 15px;">
-                {% for q in class_quizzes %}
-                    <div class="class-quiz-card" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #10b981;">
-                        <div>
-                            <h3 style="margin: 0 0 5px 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">{{ q.title }}</h3>
-                            <p style="margin: 0 0 5px 0; color: #64748b; font-size: 0.9rem;">
-                                Target: {% if q.target_type == 'all' %}All Departments{% else %}{{ q.target_branch }}{% endif %} • Created by Faculty
-                            </p>
-                            <span style="font-size: 0.8rem; color: #94a3b8;">Posted on {{ q.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                        </div>
-                        <div>
-                            {% if q.attempted %}
-                                <span class="badge bg-success-subtle text-success" style="padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
-                                    Attempted: {{ q.score }}/{{ q.total_questions }}
-                                </span>
-                            {% else %}
-                                <a href="{{ url_for('quiz.solve_class_quiz', quiz_id=q.id) }}" class="btn-primary ripple-btn" style="padding: 10px 20px; font-weight: 600; text-decoration: none; border-radius: 8px; font-size: 0.95rem; display: inline-block;">
-                                    Attempt Quiz
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-history-card" style="background: white; border-radius: 16px; padding: 30px; text-align: center; color: #94a3b8;">
-                <p style="margin: 0;">No active class quizzes assigned to you.</p>
-            </div>
-        {% endif %}
-    </section>
-
-    <!-- Announcements Feed Section -->
-    <section class="dashboard-overview-section" style="margin-bottom: 30px;">
-        <h2 class="section-title">Campus Announcements</h2>
-        {% if announcements %}
-            <div class="announcements-container" style="display: flex; flex-direction: column; gap: 15px;">
-                {% for ann in announcements %}
-                    <div class="announcement-card-student" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 6px solid #10b981;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">{{ ann.title }}</h3>
-                        <p style="margin: 0 0 12px 0; color: #475569; font-size: 0.95rem; line-height: 1.5; white-space: pre-line;">{{ ann.message }}</p>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; font-weight: 500;">
-                            <span>By: {{ ann.faculty_name }}</span>
-                            <span>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-history-card" style="background: white; border-radius: 16px; padding: 30px; text-align: center; color: #94a3b8;">
-                <p style="margin: 0;">No active announcements from the faculty.</p>
-            </div>
-        {% endif %}
-    </section>
-
-    <!-- Recent Progress Overview Section -->
-    <section class="dashboard-overview-section">
-        <h2 class="section-title">Quiz History & Overview</h2>
-        {% if history %}
-            <div class="history-table-wrapper">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Level</th>
-                            <th>Score</th>
-                            <th>Percentage</th>
-                            <th>Status</th>
-                            <th>Completion Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for attempt in history %}
-                            <tr class="status-row-{{ attempt.status }}">
-                                <td>Level {{ attempt.level }}</td>
-                                <td>{{ attempt.score }} / 20</td>
-                                <td>
-                                    <div class="percent-badge-container">
-                                        <span class="percent-num">{{ attempt.percentage }}%</span>
-                                        <div class="mini-progress-track">
-                                            <div class="mini-progress-fill" style="width: {{ attempt.percentage }}%; background-color: {% if attempt.status == 'passed' %}var(--color-primary){% else %}var(--color-red){% endif %};"></div>
-                                        </div>
+    <!-- Split Workspace -->
+    <div class="saas-split-layout">
+        <!-- Main Column (Left) -->
+        <div class="saas-main-col">
+            <!-- Class Quizzes -->
+            <div class="saas-card">
+                <h2 class="saas-card-title">
+                    <span>📝</span> Active Class Quizzes
+                </h2>
+                {% if class_quizzes %}
+                    <div class="saas-list">
+                        {% for q in class_quizzes %}
+                            <div class="saas-list-item">
+                                <div>
+                                    <div class="saas-item-title">{{ q.title }}</div>
+                                    <div class="saas-item-subtitle">
+                                        Target: {% if q.target_type == 'all' %}All Departments{% else %}{{ q.target_branch }}{% endif %} • Posted on {{ q.created_at.strftime('%Y-%m-%d') }}
                                     </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-{{ attempt.status }}">
-                                        {{ attempt.status.upper() }}
-                                    </span>
-                                </td>
-                                <td>{{ attempt.completed_at }}</td>
-                            </tr>
+                                </div>
+                                <div>
+                                    {% if q.attempted %}
+                                        <span class="saas-badge saas-badge-success">
+                                            Score: {{ q.score }}/{{ q.total_questions }}
+                                        </span>
+                                    {% else %}
+                                        <a href="{{ url_for('quiz.solve_class_quiz', quiz_id=q.id) }}" class="saas-btn-primary" style="padding: 8px 14px; font-size: 12.5px;">
+                                            Attempt
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 24px; color: #64748B; font-size: 14px;">
+                        No active class quizzes assigned to you.
+                    </div>
+                {% endif %}
             </div>
-        {% else %}
-            <div class="empty-history-card">
-                <p>No quiz attempts logged yet. Start a quiz to track your progress!</p>
+
+            <!-- Campus Announcements -->
+            <div class="saas-card">
+                <h2 class="saas-card-title">
+                    <span>📢</span> Campus Announcements
+                </h2>
+                {% if announcements %}
+                    <div class="saas-list">
+                        {% for ann in announcements %}
+                            <div class="saas-list-item" style="flex-direction: column; align-items: start; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                    <div class="saas-item-title" style="font-size: 15px;">{{ ann.title }}</div>
+                                    <span class="saas-badge saas-badge-info" style="font-size: 10.5px;">Broadcast</span>
+                                </div>
+                                <p style="color: #475569; font-size: 13.5px; line-height: 1.5; white-space: pre-line;">{{ ann.message }}</p>
+                                <div style="display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: #94A3B8; margin-top: 4px;">
+                                    <span>By: {{ ann.faculty_name }}</span>
+                                    <span>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 24px; color: #64748B; font-size: 14px;">
+                        No active announcements from the faculty.
+                    </div>
+                {% endif %}
             </div>
-        {% endif %}
-    </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="saas-side-col">
+            <!-- Student Profile Metadata -->
+            <div class="saas-card">
+                <h2 class="saas-card-title" style="margin-bottom: 12px; border-bottom: none; padding-bottom: 0;">
+                    <span>👤</span> Student Profile
+                </h2>
+                <div class="saas-profile-grid">
+                    <div class="saas-profile-row">
+                        <span class="saas-profile-label">Full Name</span>
+                        <span class="saas-profile-value">{{ student.full_name }}</span>
+                    </div>
+                    <div class="saas-profile-row">
+                        <span class="saas-profile-label">Roll Number</span>
+                        <span class="saas-profile-value">{{ student.roll_number }}</span>
+                    </div>
+                    <div class="saas-profile-row">
+                        <span class="saas-profile-label">Branch</span>
+                        <span class="saas-profile-value">{{ student.branch }}</span>
+                    </div>
+                    <div class="saas-profile-row">
+                        <span class="saas-profile-label">Year</span>
+                        <span class="saas-profile-value">{{ student.year }} Year</span>
+                    </div>
+                    <div class="saas-profile-row" style="border-bottom: none; padding-bottom: 0;">
+                        <span class="saas-profile-label">Email</span>
+                        <span class="saas-profile-value" style="font-size: 12px; font-weight: 500;">{{ student.email }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz History & Analytics -->
+            <div class="saas-card">
+                <h2 class="saas-card-title">
+                    <span>📊</span> Recent Performance
+                </h2>
+                {% if history %}
+                    <div style="overflow-x: auto;">
+                        <table class="saas-table">
+                            <thead>
+                                <tr>
+                                    <th>Level</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in history %}
+                                    <tr>
+                                        <td style="font-weight: 600;">Level {{ attempt.level }}</td>
+                                        <td style="font-weight: 600;">{{ attempt.score }}/20</td>
+                                        <td>
+                                            <span class="saas-badge {% if attempt.status == 'passed' %}saas-badge-success{% else %}saas-badge-warning{% endif %}">
+                                                {{ attempt.status.upper() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 16px; color: #64748B; font-size: 13px;">
+                        No quiz attempts logged yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </main>
 {% endblock %}
 

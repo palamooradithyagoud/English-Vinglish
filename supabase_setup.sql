@@ -103,3 +103,33 @@ CREATE TABLE IF NOT EXISTS class_quiz_attempts (
 );
 
 
+-- ==========================================
+-- SECURITY HARDENING: ROW LEVEL SECURITY (RLS)
+-- ==========================================
+
+-- 1. Enable Row Level Security (RLS) on all tables to prevent public bypasses
+ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.faculty ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.quiz_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.class_quizzes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.class_quiz_attempts ENABLE ROW LEVEL SECURITY;
+
+-- 2. Revoke all direct public/anonymous API access
+-- Note: The python Flask backend uses the `service_role` key, which automatically
+-- bypasses RLS policies, so no additional permissive policies are needed.
+REVOKE ALL ON public.students FROM anon, public;
+REVOKE ALL ON public.questions FROM anon, public;
+REVOKE ALL ON public.progress FROM anon, public;
+REVOKE ALL ON public.faculty FROM anon, public;
+REVOKE ALL ON public.notifications FROM anon, public;
+REVOKE ALL ON public.activity_logs FROM anon, public;
+REVOKE ALL ON public.quiz_attempts FROM anon, public;
+REVOKE ALL ON public.class_quizzes FROM anon, public;
+REVOKE ALL ON public.class_quiz_attempts FROM anon, public;
+
+
+
