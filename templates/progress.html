@@ -2805,6 +2805,7 @@
     let currentSpeakingTask = null;
     let currentSpeakingSeconds = 0;
     let recognitionInstance = null;
+    let fullTranscript = '';   // Module-level: persists across recognition restarts
 
     // Initialize Web Speech API if supported
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -3153,6 +3154,7 @@
 
     function startSpeakingChallenge(id, rewardXp) {
         isSpeakingRecording = true;
+        fullTranscript = '';  // Reset for new session
         
         const micBtn = document.getElementById('speaking-mic-action');
         micBtn.classList.add('recording');
@@ -3164,9 +3166,7 @@
 
         const transcriptText = document.getElementById('speaking-live-transcript');
         transcriptText.innerHTML = '<span style="color:#94A3B8; font-style:italic;">Listening to your voice...</span>';
-
-        // Accumulator for the full spoken transcript across multiple segments
-        let fullTranscript = '';
+        transcriptText.dataset.fullTranscript = '';
 
         currentSpeakingSeconds = 0;
         const timerDisplay = document.getElementById('speaking-timer-display');
@@ -3179,42 +3179,68 @@
             timerDisplay.textContent = `${mins}:${secs}`;
         }, 1000);
 
+        function updateTranscriptUI(interimText) {
+            const el = document.getElementById('speaking-live-transcript');
+            if (!el) return;
+            el.innerHTML = `${fullTranscript
+                ? `<span style="color:#1E293B; font-weight:500;">${fullTranscript}</span>`
+                : ''}<span style="color:#94A3B8; font-style:italic;">${
+                    interimText ? ' ' + interimText : (fullTranscript ? '' : 'Listening to your voice...')
+                }</span>`;
+            el.dataset.fullTranscript = fullTranscript;
+        }
+
         if (recognitionInstance) {
-            try {
-                // Enable continuous + interim results for best accuracy
-                recognitionInstance.continuous = true;
-                recognitionInstance.interimResults = true;
-                recognitionInstance.start();
-                recognitionInstance.onresult = (event) => {
-                    let interimText = '';
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        const segment = event.results[i][0].transcript;
-                        if (event.results[i].isFinal) {
-                            fullTranscript += (fullTranscript ? ' ' : '') + segment.trim();
-                        } else {
-                            interimText += segment;
-                        }
+            // Assign handlers BEFORE start()
+            recognitionInstance.continuous = true;
+            recognitionInstance.interimResults = true;
+            recognitionInstance.lang = 'en-US';
+
+            recognitionInstance.onresult = (event) => {
+                let interimText = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const segment = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        fullTranscript += (fullTranscript ? ' ' : '') + segment.trim();
+                    } else {
+                        interimText += segment;
                     }
-                    // Show finalised text + grey interim
-                    transcriptText.innerHTML = `${fullTranscript ? `<span style="color:#1E293B; font-weight:500;">${fullTranscript}</span>` : ''}<span style="color:#94A3B8; font-style:italic;">${interimText ? ' ' + interimText : (fullTranscript ? '' : 'Listening to your voice...')}</span>`;
-                    // Store full transcript where stopSpeakingAndAnalyze can read it
-                    transcriptText.dataset.fullTranscript = fullTranscript;
-                };
-                recognitionInstance.onerror = (e) => {
-                    console.warn('Speech recognition error:', e.error);
-                };
+                }
+                updateTranscriptUI(interimText);
+            };
+
+            recognitionInstance.onerror = (e) => {
+                console.warn('Speech recognition error:', e.error);
+                if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+                    const el = document.getElementById('speaking-live-transcript');
+                    if (el) el.innerHTML = '<span style="color:#EF4444; font-weight:700;">⚠️ Microphone access denied. Please allow microphone in browser settings and refresh.</span>';
+                    isSpeakingRecording = false;
+                }
+            };
+
+            // Auto-restart when Chrome stops recognition after silence
+            recognitionInstance.onend = () => {
+                if (isSpeakingRecording) {
+                    try { recognitionInstance.start(); } catch(e) {}
+                }
+            };
+
+            try {
+                recognitionInstance.start();
             } catch(e) {
-                console.error("SpeechRecognition start error:", e);
+                // Already started (e.g. InvalidStateError) — ignore, onend will restart
+                console.warn('Recognition start skipped:', e.message);
             }
         } else {
-            // Simulated speech-to-text placeholder for browsers without API
+            // Browser doesn't support Web Speech API — simulate with the prompt text
+            const el = document.getElementById('speaking-live-transcript');
+            if (el) el.innerHTML = '<span style="color:#F59E0B; font-weight:600;">⚠️ Speech API not supported in this browser. Using simulation mode.</span>';
             setTimeout(() => {
                 if (isSpeakingRecording) {
                     fullTranscript = activeSpeakingPrompt.replace(/Word:|Pronounce:|Topic:|Roleplay:/, '').trim();
-                    transcriptText.innerHTML = `<span style="color:#1E293B; font-weight:500;">${fullTranscript}</span>`;
-                    transcriptText.dataset.fullTranscript = fullTranscript;
+                    updateTranscriptUI('');
                 }
-            }, 3000);
+            }, 2000);
         }
 
         if (typeof BujjiSynth !== 'undefined') {
@@ -3223,6 +3249,7 @@
     }
 
     function stopSpeakingAndAnalyze(id, rewardXp) {
+        // Set false FIRST so onend doesn't trigger a restart
         isSpeakingRecording = false;
 
         const micBtn = document.getElementById('speaking-mic-action');
@@ -3238,23 +3265,13 @@
             clearInterval(currentSpeakingTimer);
         }
 
-        // Capture what the speaker actually said (prefer accumulated dataset value)
-        const liveTranscriptEl = document.getElementById('speaking-live-transcript');
-        const spokenText = (liveTranscriptEl && liveTranscriptEl.dataset.fullTranscript)
-            ? liveTranscriptEl.dataset.fullTranscript.trim()
-            : (liveTranscriptEl && liveTranscriptEl.textContent !== 'Listening to your voice...'
-                ? liveTranscriptEl.textContent.trim()
-                : '');
-
-        const durationSecs = currentSpeakingSeconds;
-
         if (recognitionInstance) {
-            try {
-                recognitionInstance.stop();
-            } catch(e) {
-                console.error("SpeechRecognition stop error:", e);
-            }
+            try { recognitionInstance.stop(); } catch(e) {}
         }
+
+        // Read from module-level fullTranscript (most reliable)
+        const spokenText = fullTranscript.trim();
+        const durationSecs = currentSpeakingSeconds;
 
         // Build word-level comparison HTML
         function buildComparisonHTML(spoken, prompt) {
