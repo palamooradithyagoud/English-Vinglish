@@ -578,3 +578,147 @@ body {
         display: block;
     }
 }
+
+/* ==========================================================================
+   8. PREMIUM AUTH / LOGIN / REGISTER OVERRIDES
+   ========================================================================== */
+.auth-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 100vh !important;
+    padding: 40px 24px !important;
+    background: radial-gradient(circle at 10% 20%, rgba(241, 245, 249, 0.6) 0%, rgba(226, 232, 240, 0.4) 100%) !important;
+    box-sizing: border-box !important;
+}
+
+.auth-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02) !important;
+    padding: 40px 36px !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+}
+
+.auth-card.register-card {
+    max-width: 580px !important;
+}
+
+.auth-mascot {
+    margin-bottom: 20px !important;
+}
+
+.mascot-svg-auth {
+    width: 96px !important;
+    height: 96px !important;
+}
+
+.auth-title {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    margin-bottom: 6px !important;
+}
+
+.auth-subtitle {
+    font-size: 14px !important;
+    color: #64748B !important;
+    font-weight: 500 !important;
+    margin-bottom: 24px !important;
+}
+
+.auth-tabs-container {
+    display: flex !important;
+    margin-bottom: 24px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+}
+
+.auth-tab-button {
+    font-weight: 700 !important;
+    color: #64748B !important;
+    border-bottom: 3px solid transparent !important;
+    padding: 12px 8px !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.95rem !important;
+}
+
+.auth-tab-button.active {
+    color: #3B82F6 !important;
+    border-bottom: 3px solid #3B82F6 !important;
+}
+
+.form-input {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    font-weight: 600 !important;
+    padding: 11px 14px !important;
+    border-radius: 10px !important;
+    color: #0F172A !important;
+    font-size: 0.95rem !important;
+}
+
+.form-input:focus {
+    border-color: #3B82F6 !important;
+    background-color: #FFFFFF !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+.select-input {
+    appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px !important;
+    padding-right: 40px !important;
+}
+
+.auth-submit-btn {
+    border-radius: 10px !important;
+    padding: 12px !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+    font-size: 0.95rem !important;
+    background: #3B82F6 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.1s ease !important;
+}
+
+.auth-submit-btn:hover {
+    background: #2563EB !important;
+}
+
+.auth-submit-btn:active {
+    transform: scale(0.98) !important;
+}
+
+.role-helper {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #64748B !important;
+    border-radius: 10px !important;
+    font-size: 0.8rem !important;
+    padding: 12px !important;
+    margin-top: 20px !important;
+}
+
+.auth-footer {
+    margin-top: 20px !important;
+    font-size: 0.85rem !important;
+    color: #64748B !important;
+}
+
+.auth-footer a {
+    color: #3B82F6 !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline !important;
+}

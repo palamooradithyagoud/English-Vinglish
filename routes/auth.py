@@ -50,20 +50,20 @@ def register():
         if errors:
             for error in errors:
                 flash(error, 'error')
-            return render_template('register.html')
+            return render_template('register.html', hide_navbar=True)
             
         try:
             # Check unique email
             existing_email = get_student_by_email_or_roll(email)
             if existing_email:
                 flash("Email already registered.", 'error')
-                return render_template('register.html')
+                return render_template('register.html', hide_navbar=True)
                 
             # Check unique roll number
             existing_roll = get_student_by_email_or_roll(roll_number)
             if existing_roll:
                 flash("Roll Number already registered.", 'error')
-                return render_template('register.html')
+                return render_template('register.html', hide_navbar=True)
                 
             # Create user in-memory
             password_hash = generate_password_hash(password)
@@ -74,9 +74,9 @@ def register():
             
         except Exception as e:
             flash(f"An error occurred during registration: {e}", 'error')
-            return render_template('register.html')
+            return render_template('register.html', hide_navbar=True)
             
-    return render_template('register.html')
+    return render_template('register.html', hide_navbar=True)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -89,25 +89,25 @@ def login():
         
         if not (email_or_roll and password):
             flash("Please enter both credentials.", "error")
-            return render_template('login.html', active_tab='student')
+            return render_template('login.html', active_tab='student', hide_navbar=True)
             
         try:
             student = get_student_by_email_or_roll(email_or_roll)
             
             if student:
                 if check_password_hash(student['password_hash'], password):
-                    session['student_id'] = student['id']
-                    session['student_name'] = student['full_name']
-                    session['show_greeting'] = True
-                    log_student_activity(student['id'], 'LOGIN', f"Student {student['full_name']} logged in successfully")
-                    flash(f"Welcome back, {student['full_name']}!", "success")
-                    return redirect(url_for('dashboard.home'))
+                     session['student_id'] = student['id']
+                     session['student_name'] = student['full_name']
+                     session['show_greeting'] = True
+                     log_student_activity(student['id'], 'LOGIN', f"Student {student['full_name']} logged in successfully")
+                     flash(f"Welcome back, {student['full_name']}!", "success")
+                     return redirect(url_for('dashboard.home'))
             
             flash("Invalid email/roll number or password.", "error")
         except Exception as e:
             flash(f"An error occurred during login: {e}", 'error')
             
-    return render_template('login.html', active_tab='student')
+    return render_template('login.html', active_tab='student', hide_navbar=True)
 
 @auth_bp.route('/logout')
 def logout():

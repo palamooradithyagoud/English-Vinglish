@@ -28,7 +28,7 @@ def login():
         
         if not (email_or_emp and password):
             flash("Please enter both credentials.", "error")
-            return render_template('login.html', active_tab='faculty')
+            return render_template('login.html', active_tab='faculty', hide_navbar=True)
             
         try:
             faculty = get_faculty_by_email_or_emp_id(email_or_emp)
@@ -44,7 +44,7 @@ def login():
         except Exception as e:
             flash(f"An error occurred during login: {e}", 'error')
             
-    return render_template('login.html', active_tab='faculty')
+    return render_template('login.html', active_tab='faculty', hide_navbar=True)
 
 @faculty_auth_bp.route('/faculty/logout')
 def logout():
