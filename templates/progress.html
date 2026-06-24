@@ -1776,15 +1776,24 @@
             }
             
             try {
-                await fetch('/api/earn-xp', {
+                const response = await fetch('/api/game/log', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        xp: 10,
-                        activity_type: 'WORD_SCRAMBLE',
-                        description: `Unscrambled '${activeWord}' correctly`
+                        game_type: 'WORD_SCRAMBLE',
+                        word_or_level: activeWord,
+                        score: 10,
+                        streak: gameStreak,
+                        earned_xp: 10
                     })
                 });
+                const data = await response.json();
+                if (data.success && data.new_xp !== undefined) {
+                    const studentXpEl = document.getElementById('student-xp-display');
+                    if (studentXpEl) {
+                        studentXpEl.textContent = `${data.new_xp} XP`;
+                    }
+                }
             } catch(e) {
                 console.error("Error rewarding XP:", e);
             }
@@ -2085,15 +2094,24 @@
                     feedback.innerHTML = `🎉 Level Complete! Found all ${targets.length} words! +20 XP awarded!`;
                     
                     try {
-                        await fetch('/api/earn-xp', {
+                        const response = await fetch('/api/game/log', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                xp: 20,
-                                activity_type: 'WORD_CONNECT',
-                                description: `Completed Word Connect level for: ${activeLevelData.letters.join('')}`
+                                game_type: 'WORD_CONNECT',
+                                word_or_level: activeLevelData.letters.join(''),
+                                score: 20,
+                                streak: gameStreak,
+                                earned_xp: 20
                             })
                         });
+                        const data = await response.json();
+                        if (data.success && data.new_xp !== undefined) {
+                            const studentXpEl = document.getElementById('student-xp-display');
+                            if (studentXpEl) {
+                                studentXpEl.textContent = `${data.new_xp} XP`;
+                            }
+                        }
                     } catch(e) {
                         console.error("Error rewarding XP:", e);
                     }
@@ -2110,15 +2128,24 @@
                     feedback.innerHTML = `🎉 Found word: <strong>${guess}</strong>! +5 XP awarded!`;
                     
                     try {
-                        await fetch('/api/earn-xp', {
+                        const response = await fetch('/api/game/log', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                xp: 5,
-                                activity_type: 'WORD_CONNECT',
-                                description: `Found word '${guess}' in Word Connect`
+                                game_type: 'WORD_CONNECT',
+                                word_or_level: guess,
+                                score: 5,
+                                streak: gameStreak,
+                                earned_xp: 5
                             })
                         });
+                        const data = await response.json();
+                        if (data.success && data.new_xp !== undefined) {
+                            const studentXpEl = document.getElementById('student-xp-display');
+                            if (studentXpEl) {
+                                studentXpEl.textContent = `${data.new_xp} XP`;
+                            }
+                        }
                     } catch(e) {
                         console.error("Error rewarding XP:", e);
                     }
@@ -2817,11 +2844,11 @@
     }
 
     function initSpeakingOverlay() {
-        // Load stats from LocalStorage or fall back
-        speakingXp = parseInt(localStorage.getItem('speaking_xp') || '0');
-        speakingSessions = parseInt(localStorage.getItem('speaking_sessions') || '0');
-        averagePron = parseInt(localStorage.getItem('speaking_pron_score') || '75');
-        averageFluency = parseInt(localStorage.getItem('speaking_fluency_score') || '80');
+        // Load stats from database (passed via template) or fallback to LocalStorage
+        speakingXp = parseInt("{{ speaking_stats.total_xp if speaking_stats else 0 }}") || parseInt(localStorage.getItem('speaking_xp') || '0');
+        speakingSessions = parseInt("{{ speaking_stats.total_sessions if speaking_stats else 0 }}") || parseInt(localStorage.getItem('speaking_sessions') || '0');
+        averagePron = parseInt("{{ speaking_stats.average_pron if speaking_stats else 75 }}") || parseInt(localStorage.getItem('speaking_pron_score') || '75');
+        averageFluency = parseInt("{{ speaking_stats.average_fluency if speaking_stats else 80 }}") || parseInt(localStorage.getItem('speaking_fluency_score') || '80');
         streak = student ? student.streak : 0;
 
         renderSpeakingDashboard();
@@ -3535,7 +3562,7 @@
                 <!-- Action buttons -->
                 <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
                     ${earnedXp > 0
-                        ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}')">🎁 Claim +${earnedXp} XP</button>`
+                        ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim +${earnedXp} XP</button>`
                         : `<button class="btn-secondary" style="padding:10px 24px; font-weight:700; border-radius:10px; opacity:0.6; cursor:not-allowed;" disabled>❌ No XP — Match more words to earn XP</button>`
                     }
                     <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
@@ -3551,40 +3578,61 @@
         resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    async function claimSpeakingXP(xpToEarn, activityId) {
+    async function claimSpeakingXP(xpToEarn, activityId, accuracy = 0, pronunciation = 0, fluency = 0, wordCount = 0) {
         try {
-            // Post speaking XP to user database
-            const response = await fetch('/api/earn-xp', {
+            // Post speaking attempt details to user database
+            const response = await fetch('/api/speaking/log', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    xp: xpToEarn,
-                    activity_type: 'SPEAKING_PRACTICE',
-                    description: `Completed speaking task: ${activityId}`
+                    earned_xp: xpToEarn,
+                    activity_id: activityId,
+                    accuracy: accuracy,
+                    pronunciation: pronunciation,
+                    fluency: fluency,
+                    word_count: wordCount
                 })
             });
             const data = await response.json();
             
             if (data.success) {
-                // Update local storage metrics
-                const currentXp = parseInt(localStorage.getItem('speaking_xp') || '0');
-                const newXp = currentXp + xpToEarn;
-                localStorage.setItem('speaking_xp', String(newXp));
+                if (data.speaking_stats) {
+                    // Update javascript memory state from DB metrics
+                    speakingXp = data.speaking_stats.total_xp;
+                    speakingSessions = data.speaking_stats.total_sessions;
+                    averagePron = data.speaking_stats.average_pron;
+                    averageFluency = data.speaking_stats.average_fluency;
 
-                const currentSessions = parseInt(localStorage.getItem('speaking_sessions') || '0');
-                localStorage.setItem('speaking_sessions', String(currentSessions + 1));
+                    // Sync to local storage for local redundancy
+                    localStorage.setItem('speaking_xp', String(speakingXp));
+                    localStorage.setItem('speaking_sessions', String(speakingSessions));
+                    localStorage.setItem('speaking_pron_score', String(averagePron));
+                    localStorage.setItem('speaking_fluency_score', String(averageFluency));
+                } else {
+                    // Fallback to local updates
+                    const currentXp = parseInt(localStorage.getItem('speaking_xp') || '0');
+                    speakingXp = currentXp + xpToEarn;
+                    localStorage.setItem('speaking_xp', String(speakingXp));
 
-                // Recalculate rolling average scores
-                const currentPron = parseInt(localStorage.getItem('speaking_pron_score') || '75');
-                const nextPron = Math.min(99, Math.floor((currentPron + (Math.random() * 10 + 75)) / 2));
-                localStorage.setItem('speaking_pron_score', String(nextPron));
+                    const currentSessions = parseInt(localStorage.getItem('speaking_sessions') || '0');
+                    speakingSessions = currentSessions + 1;
+                    localStorage.setItem('speaking_sessions', String(speakingSessions));
 
-                const currentFluency = parseInt(localStorage.getItem('speaking_fluency_score') || '80');
-                const nextFluency = Math.min(99, Math.floor((currentFluency + (Math.random() * 10 + 80)) / 2));
-                localStorage.setItem('speaking_fluency_score', String(nextFluency));
+                    averagePron = Math.min(99, Math.floor((parseInt(localStorage.getItem('speaking_pron_score') || '75') + pronunciation) / 2));
+                    localStorage.setItem('speaking_pron_score', String(averagePron));
+
+                    averageFluency = Math.min(99, Math.floor((parseInt(localStorage.getItem('speaking_fluency_score') || '80') + fluency) / 2));
+                    localStorage.setItem('speaking_fluency_score', String(averageFluency));
+                }
 
                 if (typeof BujjiSynth !== 'undefined') {
                     BujjiSynth.playWelcomeTune();
+                }
+
+                // Update the main header student XP display if present
+                const studentXpEl = document.getElementById('student-xp-display');
+                if (studentXpEl && data.new_xp !== undefined) {
+                    studentXpEl.textContent = `${data.new_xp} XP`;
                 }
 
                 alert(`🎉 Congratulations! You earned +${xpToEarn} XP and logged a speaking practice session successfully.`);

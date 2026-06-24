@@ -8,7 +8,11 @@ from database import (
     get_notifications,
     update_student_xp_and_level,
     log_student_activity,
-    get_student_activity_logs
+    get_student_activity_logs,
+    log_speaking_attempt,
+    log_game_attempt,
+    get_student_speaking_stats,
+    get_student_game_stats
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
@@ -121,6 +125,9 @@ def progress():
             'status': status
         })
         
+    speaking_stats = get_student_speaking_stats(student_id)
+    game_stats = get_student_game_stats(student_id)
+        
     return render_template(
         'progress.html', 
         levels=levels, 
@@ -128,7 +135,9 @@ def progress():
         stories=SHORT_STORIES, 
         scramble_words=WORD_SCRAMBLE_WORDS,
         connect_levels=WORD_CONNECT_LEVELS,
-        student=student
+        student=student,
+        speaking_stats=speaking_stats,
+        game_stats=game_stats
     )
 
 @dashboard_bp.route('/api/practice/questions')
@@ -195,6 +204,74 @@ def earn_xp():
         'success': True,
         'new_xp': updated_student['xp']
     })
+
+@dashboard_bp.route('/api/speaking/log', methods=['POST'])
+@login_required
+def log_speaking():
+    student_id = session['student_id']
+    data = request.get_json() or {}
+    
+    activity_id = data.get('activity_id')
+    accuracy = data.get('accuracy', 0)
+    pronunciation = data.get('pronunciation', 0)
+    fluency = data.get('fluency', 0)
+    word_count = data.get('word_count', 0)
+    earned_xp = data.get('earned_xp', 0)
+    
+    if not activity_id:
+        return jsonify({'error': 'activity_id is required'}), 400
+        
+    res = log_speaking_attempt(
+        student_id=student_id,
+        activity_id=activity_id,
+        accuracy=accuracy,
+        pronunciation=pronunciation,
+        fluency=fluency,
+        word_count=word_count,
+        earned_xp=earned_xp
+    )
+    
+    if res:
+        updated_student = get_student_by_id(student_id)
+        speaking_stats = get_student_speaking_stats(student_id)
+        return jsonify({
+            'success': True,
+            'new_xp': updated_student['xp'],
+            'speaking_stats': speaking_stats
+        })
+    return jsonify({'error': 'Failed to log speaking attempt'}), 500
+
+@dashboard_bp.route('/api/game/log', methods=['POST'])
+@login_required
+def log_game():
+    student_id = session['student_id']
+    data = request.get_json() or {}
+    
+    game_type = data.get('game_type')
+    word_or_level = data.get('word_or_level')
+    score = data.get('score', 0)
+    streak = data.get('streak', 0)
+    earned_xp = data.get('earned_xp', 0)
+    
+    if not game_type or not word_or_level:
+        return jsonify({'error': 'game_type and word_or_level are required'}), 400
+        
+    res = log_game_attempt(
+        student_id=student_id,
+        game_type=game_type,
+        word_or_level=word_or_level,
+        score=score,
+        streak=streak,
+        earned_xp=earned_xp
+    )
+    
+    if res:
+        updated_student = get_student_by_id(student_id)
+        return jsonify({
+            'success': True,
+            'new_xp': updated_student['xp']
+        })
+    return jsonify({'error': 'Failed to log game attempt'}), 500
 
 @dashboard_bp.route('/api/bujji/chat', methods=['POST'])
 @login_required

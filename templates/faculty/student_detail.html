@@ -87,6 +87,63 @@
         </div>
     </div>
     
+    <!-- Speaking & Game Practice Stats -->
+    <div class="row g-4 mb-4">
+        <!-- Speaking Stats -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h3 class="h6 fw-bold text-secondary mb-3">🗣️ Speaking Practice Stats</h3>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Sessions Practiced</span>
+                            <span class="h4 fw-bold mb-0 text-primary">{{ speaking_stats.total_sessions if speaking_stats else 0 }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Avg Accuracy</span>
+                            <span class="h4 fw-bold mb-0 text-success">{{ speaking_stats.average_accuracy if speaking_stats else 0 }}%</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Avg Pronunciation</span>
+                            <span class="h5 fw-bold mb-0">{{ speaking_stats.average_pron if speaking_stats else 0 }}%</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Avg Fluency</span>
+                            <span class="h5 fw-bold mb-0">{{ speaking_stats.average_fluency if speaking_stats else 0 }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Stats -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h3 class="h6 fw-bold text-secondary mb-3">🎮 Game Play Stats</h3>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Total Games Played</span>
+                            <span class="h4 fw-bold mb-0 text-primary">{{ game_stats.total_plays if game_stats else 0 }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Highest Score</span>
+                            <span class="h4 fw-bold mb-0 text-success">{{ game_stats.high_score if game_stats else 0 }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">Max Streak</span>
+                            <span class="h5 fw-bold mb-0">{{ game_stats.max_streak if game_stats else 0 }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-muted small fw-semibold text-uppercase">XP Earned from Games</span>
+                            <span class="h5 fw-bold mb-0">{{ game_stats.total_xp if game_stats else 0 }} XP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Analytics Charts Grid -->
     <div class="row g-4 mb-5">
         <!-- XP Growth Chart -->

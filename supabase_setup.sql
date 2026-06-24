@@ -102,6 +102,31 @@ CREATE TABLE IF NOT EXISTS class_quiz_attempts (
     completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 10. Create speaking_attempts table
+CREATE TABLE IF NOT EXISTS speaking_attempts (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+    activity_id TEXT NOT NULL,
+    accuracy INTEGER NOT NULL,
+    pronunciation INTEGER NOT NULL,
+    fluency INTEGER NOT NULL,
+    word_count INTEGER NOT NULL,
+    earned_xp INTEGER NOT NULL,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 11. Create game_attempts table
+CREATE TABLE IF NOT EXISTS game_attempts (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+    game_type TEXT NOT NULL, -- 'WORD_SCRAMBLE' or 'WORD_CONNECT'
+    word_or_level TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    streak INTEGER NOT NULL,
+    earned_xp INTEGER NOT NULL,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 
 -- ==========================================
 -- SECURITY HARDENING: ROW LEVEL SECURITY (RLS)
@@ -117,6 +142,8 @@ ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quiz_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.class_quizzes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.class_quiz_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.speaking_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.game_attempts ENABLE ROW LEVEL SECURITY;
 
 -- 2. Revoke all direct public/anonymous API access
 -- Note: The python Flask backend uses the `service_role` key, which automatically
@@ -130,6 +157,5 @@ REVOKE ALL ON public.activity_logs FROM anon, public;
 REVOKE ALL ON public.quiz_attempts FROM anon, public;
 REVOKE ALL ON public.class_quizzes FROM anon, public;
 REVOKE ALL ON public.class_quiz_attempts FROM anon, public;
-
-
-
+REVOKE ALL ON public.speaking_attempts FROM anon, public;
+REVOKE ALL ON public.game_attempts FROM anon, public;

@@ -14,7 +14,9 @@ from database import (
     get_notifications,
     get_top_students,
     get_levels_completed_count,
-    get_recent_progress
+    get_recent_progress,
+    get_student_speaking_stats,
+    get_student_game_stats
 )
 from routes.faculty_auth import faculty_login_required
 from routes.dashboard import calculate_streak
@@ -97,12 +99,17 @@ def student_detail(student_id):
             'completed_at': record['completed_at'].strftime("%Y-%m-%d %H:%M")
         })
         
+    speaking_stats = get_student_speaking_stats(student_id)
+    game_stats = get_student_game_stats(student_id)
+        
     return render_template(
         'faculty/student_detail.html',
         student=student,
         streak=streak,
         levels_completed=levels_completed,
-        history=history
+        history=history,
+        speaking_stats=speaking_stats,
+        game_stats=game_stats
     )
 
 @faculty_dashboard_bp.route('/faculty/student/<int:student_id>/api/data')

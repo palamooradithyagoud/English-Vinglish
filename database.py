@@ -971,4 +971,126 @@ def get_student_activity_logs(student_id, limit=100):
         print(f"Error getting student activity logs: {e}")
         return []
 
+def log_speaking_attempt(student_id, activity_id, accuracy, pronunciation, fluency, word_count, earned_xp):
+    """
+    Inserts a record of a speaking practice attempt into speaking_attempts.
+    Automatically logs student activity and updates XP.
+    """
+    try:
+        data = {
+            "student_id": int(student_id),
+            "activity_id": activity_id,
+            "accuracy": int(accuracy),
+            "pronunciation": int(pronunciation),
+            "fluency": int(fluency),
+            "word_count": int(word_count),
+            "earned_xp": int(earned_xp)
+        }
+        response = supabase.table("speaking_attempts").insert(data).execute()
+        if earned_xp > 0:
+            update_student_xp_and_level(student_id, earned_xp)
+            log_student_activity(student_id, "SPEAKING_PRACTICE", f"Completed speaking task: {activity_id} (Accuracy: {accuracy}%)")
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error logging speaking attempt: {e}")
+        return None
+
+def log_game_attempt(student_id, game_type, word_or_level, score, streak, earned_xp):
+    """
+    Inserts a record of a game attempt into game_attempts.
+    Automatically logs student activity and updates XP.
+    """
+    try:
+        data = {
+            "student_id": int(student_id),
+            "game_type": game_type,
+            "word_or_level": word_or_level,
+            "score": int(score),
+            "streak": int(streak),
+            "earned_xp": int(earned_xp)
+        }
+        response = supabase.table("game_attempts").insert(data).execute()
+        if earned_xp > 0:
+            update_student_xp_and_level(student_id, earned_xp)
+            log_student_activity(student_id, game_type, f"Played {game_type} - {word_or_level} (Score: {score})")
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error logging game attempt: {e}")
+        return None
+
+def get_student_speaking_stats(student_id):
+    """
+    Computes summary statistics for a student's speaking attempts from the database.
+    """
+    try:
+        response = supabase.table("speaking_attempts").select("*").eq("student_id", int(student_id)).execute()
+        attempts = response.data or []
+        if not attempts:
+            return {
+                "total_xp": 0,
+                "total_sessions": 0,
+                "average_accuracy": 0,
+                "average_pron": 0,
+                "average_fluency": 0
+            }
+        
+        total_xp = sum(a.get("earned_xp", 0) for a in attempts)
+        total_sessions = len(attempts)
+        average_accuracy = int(sum(a.get("accuracy", 0) for a in attempts) / total_sessions)
+        average_pron = int(sum(a.get("pronunciation", 0) for a in attempts) / total_sessions)
+        average_fluency = int(sum(a.get("fluency", 0) for a in attempts) / total_sessions)
+        
+        return {
+            "total_xp": total_xp,
+            "total_sessions": total_sessions,
+            "average_accuracy": average_accuracy,
+            "average_pron": average_pron,
+            "average_fluency": average_fluency
+        }
+    except Exception as e:
+        print(f"Error getting student speaking stats: {e}")
+        return {
+            "total_xp": 0,
+            "total_sessions": 0,
+            "average_accuracy": 0,
+            "average_pron": 0,
+            "average_fluency": 0
+        }
+
+def get_student_game_stats(student_id):
+    """
+    Computes summary statistics for a student's game attempts from the database.
+    """
+    try:
+        response = supabase.table("game_attempts").select("*").eq("student_id", int(student_id)).execute()
+        attempts = response.data or []
+        if not attempts:
+            return {
+                "total_xp": 0,
+                "total_plays": 0,
+                "high_score": 0,
+                "max_streak": 0
+            }
+        
+        total_xp = sum(a.get("earned_xp", 0) for a in attempts)
+        total_plays = len(attempts)
+        high_score = max(a.get("score", 0) for a in attempts)
+        max_streak = max(a.get("streak", 0) for a in attempts)
+        
+        return {
+            "total_xp": total_xp,
+            "total_plays": total_plays,
+            "high_score": high_score,
+            "max_streak": max_streak
+        }
+    except Exception as e:
+        print(f"Error getting student game stats: {e}")
+        return {
+            "total_xp": 0,
+            "total_plays": 0,
+            "high_score": 0,
+            "max_streak": 0
+        }
+
+
 
