@@ -1201,28 +1201,28 @@ WORD_SCRAMBLE_WORDS = [
 WORD_CONNECT_LEVELS = [
     {
         "letters": ["A", "C", "T", "S"],
-        "target_words": ["CATS", "CAST", "ACTS", "CAT", "ACT", "SAT"],
-        "hint": "Form words representing a feline companion, theater actors, and a verb in the past tense."
+        "target_words": ["CATS", "CAST", "ACTS"],
+        "hint": "Find 3 words: 1. Plural of feline animals, 2. The group of actors in a play or movie, 3. Performs deeds or plays roles."
     },
     {
         "letters": ["E", "A", "R", "T", "H"],
-        "target_words": ["HEART", "EARTH", "HATE", "HEAT", "TEAR", "RATE", "ART", "ERA", "ARE"],
-        "hint": "Form words representing our planet, the organ of love, intense warmth, or a drop of eye water."
+        "target_words": ["HEART", "EARTH", "HEAT"],
+        "hint": "Find 3 words: 1. The organ that pumps blood, 2. The planet we live on, 3. High temperature or warmth."
     },
     {
         "letters": ["O", "P", "S", "T", "R"],
-        "target_words": ["SPORT", "PORTS", "ROTS", "STOP", "POST", "SPOT", "PORT", "TOP", "POT"],
-        "hint": "Form words representing athletic play, harbor docks, a speck/blemish, or coming to a halt."
+        "target_words": ["SPORT", "STOP", "PORT"],
+        "hint": "Find 3 words: 1. An athletic game or activity, 2. To come to a complete halt, 3. A harbor town where ships load and unload."
     },
     {
         "letters": ["L", "I", "S", "T", "E", "N"],
-        "target_words": ["SILENT", "LISTEN", "LIST", "NEST", "LINE", "LENT", "NET", "TEN", "ITS"],
-        "hint": "Form words representing paying attention, keeping quiet, a bird's home, or a numbered list."
+        "target_words": ["SILENT", "LISTEN", "LIST"],
+        "hint": "Find 3 words: 1. Completely quiet and making no sound, 2. To pay attention to sound or hear, 3. A series of written names or items."
     },
     {
         "letters": ["S", "T", "A", "R", "E"],
-        "target_words": ["STARE", "TEARS", "RATES", "TEAR", "RATE", "STAR", "REST", "EAST", "ART", "ERA", "SAT"],
-        "hint": "Form words representing looking fixedly, celestial bodies, relaxation, or the direction of sunrise."
+        "target_words": ["STARE", "STAR", "REST"],
+        "hint": "Find 3 words: 1. To look fixedly with wide-open eyes, 2. A glowing celestial body in the night sky, 3. To relax or sleep to regain strength."
     }
 ]
 
