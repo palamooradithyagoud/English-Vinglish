@@ -14,18 +14,19 @@
     }
 
     .app-container {
-        margin: 0 auto !important;
-        max-width: 1100px !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
     }
 
     .progress-workspace {
         width: 100%;
         max-width: 100% !important;
-        margin: 0 auto;
-        padding: 40px 24px;
+        margin: 0;
+        padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 32px;
+        gap: 0;
         background-color: #FAFAFA;
         color: #1E293B;
     }
@@ -1224,7 +1225,7 @@
 
 {% block content %}
 <main class="progress-workspace">
-    <div class="progress-map-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; border: 1px solid #E2E8F0; border-radius: 12px; padding: 40px 32px; background: #FFFFFF;">
+    <div class="progress-map-card" id="progress-loading-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; border: 1px solid #E2E8F0; border-radius: 12px; padding: 40px 32px; background: #FFFFFF;">
         <div class="spinner" style="border: 4px solid #E2E8F0; border-top: 4px solid #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
         <h2 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Loading Learning Activity...</h2>
         <p style="color: #64748B; font-size: 14px; max-width: 300px; margin-bottom: 24px;">Please wait while we prepare your study workspace.</p>
@@ -1503,6 +1504,25 @@
             </div>
         </div>
     </div>
+
+    <!-- 5. Speaking Arena Overlay -->
+    <div class="overlay-page" id="overlay-speaking">
+        <div class="overlay-container">
+            <div class="overlay-header">
+                <div class="overlay-title-group" style="display: flex; align-items: center; gap: 8px;">
+                    <span class="overlay-title-icon" style="font-size: 24px;">🎤</span>
+                    <h2>Speaking Arena</h2>
+                </div>
+                <button class="btn-overlay-close" onclick="closeOverlay('speaking')" title="Close Overlay">&times;</button>
+            </div>
+            <div class="overlay-body" style="padding: 0; background-color: #FAFAFA;">
+                <!-- Main panel container -->
+                <div class="speaking-main-panel" id="speaking-main-panel" style="width: 100%; max-width: 100%; margin: 0; background:#FAFAFA; border:none; border-radius:0; padding:28px 32px; box-sizing:border-box;">
+                    <!-- Renders Dashboard Mode or Active Challenge Mode dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 {% endblock %}
 
@@ -1548,6 +1568,11 @@
     function openLearningActivity(activity) {
         hideAllOverlays();
         
+        const loadingCard = document.getElementById('progress-loading-card');
+        if (loadingCard) {
+            loadingCard.style.display = 'none';
+        }
+        
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playPop();
         }
@@ -1555,7 +1580,6 @@
         const overlay = document.getElementById('overlay-' + activity);
         if (overlay) {
             overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
         }
         
         // Setup state according to specific activity loading
@@ -1567,6 +1591,8 @@
             initStoriesOverlay();
         } else if (activity === 'practice') {
             initPracticeOverlay();
+        } else if (activity === 'speaking') {
+            initSpeakingOverlay();
         }
         
         updateSidebarActiveLink(activity);
@@ -2564,6 +2590,763 @@
             desc.textContent = "A great starting point! Re-read lessons and practice again to boost your score.";
         }
     }
+
+    // ==========================================================================
+    // 5. SPEAKING ARENA CONTROLLER LOGIC
+    // ==========================================================================
+    const speakingActivities = [
+        {
+            id: 'read_aloud',
+            name: 'Read Aloud',
+            icon: '📖',
+            difficulty: 'easy',
+            rewardXp: 5,
+            description: 'Read the displayed sentence aloud and improve your pronunciation.',
+            prompts: [
+                'The weather is pleasant today.',
+                'Practice makes a person perfect.',
+                'Technology is transforming how we communicate with each other.',
+                'Engineering students should focus on presentation skills.'
+            ]
+        },
+        {
+            id: 'tongue_twister',
+            name: 'Tongue Twister',
+            icon: '🌀',
+            difficulty: 'medium',
+            rewardXp: 10,
+            description: 'Master difficult sounds and articulation.',
+            prompts: [
+                'She sells seashells by the seashore.',
+                'Peter Piper picked a peck of pickled peppers.',
+                'How can a clam cram in a clean cream can?',
+                'Six slippery snails slid slowly seaward.'
+            ]
+        },
+        {
+            id: 'picture_desc',
+            name: 'Picture Description',
+            icon: '🖼️',
+            difficulty: 'medium',
+            rewardXp: 15,
+            description: 'Describe the displayed image within 30 seconds.',
+            prompts: [
+                { text: 'A busy campus library with students studying, reading books, and using laptops.', img: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80' },
+                { text: 'A team of young software engineers having an active standup meeting in a modern tech office.', img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80' }
+            ]
+        },
+        {
+            id: 'one_minute',
+            name: 'One Minute Speaking',
+            icon: '🎙️',
+            difficulty: 'hard',
+            rewardXp: 20,
+            description: 'Speak continuously for one minute on a random topic.',
+            prompts: [
+                'My Dream Job',
+                'My College Life',
+                'Social Media: Boon or Bane?',
+                'AI in modern Engineering Education'
+            ]
+        },
+        {
+            id: 'daily_question',
+            name: 'Daily Question',
+            icon: '❓',
+            difficulty: 'easy',
+            rewardXp: 10,
+            description: 'Answer a fresh, thought-provoking question verbally.',
+            prompts: [
+                'What motivates you to learn English?',
+                'What did you learn or improve this week?',
+                'If you had ₹1 crore, what would be the first thing you do?'
+            ]
+        },
+        {
+            id: 'story_complete',
+            name: 'Story Completion',
+            icon: '📚',
+            difficulty: 'medium',
+            rewardXp: 15,
+            description: 'Continue a story started by our AI coach.',
+            prompts: [
+                'Yesterday I found a mysterious locked wooden box in my attic...',
+                'As the airplane took off, I realized I had left my main folder behind...',
+                'Walking into the empty classroom, I saw a glowing screen with my name on it...'
+            ]
+        },
+        {
+            id: 'interview_practice',
+            name: 'Interview Practice',
+            icon: '💼',
+            difficulty: 'hard',
+            rewardXp: 25,
+            description: 'Prepare for real-world campus placements and job interviews.',
+            prompts: [
+                'Tell me about yourself and your background.',
+                'Why should we hire you for this placement role?',
+                'What are your greatest professional strengths and weaknesses?',
+                'Describe a challenging engineering project you solved successfully.'
+            ]
+        },
+        {
+            id: 'debate_arena',
+            name: 'Debate Arena',
+            icon: '⚔️',
+            difficulty: 'hard',
+            rewardXp: 20,
+            description: 'Choose a side and defend your opinion.',
+            prompts: [
+                'Topic: Will Artificial Intelligence replace human programmers?',
+                'Topic: Online learning is better than classroom learning.',
+                'Topic: Mobile phones should be banned in university classrooms.'
+            ]
+        },
+        {
+            id: 'situation_practice',
+            name: 'Situation Practice',
+            icon: '🎭',
+            difficulty: 'medium',
+            rewardXp: 20,
+            description: 'Practice real-world conversational English.',
+            prompts: [
+                'Roleplay: Ordering Food in a premium restaurant.',
+                'Roleplay: Airport Check-In and handling baggage issues.',
+                'Roleplay: Delivering a business presentation to college faculties.',
+                'Roleplay: Explaining symptoms to a doctor during a clinic visit.'
+            ]
+        },
+        {
+            id: 'word_challenge',
+            name: 'Word Challenge',
+            icon: '🧠',
+            difficulty: 'medium',
+            rewardXp: 10,
+            description: 'Use the given advanced word in three meaningful sentences.',
+            prompts: [
+                'Word: Resilient (Meaning: Able to withstand or recover quickly from difficult conditions)',
+                'Word: Eloquent (Meaning: Fluent or persuasive in speaking or writing)',
+                'Word: Meticulous (Meaning: Showing great attention to detail; very careful)'
+            ]
+        },
+        {
+            id: 'speaking_race',
+            name: 'Speaking Race',
+            icon: '🏃',
+            difficulty: 'hard',
+            rewardXp: 15,
+            description: 'Speak as many correct English sentences as possible within 30 seconds.',
+            prompts: [
+                'Topic: Tell us about your daily engineering routine.',
+                'Topic: Describe everything you see in your room right now.'
+            ]
+        },
+        {
+            id: 'pron_battle',
+            name: 'Pronunciation Battle',
+            icon: '🎯',
+            difficulty: 'medium',
+            rewardXp: 15,
+            description: 'Master extremely difficult English words.',
+            prompts: [
+                'Pronounce: Entrepreneur',
+                'Pronounce: Algorithm',
+                'Pronounce: Communication',
+                'Pronounce: Opportunity'
+            ]
+        },
+        {
+            id: 'shadowing',
+            name: 'Shadowing Practice',
+            icon: '🔊',
+            difficulty: 'medium',
+            rewardXp: 20,
+            description: 'Listen to a sentence and immediately repeat it.',
+            prompts: [
+                'Consistent practice is the absolute key to speaking fluent English.',
+                'We must adapt to technological disruptions quickly to excel.'
+            ]
+        },
+        {
+            id: 'explain_topic',
+            name: 'Explain a Topic',
+            icon: '🎓',
+            difficulty: 'medium',
+            rewardXp: 15,
+            description: 'Explain a popular topic in your own words.',
+            prompts: [
+                'Explain how Instagram or social networks work.',
+                'Explain the rules of Cricket to a beginner.',
+                'Explain the concept of Artificial Intelligence in simple words.'
+            ]
+        },
+        {
+            id: 'news_speaking',
+            name: 'News Speaking',
+            icon: '📰',
+            difficulty: 'medium',
+            rewardXp: 20,
+            description: 'Read the short news snippet aloud and summarize it verbally.',
+            prompts: [
+                'Global tech firms are investing billions in eco-friendly data centers to achieve carbon neutrality by 2030.',
+                'Researchers discover that regular exercise combined with language studies accelerates cognitive function.'
+            ]
+        }
+    ];
+
+    let speakingXp = 0;
+    let speakingSessions = 0;
+    let averagePron = 75;
+    let averageFluency = 80;
+    let streak = 0;
+    let isSpeakingRecording = false;
+    let activeSpeakingPrompt = '';
+    let currentSpeakingTimer = null;
+    let currentSpeakingTask = null;
+    let currentSpeakingSeconds = 0;
+    let recognitionInstance = null;
+
+    // Initialize Web Speech API if supported
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = true;
+        recognitionInstance.lang = 'en-US';
+    }
+
+    function initSpeakingOverlay() {
+        // Load stats from LocalStorage or fall back
+        speakingXp = parseInt(localStorage.getItem('speaking_xp') || '0');
+        speakingSessions = parseInt(localStorage.getItem('speaking_sessions') || '0');
+        averagePron = parseInt(localStorage.getItem('speaking_pron_score') || '75');
+        averageFluency = parseInt(localStorage.getItem('speaking_fluency_score') || '80');
+        streak = student ? student.streak : 0;
+
+        renderSpeakingDashboard();
+    }
+
+    function renderSpeakingDashboard() {
+        const panel = document.getElementById('speaking-main-panel');
+        
+        // Calculate dynamic level based on speaking XP (100 XP per level)
+        const speakingLevel = Math.floor(speakingXp / 100) + 1;
+
+        // Formulate achievement badges
+        const badges = [
+            { id: 'twister', name: 'Twister Champ', icon: '🌀', req: 30, val: speakingXp, label: '30 speaking XP' },
+            { id: 'placement', name: 'HR Placement Ready', icon: '💼', req: 60, val: speakingXp, label: '60 speaking XP' },
+            { id: 'debate', name: 'Debate Master', icon: '⚔️', req: 100, val: speakingXp, label: '100 speaking XP' }
+        ];
+
+        let badgesHtml = '';
+        badges.forEach(b => {
+            const isUnlocked = b.val >= b.req;
+            badgesHtml += `
+                <div class="speaking-badge-item ${isUnlocked ? 'unlocked' : 'locked'}" title="${isUnlocked ? 'Unlocked!' : 'Earn ' + b.label + ' to unlock'}">
+                    <span class="speaking-badge-icon">${b.icon}</span>
+                    <span class="speaking-badge-title">${b.name}</span>
+                    <span style="font-size:0.65rem; color:#64748B;">${isUnlocked ? 'Unlocked ✅' : b.req + ' XP req.'}</span>
+                </div>
+            `;
+        });
+
+        // Unique gradient mapping for speaking task card icons
+        const iconGradients = {
+            read_aloud: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+            tongue_twister: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+            picture_desc: 'linear-gradient(135deg, #10B981, #047857)',
+            one_minute: 'linear-gradient(135deg, #EF4444, #B91C1C)',
+            daily_question: 'linear-gradient(135deg, #F59E0B, #D97706)',
+            story_complete: 'linear-gradient(135deg, #EC4899, #BE185D)',
+            interview_practice: 'linear-gradient(135deg, #6366F1, #4338CA)',
+            debate_arena: 'linear-gradient(135deg, #475569, #1E293B)',
+            situation_practice: 'linear-gradient(135deg, #06B6D4, #0891B2)',
+            word_challenge: 'linear-gradient(135deg, #14B8A6, #0D9488)',
+            speaking_race: 'linear-gradient(135deg, #F59E0B, #D97706)',
+            pron_battle: 'linear-gradient(135deg, #F43F5E, #BE123C)',
+            shadowing: 'linear-gradient(135deg, #84CC16, #4D7C0F)',
+            explain_topic: 'linear-gradient(135deg, #8B5CF6, #5B21B6)',
+            news_speaking: 'linear-gradient(135deg, #10B981, #064E3B)'
+        };
+
+        // Render activities cards grid
+        let activitiesGridHtml = '';
+        speakingActivities.forEach(act => {
+            activitiesGridHtml += `
+                <div class="speaking-activity-card" onclick="selectSpeakingActivity('${act.id}')">
+                    <div style="font-size: 40px; margin-bottom: 10px; line-height: 1;">${act.icon}</div>
+                    <h3 class="speaking-activity-title">${act.name}</h3>
+                    <p class="speaking-activity-desc">${act.description}</p>
+                    <div class="speaking-activity-meta">
+                        <span class="speaking-activity-xp">+${act.rewardXp} XP</span>
+                        <span class="difficulty-badge ${act.difficulty}">${act.difficulty}</span>
+                    </div>
+                    <span style="display:inline-block; margin-top:10px; background:#0F172A; color:#fff; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:700; width:100%; box-sizing:border-box; pointer-events:none;">Start</span>
+                </div>
+            `;
+        });
+
+        // Weekly Practice Data (Simple SVGs)
+        const weeklyBarChart = `
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; margin:20px 0;">
+                <h4 style="font-size:0.85rem; font-weight:800; text-transform:uppercase; color:#64748B; margin:0 0 12px 0;">Weekly Speaking Frequency</h4>
+                <div style="display:flex; justify-content:space-around; align-items:flex-end; height:80px; padding:0 10px;">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                        <div style="background:#3B82F6; width:12px; height:${Math.min(70, speakingSessions * 8)}px; border-radius:3px;"></div>
+                        <span style="font-size:10px; color:#64748B;">M</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                        <div style="background:#3B82F6; width:12px; height:${Math.min(70, speakingSessions * 12)}px; border-radius:3px;"></div>
+                        <span style="font-size:10px; color:#64748B;">T</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                        <div style="background:#3B82F6; width:12px; height:${Math.min(70, speakingSessions * 18)}px; border-radius:3px;"></div>
+                        <span style="font-size:10px; color:#64748B;">W</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                        <div style="background:#E2E8F0; width:12px; height:8px; border-radius:3px;"></div>
+                        <span style="font-size:10px; color:#64748B;">T</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                        <div style="background:#E2E8F0; width:12px; height:8px; border-radius:3px;"></div>
+                        <span style="font-size:10px; color:#64748B;">F</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                        <div style="background:#E2E8F0; width:12px; height:8px; border-radius:3px;"></div>
+                        <span style="font-size:10px; color:#64748B;">S</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        panel.innerHTML = `
+            <div style="margin-bottom:12px; text-align: center;">
+                <h1 style="font-size:1.8rem; font-weight:800; color:#0F172A; margin:0 0 6px 0;">🎤 Speaking Arena</h1>
+                <p style="font-size:0.95rem; color:#64748B; margin:0; max-width:600px; margin: 0 auto;">Improve your fluency, pronunciation, confidence, and communication skills through interactive speaking challenges.</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="speaking-stats-grid">
+                <div class="speaking-stat-card">
+                    <div class="speaking-stat-icon">⚡</div>
+                    <div class="speaking-stat-val">${speakingXp}</div>
+                    <div class="speaking-stat-label">Speaking XP</div>
+                </div>
+                <div class="speaking-stat-card">
+                    <div class="speaking-stat-icon">🎓</div>
+                    <div class="speaking-stat-val">${speakingLevel}</div>
+                    <div class="speaking-stat-label">Speaking Level</div>
+                </div>
+                <div class="speaking-stat-card">
+                    <div class="speaking-stat-icon">🔥</div>
+                    <div class="speaking-stat-val">${streak} Days</div>
+                    <div class="speaking-stat-label">Daily Streak</div>
+                </div>
+                <div class="speaking-stat-card">
+                    <div class="speaking-stat-icon">🎙️</div>
+                    <div class="speaking-stat-val">${speakingSessions}</div>
+                    <div class="speaking-stat-label">Total Sessions</div>
+                </div>
+                <div class="speaking-stat-card">
+                    <div class="speaking-stat-icon">🎯</div>
+                    <div class="speaking-stat-val">${averagePron}%</div>
+                    <div class="speaking-stat-label">Pronunciation</div>
+                </div>
+                <div class="speaking-stat-card">
+                    <div class="speaking-stat-icon">🏃</div>
+                    <div class="speaking-stat-val">${averageFluency}%</div>
+                    <div class="speaking-stat-label">Fluency</div>
+                </div>
+            </div>
+
+            <!-- Daily challenge Banner -->
+            <div class="speaking-daily-banner">
+                <span class="difficulty-badge hard" style="background:#FEE2E2; color:#B91C1C; margin-bottom:10px; display:inline-block;">Daily Challenge</span>
+                <h3 style="margin:0 0 6px 0; font-size:1.15rem; font-weight:800;">Master the Tongue Twister!</h3>
+                <p style="margin:0 0 16px 0; font-size:0.85rem; color:#E2E8F0; max-width:480px;">"She sells seashells by the seashore." Complete this challenge today to earn a double XP reward.</p>
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <button class="btn-primary" style="padding:10px 20px; font-size:0.85rem; font-weight:800; border-radius:10px; border:none; box-shadow:none; cursor:pointer;" onclick="selectSpeakingActivity('tongue_twister')">Start Challenge</button>
+                    <span style="font-weight:800; color:#F59E0B; font-size:0.9rem;">🎁 +20 XP</span>
+                </div>
+            </div>
+
+            <!-- Main Speaking Activities Section -->
+            <div style="margin: 28px 0 12px 0;">
+                <h2 style="font-size: 1.3rem; font-weight: 800; color: #0F172A; margin: 0; text-align: center;">Choose a Speaking Challenge</h2>
+                <p style="font-size: 0.85rem; color: #64748B; margin: 4px 0 0 0; text-align: center;">Choose any skill category to practice aloud with instant verbal feedback</p>
+                <div class="speaking-activities-grid">
+                    ${activitiesGridHtml}
+                </div>
+            </div>
+
+            <!-- Double Column layout for Leaderboard and Badges -->
+            <div class="speaking-row-split" style="margin-top: 32px;">
+                <!-- Leaderboard Card -->
+                <div class="speaking-leaderboard-card">
+                    <h3 style="font-size:0.95rem; font-weight:800; color:#0F172A; margin:0 0 12px 0; display:flex; align-items:center; gap:6px;">📊 Speaking Leaderboard</h3>
+                    <table class="speaking-leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Student</th>
+                                <th>XP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="speaking-leaderboard-rank">🥇</td>
+                                <td>Abhishek Goud</td>
+                                <td style="font-weight:700;">450 XP</td>
+                            </tr>
+                            <tr>
+                                <td class="speaking-leaderboard-rank">🥈</td>
+                                <td>Priya Sharma</td>
+                                <td style="font-weight:700;">320 XP</td>
+                            </tr>
+                            <tr class="speaking-rank-highlight">
+                                <td class="speaking-leaderboard-rank">🥉</td>
+                                <td>You (${student ? student.full_name.split(' ')[0] : 'Student'})</td>
+                                <td style="font-weight:700; color:#3B82F6;">${speakingXp} XP</td>
+                            </tr>
+                            <tr>
+                                <td class="speaking-leaderboard-rank">4</td>
+                                <td>Rajesh Kumar</td>
+                                <td style="font-weight:700;">80 XP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Badges Card -->
+                <div class="speaking-badges-card">
+                    <h3 style="font-size:0.95rem; font-weight:800; color:#0F172A; margin:0 0 6px 0;">🏆 Speaking Badges</h3>
+                    <p style="font-size:0.75rem; color:#64748B; margin:0 0 10px 0;">Complete challenges to claim modern visual badges.</p>
+                    <div class="speaking-badges-grid">
+                        ${badgesHtml}
+                    </div>
+                </div>
+            </div>
+
+            ${weeklyBarChart}
+
+            <!-- Motivational Quotes -->
+            <div style="background:#EFF6FF; border:1px solid #DBEAFE; border-radius:12px; padding:16px; margin-top:10px; display:flex; align-items:center; gap:12px;">
+                <span style="font-size:24px;">💡</span>
+                <p style="font-size:0.8rem; color:#1E40AF; font-style:italic; margin:0; font-weight:500;">"Speaking a new language is like gaining a whole new soul." Keep practicing every day to unlock your fluent future!</p>
+            </div>
+        `;
+    }
+
+    function showSpeakingHome() {
+        if (currentSpeakingTimer) {
+            clearInterval(currentSpeakingTimer);
+        }
+        if (recognitionInstance && isSpeakingRecording) {
+            recognitionInstance.stop();
+        }
+        isSpeakingRecording = false;
+
+        renderSpeakingDashboard();
+    }
+
+    function selectSpeakingActivity(id) {
+        const act = speakingActivities.find(a => a.id === id);
+        if (!act) return;
+
+        currentSpeakingTask = act;
+
+        // Get a random prompt for this activity
+        let promptText = '';
+        let isImage = false;
+        let imageSrc = '';
+
+        if (id === 'picture_desc') {
+            const randomPrompt = act.prompts[Math.floor(Math.random() * act.prompts.length)];
+            promptText = randomPrompt.text;
+            imageSrc = randomPrompt.img;
+            isImage = true;
+        } else {
+            promptText = act.prompts[Math.floor(Math.random() * act.prompts.length)];
+        }
+
+        activeSpeakingPrompt = promptText;
+
+        const panel = document.getElementById('speaking-main-panel');
+        
+        let visualPrompt = '';
+        if (isImage) {
+            visualPrompt = `
+                <div class="speaking-image-container">
+                    <img src="${imageSrc}" class="speaking-image-img" alt="Description Challenge">
+                </div>
+                <div style="font-size:0.8rem; color:#64748B; margin-top:-6px; margin-bottom:12px;">Describe this photo within 30 seconds</div>
+            `;
+        } else {
+            visualPrompt = `<div class="speaking-prompt-container" id="speaking-prompt-display">${promptText}</div>`;
+        }
+
+        panel.innerHTML = `
+            <!-- Top return navigation -->
+            <button onclick="showSpeakingHome()" style="background:none; border:none; color:#64748B; font-weight:700; cursor:pointer; font-size:0.85rem; padding:0; display:flex; align-items:center; gap:4px; margin-bottom:16px;">⬅ Back to Speaking Dashboard</button>
+
+            <div class="speaking-workspace-card">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:32px;">${act.icon}</span>
+                    <div style="text-align:left;">
+                        <h2 style="margin:0 0 2px 0; font-size:1.3rem; font-weight:800; color:#0F172A;">${act.name}</h2>
+                        <span class="difficulty-badge ${act.difficulty}">${act.difficulty}</span>
+                    </div>
+                </div>
+                
+                <p style="font-size:0.85rem; color:#64748B; max-width:420px; margin:0 0 10px 0;">${act.description}</p>
+                
+                ${visualPrompt}
+
+                <!-- Microphone Recording Interface -->
+                <button class="speaking-mic-btn" id="speaking-mic-action" onclick="toggleSpeakingMic('${act.id}', ${act.rewardXp})">
+                    🎙️
+                </button>
+                <div id="speaking-status-text" style="font-size:0.85rem; font-weight:700; color:#EF4444; margin-top:8px;">Click to Start Speaking</div>
+
+                <div class="speaking-waveform-container" style="display: none;" id="speaking-waveform">
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                </div>
+
+                <!-- Real-time transcript viewer -->
+                <div id="speaking-transcript-wrapper" style="display:none; width:100%; text-align:left; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; box-sizing:border-box;">
+                    <h4 style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#64748B; margin:0 0 8px 0; display:flex; justify-content:space-between;">
+                        <span>🔊 Live Transcription</span>
+                        <span id="speaking-timer-display" style="color:#EF4444;">00:00</span>
+                    </h4>
+                    <p id="speaking-live-transcript" style="font-size:0.85rem; color:#334155; margin:0; font-style:italic; line-height:1.4;">Listening to your voice...</p>
+                </div>
+
+                <!-- Results container hidden initially -->
+                <div id="speaking-results-panel" style="display:none; width:100%;">
+                    <!-- Populated dynamically upon Stop & Analyze -->
+                </div>
+            </div>
+        `;
+
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    function toggleSpeakingMic(id, rewardXp) {
+        if (!isSpeakingRecording) {
+            startSpeakingChallenge(id, rewardXp);
+        } else {
+            stopSpeakingAndAnalyze(id, rewardXp);
+        }
+    }
+
+    function startSpeakingChallenge(id, rewardXp) {
+        isSpeakingRecording = true;
+        
+        const micBtn = document.getElementById('speaking-mic-action');
+        micBtn.classList.add('recording');
+        micBtn.innerHTML = '⏹️';
+
+        document.getElementById('speaking-status-text').textContent = 'Live Recording... Click to Stop & Analyze';
+        document.getElementById('speaking-waveform').style.display = 'flex';
+        document.getElementById('speaking-transcript-wrapper').style.display = 'block';
+
+        const transcriptText = document.getElementById('speaking-live-transcript');
+        transcriptText.textContent = 'Listening to your voice...';
+
+        currentSpeakingSeconds = 0;
+        const timerDisplay = document.getElementById('speaking-timer-display');
+        
+        if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
+        currentSpeakingTimer = setInterval(() => {
+            currentSpeakingSeconds++;
+            const mins = String(Math.floor(currentSpeakingSeconds / 60)).padStart(2, '0');
+            const secs = String(currentSpeakingSeconds % 60).padStart(2, '0');
+            timerDisplay.textContent = `${mins}:${secs}`;
+        }, 1000);
+
+        if (recognitionInstance) {
+            try {
+                recognitionInstance.start();
+                recognitionInstance.onresult = (event) => {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    if (finalTranscript) {
+                        transcriptText.textContent = finalTranscript;
+                    }
+                };
+            } catch(e) {
+                console.error("SpeechRecognition start error:", e);
+            }
+        } else {
+            // Simulated speech-to-text placeholder
+            setTimeout(() => {
+                if (isSpeakingRecording) {
+                    transcriptText.textContent = `"${activeSpeakingPrompt.replace(/Word:|Pronounce:|Topic:|Roleplay:/, '').trim()}" ... (Analyzing fluency and phonetic accuracy)`;
+                }
+            }, 3000);
+        }
+
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    function stopSpeakingAndAnalyze(id, rewardXp) {
+        isSpeakingRecording = false;
+
+        const micBtn = document.getElementById('speaking-mic-action');
+        if (micBtn) {
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '🎙️';
+        }
+
+        document.getElementById('speaking-status-text').textContent = 'Speech Analysis Complete!';
+        document.getElementById('speaking-waveform').style.display = 'none';
+
+        if (currentSpeakingTimer) {
+            clearInterval(currentSpeakingTimer);
+        }
+
+        if (recognitionInstance) {
+            try {
+                recognitionInstance.stop();
+            } catch(e) {
+                console.error("SpeechRecognition stop error:", e);
+            }
+        }
+
+        // Compute simulated pronunciation & fluency scores
+        const randomPron = Math.floor(Math.random() * 25) + 75; // 75 - 99%
+        const randomFluency = Math.floor(Math.random() * 20) + 80; // 80 - 99%
+
+        // Show analysis scores card
+        const resultsPanel = document.getElementById('speaking-results-panel');
+        resultsPanel.style.display = 'block';
+        resultsPanel.innerHTML = `
+            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:16px; padding:20px; box-sizing:border-box; margin-top:20px;">
+                <h3 style="font-size:0.95rem; font-weight:800; color:#0F172A; margin:0 0 12px 0;">📊 Pronunciation & Fluency Report</h3>
+                <div class="speaking-scores-container">
+                    <div class="speaking-score-circle ${randomPron >= 85 ? 'good' : 'avg'}">
+                        <span class="speaking-score-num">${randomPron}%</span>
+                        <span class="speaking-score-label">Pronunciation</span>
+                    </div>
+                    <div class="speaking-score-circle ${randomFluency >= 85 ? 'good' : 'avg'}">
+                        <span class="speaking-score-num">${randomFluency}%</span>
+                        <span class="speaking-score-label">Fluency</span>
+                    </div>
+                    <div class="speaking-score-circle good">
+                        <span class="speaking-score-num">Excellent</span>
+                        <span class="speaking-score-label">Intonation</span>
+                    </div>
+                </div>
+
+                <div style="text-align:left; background:#FAFAFA; padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid #F1F5F9;">
+                    <span style="font-size:0.8rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.4px;">Bujji Coach Tip:</span>
+                    <p style="font-size:0.8rem; color:#64748B; margin:4px 0 0 0; line-height:1.4;">"Great job with word stress! Work slightly on pauses between complex sentences to elevate your fluency rating above 90% next time."</p>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:16px;">
+                    <button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${rewardXp}, '${id}')">🎁 Claim +${rewardXp} XP</button>
+                    <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
+                </div>
+            </div>
+        `;
+
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playSuccess();
+        }
+    }
+
+    async function claimSpeakingXP(xpToEarn, activityId) {
+        try {
+            // Post speaking XP to user database
+            const response = await fetch('/api/earn-xp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    xp: xpToEarn,
+                    activity_type: 'SPEAKING_PRACTICE',
+                    description: `Completed speaking task: ${activityId}`
+                })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update local storage metrics
+                const currentXp = parseInt(localStorage.getItem('speaking_xp') || '0');
+                const newXp = currentXp + xpToEarn;
+                localStorage.setItem('speaking_xp', String(newXp));
+
+                const currentSessions = parseInt(localStorage.getItem('speaking_sessions') || '0');
+                localStorage.setItem('speaking_sessions', String(currentSessions + 1));
+
+                // Recalculate rolling average scores
+                const currentPron = parseInt(localStorage.getItem('speaking_pron_score') || '75');
+                const nextPron = Math.min(99, Math.floor((currentPron + (Math.random() * 10 + 75)) / 2));
+                localStorage.setItem('speaking_pron_score', String(nextPron));
+
+                const currentFluency = parseInt(localStorage.getItem('speaking_fluency_score') || '80');
+                const nextFluency = Math.min(99, Math.floor((currentFluency + (Math.random() * 10 + 80)) / 2));
+                localStorage.setItem('speaking_fluency_score', String(nextFluency));
+
+                if (typeof BujjiSynth !== 'undefined') {
+                    BujjiSynth.playWelcomeTune();
+                }
+
+                alert(`🎉 Congratulations! You earned +${xpToEarn} XP and logged a speaking practice session successfully.`);
+                showSpeakingHome();
+            } else {
+                throw new Error("API return error");
+            }
+        } catch(e) {
+            console.error("Error rewarding speaking XP:", e);
+            alert("Failed to sync XP. Returning to Speaking Dashboard.");
+            showSpeakingHome();
+        }
+    }
+
+    // Intercept closing actions to clean up speech recognition
+    const originalCloseOverlaySpeaking = closeOverlay;
+    closeOverlay = function(activity) {
+        if (activity === 'speaking') {
+            if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
+            if (recognitionInstance && isSpeakingRecording) {
+                try {
+                    recognitionInstance.stop();
+                } catch(e) {}
+            }
+            isSpeakingRecording = false;
+        }
+        originalCloseOverlaySpeaking(activity);
+    };
+
+    const originalCloseAllOverlaysSpeaking = closeAllOverlays;
+    closeAllOverlays = function() {
+        if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
+        if (recognitionInstance && isSpeakingRecording) {
+            try {
+                recognitionInstance.stop();
+            } catch(e) {}
+        }
+        isSpeakingRecording = false;
+        originalCloseAllOverlaysSpeaking();
+    };
 
     // Auto-open learning activity if passed as query parameter
     document.addEventListener("DOMContentLoaded", () => {

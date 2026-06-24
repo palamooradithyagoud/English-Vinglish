@@ -104,6 +104,7 @@ def progress():
         session.clear()
         return redirect(url_for('auth.login'))
         
+    student['streak'] = calculate_streak(student_id)
     current_level = student['current_level']
     
     # Build states for levels 1 to 5 dynamically

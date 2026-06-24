@@ -160,13 +160,13 @@ body {
 
 /* 3. TOP HEADER BAR */
 .top-header-bar {
-    height: 72px;
+    height: 56px;
     background-color: #FFFFFF;
     border-bottom: 1px solid #E2E8F0;
-    padding: 0 32px;
+    padding: 0 28px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     position: sticky;
     top: 0;
     z-index: 150;
@@ -176,9 +176,8 @@ body {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 16px;
-    flex-grow: 1;
-    max-width: 480px;
+    gap: 12px;
+    margin-right: auto;
 }
 
 .btn-toggle-sidebar {
@@ -328,6 +327,11 @@ body {
 .main-page-content {
     flex-grow: 1;
     padding: 32px;
+}
+
+/* Full-bleed for progress map overlays (speaking, grammar, games, etc.) */
+.main-page-content:has(.progress-workspace) {
+    padding: 0 !important;
 }
 
 /* 5. SIDEBAR RIGHT COLUMN ELEMENTS */
@@ -721,4 +725,548 @@ body {
 
 .auth-footer a:hover {
     text-decoration: underline !important;
+}
+
+/* ==========================================================================
+   9. SPEAKING ARENA PREMIUM STYLES
+   ========================================================================== */
+/* Activities Selector Grid styles */
+/* Activities Selector Grid - 5 columns on wide, auto-fit on smaller screens */
+.speaking-activities-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 16px !important;
+    margin-top: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 1200px) {
+    .speaking-activities-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .speaking-activities-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .speaking-activities-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+.speaking-activity-card {
+    background-color: #FFFFFF !important;
+    border: 2px solid #E2E8F0 !important;
+    border-radius: 16px !important;
+    padding: 20px 14px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    min-height: 0 !important;
+}
+
+.speaking-activity-card:hover {
+    transform: translateY(-4px) !important;
+    border-color: #3B82F6 !important;
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+.speaking-activity-title {
+    font-size: 0.9rem !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.25 !important;
+}
+
+.speaking-activity-desc {
+    font-size: 0.72rem !important;
+    color: #64748B !important;
+    line-height: 1.4 !important;
+    margin: 0 0 12px 0 !important;
+    flex-grow: 1 !important;
+}
+
+.speaking-activity-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+}
+
+.speaking-activity-xp {
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    color: #F59E0B !important;
+}
+
+.difficulty-badge {
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px !important;
+}
+
+.difficulty-badge.easy {
+    background-color: #DCFCE7 !important;
+    color: #15803D !important;
+}
+
+.difficulty-badge.medium {
+    background-color: #FEF3C7 !important;
+    color: #B45309 !important;
+}
+
+.difficulty-badge.hard {
+    background-color: #FEE2E2 !important;
+    color: #B91C1C !important;
+}
+
+.speaking-main-panel {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    overflow-y: auto !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+}
+
+.speaking-stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 16px !important;
+    margin: 20px 0 !important;
+}
+
+.speaking-stat-card {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    text-align: center !important;
+    transition: transform 0.2s ease !important;
+}
+
+.speaking-stat-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: #CBD5E1 !important;
+}
+
+.speaking-stat-icon {
+    font-size: 24px !important;
+    margin-bottom: 8px !important;
+}
+
+.speaking-stat-val {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    margin-bottom: 2px !important;
+}
+
+.speaking-stat-label {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Daily Challenge Banner style */
+.speaking-daily-banner {
+    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important;
+    color: #FFFFFF !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 20px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1) !important;
+}
+
+.speaking-daily-banner::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    right: -20% !important;
+    width: 250px !important;
+    height: 250px !important;
+    border-radius: 50% !important;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%) !important;
+    pointer-events: none !important;
+}
+
+.speaking-row-split {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-top: 10px !important;
+}
+
+.speaking-leaderboard-card, .speaking-badges-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+}
+
+.speaking-leaderboard-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.speaking-leaderboard-table th {
+    font-size: 0.75rem !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    text-align: left !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.speaking-leaderboard-table td {
+    padding: 10px 0 !important;
+    font-size: 0.85rem !important;
+    color: #334155 !important;
+    border-bottom: 1px solid #F8FAFC !important;
+}
+
+.speaking-leaderboard-rank {
+    font-weight: 800 !important;
+    width: 28px !important;
+}
+
+.speaking-rank-highlight {
+    background-color: #EFF6FF !important;
+}
+
+.speaking-badges-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    margin-top: 12px !important;
+}
+
+.speaking-badge-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px 8px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.speaking-badge-item.locked {
+    opacity: 0.4 !important;
+    background-color: #F8FAFC !important;
+}
+
+.speaking-badge-icon {
+    font-size: 24px !important;
+    margin-bottom: 6px !important;
+}
+
+.speaking-badge-title {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: #0F172A !important;
+}
+
+/* Active challenge workspace */
+.speaking-workspace-card {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 20px 10px !important;
+}
+
+.speaking-prompt-container {
+    background-color: #F8FAFC !important;
+    border: 2px dashed #CBD5E1 !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+    min-height: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.speaking-mic-btn {
+    width: 80px !important;
+    height: 80px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-size: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3) !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+}
+
+.speaking-mic-btn:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 10px 20px -3px rgba(239, 68, 68, 0.4) !important;
+}
+
+.speaking-mic-btn.recording {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.2) !important;
+    animation: pulseRecording 1.5s infinite !important;
+}
+
+@keyframes pulseRecording {
+    0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); }
+}
+
+/* Soundwave Waveform Animation */
+.speaking-waveform-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    height: 60px !important;
+    margin: 10px 0 !important;
+    width: 100% !important;
+}
+
+.waveform-bar {
+    width: 4px !important;
+    height: 8px !important;
+    background-color: #CBD5E1 !important;
+    border-radius: 2px !important;
+    transition: height 0.15s ease !important;
+}
+
+.speaking-mic-btn.recording ~ .speaking-waveform-container .waveform-bar {
+    background-color: #10B981 !important;
+    animation: soundwave 1.2s ease-in-out infinite alternate !important;
+}
+
+.speaking-mic-btn.recording ~ .speaking-waveform-container .waveform-bar:nth-child(2n) {
+    animation-delay: 0.15s !important;
+}
+.speaking-mic-btn.recording ~ .speaking-waveform-container .waveform-bar:nth-child(3n) {
+    animation-delay: 0.3s !important;
+}
+.speaking-mic-btn.recording ~ .speaking-waveform-container .waveform-bar:nth-child(4n) {
+    animation-delay: 0.45s !important;
+}
+
+@keyframes soundwave {
+    0% { height: 8px; }
+    100% { height: 48px; }
+}
+
+/* Speaking Results / Feedback layout */
+.speaking-scores-container {
+    display: flex !important;
+    gap: 24px !important;
+    justify-content: center !important;
+    margin: 20px 0 !important;
+    width: 100% !important;
+}
+
+.speaking-score-circle {
+    width: 90px !important;
+    height: 90px !important;
+    border-radius: 50% !important;
+    background: #F8FAFC !important;
+    border: 4px solid #E2E8F0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+}
+
+.speaking-score-circle.good {
+    border-color: #10B981 !important;
+}
+.speaking-score-circle.avg {
+    border-color: #F59E0B !important;
+}
+
+.speaking-score-num {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+}
+
+.speaking-score-label {
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+}
+
+/* Speaking details / subactivities grids */
+.speaking-detail-scenarios {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.speaking-scenario-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-align: center !important;
+}
+
+.speaking-scenario-card:hover {
+    border-color: #3B82F6 !important;
+    background-color: #F0F6FF !important;
+    transform: translateY(-2px) !important;
+}
+
+.speaking-scenario-title {
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    color: #1E293B !important;
+}
+
+.speaking-image-container {
+    width: 100% !important;
+    max-width: 320px !important;
+    height: 180px !important;
+    border-radius: 12px !important;
+    background-color: #F1F5F9 !important;
+    border: 1px solid #E2E8F0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-bottom: 10px !important;
+    overflow: hidden !important;
+}
+
+.speaking-image-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+    .speaking-layout {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+    
+    .speaking-row-split {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   10. INLINE OVERLAY CONVERSION FOR PROGRESS MAP
+   ========================================================================== */
+.progress-workspace {
+    gap: 0 !important;
+    padding: 0 !important;
+}
+
+.progress-workspace .overlay-page {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    z-index: 1 !important;
+    display: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transition: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.progress-workspace .overlay-page.active {
+    display: block !important;
+}
+
+.progress-workspace .overlay-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 80vh !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+    transform: none !important;
+    transition: none !important;
+    margin: 0 !important;
+}
+
+.progress-workspace .overlay-body {
+    padding: 0 !important;
+    background-color: #FAFAFA !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    border-radius: 0 !important;
+}
+
+.progress-workspace .story-text-view, 
+.progress-workspace .grammar-content-card {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
+/* Full-width speaking overlay header */
+.progress-workspace .overlay-header {
+    border-radius: 0 !important;
+    padding: 16px 32px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    background-color: #FFFFFF !important;
+}
+
+/* Override page-content padding for progress map page */
+.page-content.progress-workspace,
+body .page-content.progress-workspace {
+    padding: 0 !important;
+    gap: 0 !important;
 }

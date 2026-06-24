@@ -74,7 +74,7 @@
                 <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'practice' %}active{% endif %}">
                     <span class="menu-icon">⚡</span> Practice Arena
                 </a>
-                <a href="#" onclick="alert('Speaking practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                <a href="{{ url_for('dashboard.progress') }}?activity=speaking" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'speaking' %}active{% endif %}">
                     <span class="menu-icon">🎤</span> Speaking
                 </a>
                 <a href="#" onclick="alert('Writing practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
@@ -109,20 +109,8 @@
             <header class="top-header-bar">
                 <div class="header-left">
                     <button class="btn-toggle-sidebar" id="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
-                    <div class="search-input-wrapper">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" placeholder="Search lessons, quizzes, topics..." onkeydown="if(event.key==='Enter')alert('Searching for: ' + this.value)">
-                    </div>
                 </div>
                 <div class="header-right">
-                    <div class="header-stat-streak">
-                        <span class="streak-icon">🔥</span>
-                        <span class="streak-text">{{ student_streak or 0 }} Day Streak</span>
-                    </div>
-                    <div class="header-notifications" onclick="alert('You have 3 new notifications from faculty.')">
-                        <span class="bell-icon">🔔</span>
-                        <span class="notification-badge">3</span>
-                    </div>
                     {% if student %}
                     <div class="header-user-profile" onclick="location.href='{{ url_for('dashboard.home') }}'">
                         <div class="profile-avatar-circle">
