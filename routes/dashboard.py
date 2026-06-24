@@ -6,10 +6,9 @@ from database import (
     get_recent_progress, 
     get_all_passed_levels,
     get_notifications,
-    get_class_quizzes_for_student,
     update_student_xp_and_level,
     log_student_activity,
-    get_questions_for_level
+    get_student_activity_logs
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
@@ -19,17 +18,15 @@ dashboard_bp = Blueprint('dashboard', __name__)
 
 def calculate_streak(student_id):
     """
-    Dynamically calculates the current daily streak of quiz completions.
-    Looks at 'completed_at' dates in the in-memory progress dataset.
+    Dynamically calculates the current daily streak of learning activities.
+    Looks at 'created_at' dates in the in-memory student activity logs.
     """
-    attempts = get_recent_progress(student_id, limit=100)
-    passed_attempts = [a for a in attempts if a['status'] == 'passed']
-    
-    if not passed_attempts:
+    logs = get_student_activity_logs(student_id, limit=100)
+    if not logs:
         return 0
         
     # Extract unique dates, sorted descending
-    unique_dates = sorted(list({a['completed_at'].date() for a in passed_attempts}), reverse=True)
+    unique_dates = sorted(list({l['created_at'].date() for l in logs}), reverse=True)
     
     if not unique_dates:
         return 0
@@ -37,7 +34,7 @@ def calculate_streak(student_id):
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
     
-    # Check if they completed a quiz today or yesterday to continue streak
+    # Check if they completed an activity today or yesterday to continue streak
     if unique_dates[0] not in (today, yesterday):
         return 0
         
@@ -49,7 +46,7 @@ def calculate_streak(student_id):
             streak += 1
             current_date = next_date
         elif (current_date - next_date).days == 0:
-            continue  # same day completion, ignore
+            continue  # same day activity, ignore
         else:
             break  # gap in streak
             
@@ -71,21 +68,12 @@ def home():
         session.clear()
         return redirect(url_for('auth.login'))
         
-    levels_completed = get_levels_completed_count(student_id)
+    levels_completed = max(0, student['current_level'] - 1)
     streak = calculate_streak(student_id)
     
-    # Fetch recent history
-    history_records = get_recent_progress(student_id, limit=5)
-    
+    # Fetch recent history (quizzes removed, keeping empty list for template safety)
     history = []
-    for record in history_records:
-        history.append({
-            'level': record['level'],
-            'score': record['score'],
-            'percentage': record['percentage'],
-            'status': record['status'],
-            'completed_at': record['completed_at'].strftime("%Y-%m-%d %H:%M")
-        })
+
         
     student_data = {
         'full_name': student['full_name'],
@@ -100,12 +88,15 @@ def home():
     }
     
     announcements = get_notifications(limit=5)
-    class_quizzes = get_class_quizzes_for_student(student_id, student['branch'])
-    return render_template('dashboard.html', student=student_data, history=history, announcements=announcements, class_quizzes=class_quizzes)
+    return render_template('dashboard.html', student=student_data, history=history, announcements=announcements)
 
 @dashboard_bp.route('/progress')
 @login_required
 def progress():
+    activity = request.args.get('activity')
+    if not activity:
+        return redirect(url_for('dashboard.home'))
+        
     student_id = session['student_id']
     student = get_student_by_id(student_id)
     
@@ -114,21 +105,16 @@ def progress():
         return redirect(url_for('auth.login'))
         
     current_level = student['current_level']
-    passed_levels = get_all_passed_levels(student_id)
     
-    # Build states for levels 1 to 5
+    # Build states for levels 1 to 5 dynamically
     levels = []
     for lvl in range(1, 6):
-        if lvl in passed_levels:
+        if lvl < current_level:
             status = 'completed'
-        elif lvl <= current_level:
+        elif lvl == current_level:
             status = 'unlocked'
         else:
-            # Level L is unlocked if L-1 is completed
-            if (lvl - 1) in passed_levels:
-                status = 'unlocked'
-            else:
-                status = 'locked'
+            status = 'locked'
         levels.append({
             'number': lvl,
             'status': status

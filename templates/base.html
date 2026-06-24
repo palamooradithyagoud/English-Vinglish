@@ -9,16 +9,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_overrides.css') }}">
     {% block head %}{% endblock %}
 </head>
 <body>
     <div class="app-container">
-        <!-- Main Top Navigation -->
+        <!-- Main Top Navigation Sidebar & Header -->
         {% if not hide_navbar %}
-        <nav class="nav-bar">
-            <a href="{{ url_for('dashboard.home') }}" class="nav-logo">
-                <div class="nav-bujji-logo" id="nav-bujji-logo">
-                    <svg viewBox="0 0 200 200" class="mascot-svg-nav">
+        <!-- Left Sidebar Navigation -->
+        <aside class="app-sidebar" id="sidebar-container">
+            <!-- Brand Logo -->
+            <a href="{{ url_for('dashboard.home') }}" class="sidebar-logo">
+                <div class="nav-bujji-logo" id="nav-bujji-logo" style="width:32px; height:32px;">
+                    <svg viewBox="0 0 200 200" class="mascot-svg-sidebar">
                         <defs>
                             <linearGradient id="metal-grad-nav" x1="0%" y1="0%" x2="0%" y2="100%">
                                 <stop offset="0%" stop-color="#FDE7B9"/>
@@ -48,47 +51,158 @@
                         <circle cx="100" cy="65" r="4" fill="#FFC800" />
                     </svg>
                 </div>
-                <span class="logo-text">English Winglish</span>
+                <span class="logo-text" style="font-size: 19px; font-weight: 800;">English Winglish</span>
             </a>
             
-            <div class="nav-links">
-                {% if session.student_id %}
-                    <a href="{{ url_for('dashboard.home') }}" class="nav-item">Dashboard</a>
-                    <a href="{{ url_for('dashboard.progress') }}" class="nav-item">My Path</a>
-                    <a href="{{ url_for('quiz.quiz_page') }}" class="nav-item start-badge">Quiz</a>
-                    <a href="{{ url_for('auth.logout') }}" class="nav-item logout-link">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="nav-item">Login</a>
-                    <a href="{{ url_for('auth.register') }}" class="nav-item register-btn">Register</a>
-                {% endif %}
+            <!-- Menu items -->
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('dashboard.home') }}" class="sidebar-menu-item {% if request.endpoint == 'dashboard.home' %}active{% endif %}">
+                    <span class="menu-icon">🏠</span> Dashboard
+                </a>
+                <a href="{{ url_for('dashboard.progress') }}?activity=games" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'games' %}active{% endif %}">
+                    <span class="menu-icon">🎮</span> Games
+                </a>
+                <a href="{{ url_for('dashboard.progress') }}?activity=stories" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'stories' %}active{% endif %}">
+                    <span class="menu-icon">📖</span> Read Stories
+                </a>
+                <a href="#" onclick="alert('Vocabulary practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">📖</span> Vocabulary
+                </a>
+                <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'grammar' %}active{% endif %}">
+                    <span class="menu-icon">🔠</span> Grammar
+                </a>
+                <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'practice' %}active{% endif %}">
+                    <span class="menu-icon">⚡</span> Practice Arena
+                </a>
+                <a href="#" onclick="alert('Speaking practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">🎤</span> Speaking
+                </a>
+                <a href="#" onclick="alert('Writing practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">✏️</span> Writing
+                </a>
+                <a href="#" onclick="alert('Achievements showcase is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">🏆</span> Achievements
+                </a>
+                <a href="#" onclick="alert('Leaderboard is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">📊</span> Leaderboard
+                </a>
+                <a href="#" onclick="alert('Settings panel is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">⚙️</span> Settings
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-menu-item" style="color: #F87171; margin-top: auto;">
+                    <span class="menu-icon">🚪</span> Logout
+                </a>
+            </nav>
+            
+            <!-- Bottom Premium Card -->
+            <div class="premium-card">
+                <div class="premium-icon">🏆</div>
+                <h4>Go Premium</h4>
+                <p>Unlock all features and learn without limits</p>
+                <button class="btn-premium-upgrade" onclick="alert('Premium Features Coming Soon! Keep studying!')">Upgrade Now</button>
             </div>
-        </nav>
-        {% endif %}
-
-        <!-- Flash Messages for Errors, Success, Warning Alerts -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash-alert flash-{{ category }} shake">
-                            <span class="alert-icon">
-                                {% if category == 'success' %}✅
-                                {% elif category == 'error' %}⚠️
-                                {% else %}ℹ️{% endif %}
-                            </span>
-                            <span class="alert-text">{{ message }}</span>
-                            <button class="btn-close-alert" onclick="this.parentElement.remove();">&times;</button>
-                        </div>
-                    {% endfor %}
+        </aside>
+        
+        <!-- Main Area Wrapper -->
+        <div class="main-layout-wrapper">
+            <!-- Top Header Bar -->
+            <header class="top-header-bar">
+                <div class="header-left">
+                    <button class="btn-toggle-sidebar" id="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search lessons, quizzes, topics..." onkeydown="if(event.key==='Enter')alert('Searching for: ' + this.value)">
+                    </div>
                 </div>
-            {% endif %}
-        {% endwith %}
-
-        <!-- Content Area -->
+                <div class="header-right">
+                    <div class="header-stat-streak">
+                        <span class="streak-icon">🔥</span>
+                        <span class="streak-text">{{ student_streak or 0 }} Day Streak</span>
+                    </div>
+                    <div class="header-notifications" onclick="alert('You have 3 new notifications from faculty.')">
+                        <span class="bell-icon">🔔</span>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    {% if student %}
+                    <div class="header-user-profile" onclick="location.href='{{ url_for('dashboard.home') }}'">
+                        <div class="profile-avatar-circle">
+                            {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
+                        </div>
+                        <div class="profile-user-info">
+                            <span class="profile-user-name">{{ student.full_name.split(' ')[0] }}</span>
+                            <span class="profile-user-level">Level {{ student.current_level }}</span>
+                        </div>
+                        <span class="profile-dropdown-arrow">▼</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+            
+            <!-- Alert Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-alert flash-{{ category }} shake">
+                                <span class="alert-icon">
+                                    {% if category == 'success' %}✅
+                                    {% elif category == 'error' %}⚠️
+                                    {% else %}ℹ️{% endif %}
+                                </span>
+                                <span class="alert-text">{{ message }}</span>
+                                <button class="btn-close-alert" onclick="this.parentElement.remove();">&times;</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Main Content Area / Auth wrapper split -->
+            <main class="main-page-content">
+        {% else %}
+            <!-- Full width container for pages with navbar hidden -->
+            <div class="auth-page-content">
+                <!-- Alert Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash-alert flash-{{ category }} shake">
+                                    <span class="alert-icon">
+                                        {% if category == 'success' %}✅
+                                        {% elif category == 'error' %}⚠️
+                                        {% else %}ℹ️{% endif %}
+                                    </span>
+                                    <span class="alert-text">{{ message }}</span>
+                                    <button class="btn-close-alert" onclick="this.parentElement.remove();">&times;</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+        {% endif %}
+        
         {% block content %}{% endblock %}
+        
+        {% if not hide_navbar %}
+            </main>
+        </div>
+        
+        <!-- Toggle Sidebar Script -->
+        <script>
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar-container');
+                if (sidebar) {
+                    sidebar.classList.toggle('sidebar-open');
+                }
+            }
+        </script>
+        {% else %}
+            </div>
+        {% endif %}
     </div>
-
-    <!-- Global Bujji Companion Mascot Integration -->
+    
+    <!-- Mascot js and other script files -->
     <script src="{{ url_for('static', filename='js/bujji-companion.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

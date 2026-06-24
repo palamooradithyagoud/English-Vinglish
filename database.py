@@ -110,8 +110,22 @@ def update_student_xp_and_level(student_id, xp_earned, new_level=None):
         updated_xp = student.get('xp', 0) + xp_earned
         updates = {'xp': updated_xp}
         
+        # Calculate level based on XP thresholds
+        calculated_level = 1
+        if updated_xp >= 1000:
+            calculated_level = 5
+        elif updated_xp >= 500:
+            calculated_level = 4
+        elif updated_xp >= 250:
+            calculated_level = 3
+        elif updated_xp >= 100:
+            calculated_level = 2
+            
+        final_level = max(student.get('current_level', 1), calculated_level)
         if new_level is not None:
-            updates['current_level'] = max(student.get('current_level', 1), new_level)
+            final_level = max(final_level, new_level)
+            
+        updates['current_level'] = final_level
             
         response = supabase.table("students").update(updates).eq("id", student_id).execute()
         if response.data:
@@ -935,6 +949,26 @@ def get_class_quiz_results_for_faculty():
         return records
     except Exception as e:
         print(f"Error getting class quiz results for faculty: {e}")
+        return []
+
+def get_student_activity_logs(student_id, limit=100):
+    """
+    Retrieves activity logs for a specific student from Supabase.
+    """
+    try:
+        response = supabase.table("activity_logs") \
+            .select("*") \
+            .eq("student_id", int(student_id)) \
+            .order("created_at", desc=True) \
+            .limit(limit) \
+            .execute()
+            
+        records = response.data or []
+        for r in records:
+            r['created_at'] = parse_date(r.get('created_at'))
+        return records
+    except Exception as e:
+        print(f"Error getting student activity logs: {e}")
         return []
 
 

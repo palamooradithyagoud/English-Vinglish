@@ -678,24 +678,63 @@
             <p class="hero-subtitle">You're making great progress. Continue your learning path to level up your communication skills!</p>
             <div class="hero-actions">
                 {% if student.current_level == 1 %}
-                    <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary hero-btn-main">Start Basic Learning</a>
+                    <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="saas-btn-primary hero-btn-main">Start Basic Learning</a>
                 {% else %}
-                    <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary hero-btn-main">Continue Level {{ student.current_level }}</a>
+                    <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="saas-btn-primary hero-btn-main">Continue Level {{ student.current_level }}</a>
                 {% endif %}
-                <a href="{{ url_for('dashboard.progress') }}" class="saas-btn-secondary hero-btn-sub">View Journey Path</a>
+                <a href="{{ url_for('dashboard.progress') }}?activity=games" class="saas-btn-secondary hero-btn-sub">Play Games</a>
             </div>
         </div>
-        <div class="hero-mascot-illustration">
-            <div class="hero-glow-bubble"></div>
-            <div class="hero-stats-quick">
-                <div class="quick-stat-item">
-                    <span class="q-label">Current Level</span>
-                    <span class="q-val">Lvl {{ student.current_level }}</span>
+        <div class="hero-right-content-wrapper">
+            <div class="hero-illustration-container">
+                <div class="hero-glow-bubble"></div>
+                <svg viewBox="0 0 200 150" class="svg-books-globe">
+                    <!-- Globe Grid / Circles -->
+                    <g stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" fill="none">
+                        <circle cx="100" cy="50" r="40" stroke="rgba(255, 255, 255, 0.3)" />
+                        <ellipse cx="100" cy="50" rx="40" ry="15" />
+                        <ellipse cx="100" cy="50" rx="15" ry="40" />
+                        <line x1="60" y1="50" x2="140" y2="50" />
+                        <line x1="100" y1="10" x2="100" y2="90" />
+                    </g>
+                    <!-- Globe Continent Shapes -->
+                    <path d="M75 35 C80 30, 85 40, 90 35 C95 30, 90 20, 80 20 Z" fill="rgba(96, 165, 250, 0.4)" />
+                    <path d="M110 40 C115 35, 125 45, 130 40 C135 35, 130 30, 120 30 Z" fill="rgba(96, 165, 250, 0.4)" />
+                    <path d="M85 65 C95 65, 100 75, 110 70 C120 65, 115 55, 100 60 Z" fill="rgba(96, 165, 250, 0.4)" />
+                    
+                    <!-- 3D Book 1 (Left, standing/tilted) -->
+                    <g transform="translate(45, 80) rotate(-15)">
+                        <path d="M 0,0 L 0,45 A 5,5 0 0,0 10,45 L 10,0 A 5,5 0 0,0 0,0 Z" fill="#3B82F6" />
+                        <rect x="10" y="0" width="30" height="45" rx="2" fill="#2563EB" />
+                        <rect x="12" y="3" width="26" height="39" rx="1" fill="#F8FAFC" />
+                        <path d="M 22,40 L 22,50 L 25,47 L 28,50 L 28,40" fill="#EF4444" />
+                    </g>
+                    
+                    <!-- 3D Book 2 (Right, lying flat) -->
+                    <g transform="translate(100, 95)">
+                        <rect x="0" y="10" width="55" height="12" rx="2" fill="#10B981" />
+                        <rect x="2" y="3" width="51" height="9" rx="1" fill="#F1F5F9" />
+                        <line x1="5" y1="6" x2="48" y2="6" stroke="#CBD5E1" stroke-width="1" />
+                        <line x1="5" y1="9" x2="48" y2="9" stroke="#CBD5E1" stroke-width="1" />
+                        <rect x="0" y="0" width="55" height="4" rx="1" fill="#059669" />
+                    </g>
+                    
+                    <!-- Graduation Cap / Accent overlaying the globe -->
+                    <g transform="translate(85, 5)">
+                        <polygon points="15,0 30,6 15,12 0,6" fill="#FBBF24" />
+                        <path d="M6,8 L6,14 C6,17, 24,17, 24,14 L24,8" fill="#D97706" />
+                        <path d="M15,6 L26,11 L26,16" stroke="#F59E0B" stroke-width="1" fill="none" />
+                        <circle cx="26" cy="17" r="1.5" fill="#FBBF24" />
+                    </g>
+                </svg>
+            </div>
+            <div class="hero-progress-card">
+                <div class="hero-progress-header">
+                    <span class="hero-progress-title">Level Progress</span>
+                    <span class="hero-progress-val">Lvl {{ student.current_level }} ({{ student.xp }} XP)</span>
                 </div>
-                <div class="quick-stat-divider"></div>
-                <div class="quick-stat-item">
-                    <span class="q-label">XP points</span>
-                    <span class="q-val">{{ student.xp }} XP</span>
+                <div class="hero-progress-bar-track">
+                    <div class="hero-progress-bar-fill" style="width: {{ (student.levels_completed / 5 * 100) | int }}%;"></div>
                 </div>
             </div>
         </div>
@@ -744,41 +783,6 @@
     <div class="saas-split-layout">
         <!-- Main Column (Left) -->
         <div class="saas-main-col">
-            <!-- Class Quizzes -->
-            <div class="saas-card">
-                <h2 class="saas-card-title">
-                    <span>📝</span> Active Class Quizzes
-                </h2>
-                {% if class_quizzes %}
-                    <div class="saas-list">
-                        {% for q in class_quizzes %}
-                            <div class="saas-list-item">
-                                <div>
-                                    <div class="saas-item-title">{{ q.title }}</div>
-                                    <div class="saas-item-subtitle">
-                                        Target: {% if q.target_type == 'all' %}All Departments{% else %}{{ q.target_branch }}{% endif %} • Posted on {{ q.created_at.strftime('%Y-%m-%d') }}
-                                    </div>
-                                </div>
-                                <div>
-                                    {% if q.attempted %}
-                                        <span class="saas-badge saas-badge-success">
-                                            Score: {{ q.score }}/{{ q.total_questions }}
-                                        </span>
-                                    {% else %}
-                                        <a href="{{ url_for('quiz.solve_class_quiz', quiz_id=q.id) }}" class="saas-btn-primary" style="padding: 8px 14px; font-size: 12.5px;">
-                                            Attempt
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div style="text-align: center; padding: 24px; color: #64748B; font-size: 14px;">
-                        No active class quizzes assigned to you.
-                    </div>
-                {% endif %}
-            </div>
 
             <!-- Campus Announcements -->
             <div class="saas-card">
@@ -811,73 +815,49 @@
 
         <!-- Sidebar Column (Right) -->
         <div class="saas-side-col">
-            <!-- Student Profile Metadata -->
-            <div class="saas-card saas-profile-card">
-                <div class="profile-cover-accent"></div>
-                <div class="profile-card-body">
-                    <div class="student-avatar-banner">
-                        <div class="student-avatar-circle">
-                            {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
+            <!-- Learning Tip Box -->
+            <div class="learning-tip-card">
+                <div class="tip-icon-box">💡</div>
+                <div class="tip-content-box">
+                    <h4>Learning Tip of the Day</h4>
+                    <p>Try reading a short story aloud. It builds vocal muscle memory, helps you notice pronunciation patterns, and boosts spoken confidence!</p>
+                </div>
+            </div>
+
+            <!-- Achievements Box -->
+            <div class="achievements-card">
+                <h3 class="saas-card-title" style="border-bottom: none; padding-bottom: 0; margin-bottom: 16px;">
+                    <span>🏆</span> Recent Achievements
+                </h3>
+                <div class="achievements-list">
+                    <div class="achievement-row">
+                        <div class="achievement-icon-circle badge-blue">🔥</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Consistent Learner</div>
+                            <div class="achievement-subtitle">Completed 3 day streak</div>
                         </div>
-                        <div class="student-avatar-details">
-                            <h3 class="student-profile-name">{{ student.full_name }}</h3>
-                            <p class="student-profile-email">{{ student.email }}</p>
-                        </div>
+                        <span class="achievement-xp-badge">+50 XP</span>
                     </div>
-                    <div class="saas-profile-grid">
-                        <div class="saas-profile-row">
-                            <span class="saas-profile-label">
-                                <span class="profile-row-icon">🆔</span> Roll Number
-                            </span>
-                            <span class="saas-profile-value">{{ student.roll_number }}</span>
+                    <div class="achievement-row">
+                        <div class="achievement-icon-circle badge-purple">🎯</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Perfect Score</div>
+                            <div class="achievement-subtitle">Scored 100% in any quiz</div>
                         </div>
-                        <div class="saas-profile-row">
-                            <span class="saas-profile-label">
-                                <span class="profile-row-icon">🎓</span> Branch
-                            </span>
-                            <span class="saas-profile-value">{{ student.branch }}</span>
-                        </div>
-                        <div class="saas-profile-row">
-                            <span class="saas-profile-label">
-                                <span class="profile-row-icon">📅</span> Year
-                            </span>
-                            <span class="saas-profile-value">{{ student.year }} Year</span>
-                        </div>
+                        <span class="achievement-xp-badge xp-purple">+100 XP</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Quiz History & Analytics -->
-            <div class="saas-card saas-performance-card">
-                <h2 class="saas-card-title" style="border-bottom: none; padding-bottom: 0; margin-bottom: 20px;">
-                    <span>📊</span> Recent Performance
-                </h2>
-                {% if history %}
-                    <div class="performance-list">
-                        {% for attempt in history %}
-                            <div class="performance-item">
-                                <div class="perf-header">
-                                    <span class="perf-level-badge">Level {{ attempt.level }}</span>
-                                    <span class="saas-badge {% if attempt.status == 'passed' %}saas-badge-success{% else %}saas-badge-warning{% endif %}">
-                                        {{ attempt.status.upper() }}
-                                    </span>
-                                </div>
-                                <div class="perf-score-row">
-                                    <span class="perf-score-label">Accuracy Score</span>
-                                    <span class="perf-score-value">{{ attempt.score }}/20 ({{ attempt.percentage }}%)</span>
-                                </div>
-                                <div class="perf-progress-bar-track">
-                                    <div class="perf-progress-bar-fill {% if attempt.status == 'passed' %}fill-success{% else %}fill-warning{% endif %}" 
-                                         style="width: {{ attempt.percentage }}%;"></div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div style="text-align: center; padding: 24px; color: #64748B; font-size: 13.5px;">
-                        No quiz attempts logged yet.
-                    </div>
-                {% endif %}
+            <!-- Study Reminder Box -->
+            <div class="reminder-card">
+                <div class="reminder-header">
+                    <span>📅</span> Daily Study Reminder
+                </div>
+                <div class="reminder-body">
+                    <p class="reminder-text">Set aside 10 minutes today to keep your streak alive and make progress on your path!</p>
+                    <div class="reminder-illustration">⏰</div>
+                </div>
             </div>
         </div>
     </div>
@@ -887,21 +867,6 @@
 {% block scripts %}
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const toggleBtn = document.getElementById("btn-toggle-profile");
-        const profileCard = document.getElementById("profile-details-card");
-        
-        if (toggleBtn && profileCard) {
-            toggleBtn.addEventListener("click", () => {
-                profileCard.classList.toggle("hidden");
-                if (profileCard.classList.contains("hidden")) {
-                    toggleBtn.textContent = "View Profile Details";
-                } else {
-                    toggleBtn.textContent = "Hide Profile Details";
-                    profileCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-        }
-
         // Bujji Welcome Glide Animation Logic
         const overlay = document.getElementById("bujji-greeting-overlay");
         const navBujji = document.getElementById("nav-bujji-logo");

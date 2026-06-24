@@ -1,0 +1,580 @@
+/* Overrides for Modern left-sidebar layout */
+
+/* Global container layout shift */
+body {
+    background-color: #F8FAFC !important;
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    min-height: 100vh !important;
+    background-color: #F8FAFC !important;
+}
+
+/* Auth container full width fallback */
+.auth-page-content {
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 1. LEFT SIDEBAR STYLES */
+.app-sidebar {
+    width: 260px;
+    background-color: #0F172A;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 200;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 24px 16px;
+    box-sizing: border-box;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 32px;
+    padding: 0 8px;
+}
+
+.mascot-svg-sidebar {
+    width: 32px;
+    height: 32px;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-grow: 1;
+}
+
+.sidebar-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #94A3B8;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14.5px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-menu-item:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.04);
+    transform: translateX(4px);
+}
+
+.sidebar-menu-item.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.menu-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Premium promo box inside sidebar */
+.premium-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px 16px;
+    text-align: center;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.premium-card h4 {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.premium-card p {
+    margin: 0 0 16px 0;
+    font-size: 11px;
+    color: #94A3B8;
+    line-height: 1.4;
+}
+
+.btn-premium-upgrade {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    color: #FFFFFF;
+    padding: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-premium-upgrade:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+}
+
+/* 2. MAIN LAYOUT CONTAINER */
+.main-layout-wrapper {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* 3. TOP HEADER BAR */
+.top-header-bar {
+    height: 72px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 150;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-grow: 1;
+    max-width: 480px;
+}
+
+.btn-toggle-sidebar {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #475569;
+    cursor: pointer;
+    display: none; /* hidden on desktop */
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 10px 16px 10px 42px;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0F172A;
+    background-color: #F8FAFC;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search-input-wrapper input:focus {
+    border-color: #3B82F6;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #94A3B8;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.header-stat-streak {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #FFF7ED;
+    border: 1px solid #FFEDD5;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #EA580C;
+}
+
+.header-notifications {
+    position: relative;
+    cursor: pointer;
+    font-size: 18px;
+    color: #475569;
+    transition: color 0.15s;
+}
+
+.header-notifications:hover {
+    color: #0F172A;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #EF4444;
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 800;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #FFFFFF;
+}
+
+.header-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 10px;
+    transition: background-color 0.15s;
+}
+
+.header-user-profile:hover {
+    background-color: #F8FAFC;
+}
+
+.profile-avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.profile-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.profile-user-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.profile-user-level {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+}
+
+.profile-dropdown-arrow {
+    font-size: 9px;
+    color: #94A3B8;
+    margin-left: 2px;
+}
+
+/* 4. MAIN PAGE CONTENT VIEW WRAPPER */
+.main-page-content {
+    flex-grow: 1;
+    padding: 32px;
+}
+
+/* 5. SIDEBAR RIGHT COLUMN ELEMENTS */
+/* Learning Tip Box */
+.learning-tip-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    gap: 16px;
+}
+
+.tip-icon-box {
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+}
+
+.tip-content-box h4 {
+    margin: 0 0 6px 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.tip-content-box p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* Achievements Box */
+.achievements-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.achievement-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.achievement-icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.badge-blue { background-color: #EFF6FF; color: #2563EB; }
+.badge-purple { background-color: #F5F3FF; color: #7C3AED; }
+
+.achievement-info {
+    flex-grow: 1;
+}
+
+.achievement-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.achievement-subtitle {
+    font-size: 11.5px;
+    color: #94A3B8;
+    margin-top: 2px;
+}
+
+.achievement-xp-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2563EB;
+    background-color: #EFF6FF;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.achievement-xp-badge.xp-purple {
+    color: #7C3AED;
+    background-color: #F5F3FF;
+}
+
+/* Study Reminder Box */
+.reminder-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.reminder-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.reminder-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.reminder-text {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+    font-weight: 500;
+    margin: 0;
+}
+
+.reminder-illustration {
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+}
+
+/* 6. HERO ILLUSTRATION STYLING */
+.svg-books-globe {
+    width: 200px;
+    height: 120px;
+    z-index: 2;
+}
+
+.hero-right-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+    z-index: 2;
+}
+
+.hero-illustration-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 120px;
+}
+
+.hero-progress-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 14px 20px;
+    width: 240px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hero-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.hero-progress-title {
+    color: #94A3B8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hero-progress-val {
+    color: #3b82f6;
+    font-weight: 800;
+}
+
+.hero-progress-bar-track {
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.hero-progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+    transition: width 0.3s ease;
+}
+
+/* Game Selection Card hover styles */
+.game-select-card {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.game-select-card:hover {
+    border-color: #3b82f6 !important;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.15) !important;
+}
+
+.btn-game-back {
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+.btn-game-back:hover {
+    color: #2563eb !important;
+    transform: translateX(-2px);
+}
+
+/* 7. RESPONSIVENESS IN SIDEBAR */
+@media (max-width: 991px) {
+    .app-sidebar {
+        transform: translateX(-260px);
+    }
+    
+    .app-sidebar.sidebar-open {
+        transform: translateX(0);
+    }
+    
+    .main-layout-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .btn-toggle-sidebar {
+        display: block;
+    }
+}

@@ -157,9 +157,7 @@
                 <a href="{{ url_for('questions.list_questions' )}}" class="faculty-nav-item {% if request.path == '/faculty/questions' %}active{% endif %}">
                     Question Manager
                 </a>
-                <a href="{{ url_for('faculty_dashboard.class_quizzes') }}" class="faculty-nav-item {% if request.path == '/faculty/class_quizzes' %}active{% endif %}">
-                    Class Quizzes
-                </a>
+
                 <a href="{{ url_for('faculty_dashboard.notifications') }}" class="faculty-nav-item {% if request.path == '/faculty/notifications' %}active{% endif %}">
                     Announcements
                 </a>

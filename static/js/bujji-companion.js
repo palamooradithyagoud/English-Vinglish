@@ -193,7 +193,7 @@ window.addEventListener('click', () => {
 // Phrases that Bujji companion says
 const bujjiCompanionPhrases = [
     "Bujji online! Let's learn some English today! ⚡",
-    "Did you complete your daily quiz challenge?",
+    "Did you complete your daily practice today? ⚡",
     "Need a tip? Adjectives describe nouns, while adverbs modify verbs!",
     "Bleep boop! Power levels at 100%. Ready for syntax analysis!",
     "You are doing an amazing job. Keep moving forward! 🏆",

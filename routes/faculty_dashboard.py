@@ -2,13 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from database import (
     get_total_students_count,
     get_active_students_count,
-    get_average_quiz_accuracy,
-    get_total_quiz_attempts,
     get_total_levels_completed_count,
     get_top_performing_student,
     get_students_list,
     get_student_by_id,
-    get_student_quiz_accuracy_trend,
     get_student_xp_growth,
     get_student_weekly_activity,
     get_student_level_completions,
@@ -17,10 +14,7 @@ from database import (
     get_notifications,
     get_top_students,
     get_levels_completed_count,
-    get_recent_progress,
-    create_class_quiz,
-    get_all_class_quizzes,
-    get_class_quiz_results_for_faculty
+    get_recent_progress
 )
 from routes.faculty_auth import faculty_login_required
 from routes.dashboard import calculate_streak
@@ -33,8 +27,6 @@ def dashboard():
     stats = {
         'total_students': get_total_students_count(),
         'active_students': get_active_students_count(),
-        'avg_accuracy': get_average_quiz_accuracy(),
-        'total_attempts': get_total_quiz_attempts(),
         'levels_completed': get_total_levels_completed_count(),
     }
     
@@ -119,7 +111,7 @@ def student_api_data(student_id):
     """
     JSON API for Chart.js visual metrics
     """
-    accuracy_trend = get_student_quiz_accuracy_trend(student_id)
+    accuracy_trend = []
     xp_growth = get_student_xp_growth(student_id)
     weekly_activity = get_student_weekly_activity(student_id)
     level_completions = get_student_level_completions(student_id)
@@ -169,46 +161,5 @@ def notifications():
     announcements = get_notifications(limit=20)
     return render_template('faculty/notifications.html', announcements=announcements)
 
-@faculty_dashboard_bp.route('/faculty/class_quizzes')
-@faculty_login_required
-def class_quizzes():
-    quizzes = get_all_class_quizzes()
-    results = get_class_quiz_results_for_faculty()
-    branches = ['CSE', 'CSE AIML', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'Chemical']
-    
-    return render_template(
-        'faculty/class_quizzes.html',
-        quizzes=quizzes,
-        results=results,
-        branches=branches
-    )
 
-@faculty_dashboard_bp.route('/faculty/class_quizzes/create', methods=['POST'])
-@faculty_login_required
-def create_class_quiz_route():
-    data = request.get_json() or {}
-    title = data.get('title', '').strip()
-    target_type = data.get('target_type', 'all')
-    target_branch = data.get('target_branch', '')
-    questions = data.get('questions', [])
-    
-    if not title or not questions:
-        return jsonify({'error': 'Title and questions are required'}), 400
-        
-    faculty_id = session['faculty_id']
-    
-    # Save the quiz
-    quiz = create_class_quiz(title, target_type, target_branch, faculty_id, questions)
-    if not quiz:
-        return jsonify({'error': 'Failed to save quiz in database'}), 500
-        
-    # Trigger notification/announcement
-    target_str = target_branch if target_type == 'branch' else 'all departments'
-    create_notification(
-        title=f"New Class Quiz: {title}",
-        message=f"A new custom class quiz has been posted for {target_str}. Go to your Class Quizzes section on the dashboard to attempt it!",
-        created_by=faculty_id
-    )
-    
-    return jsonify({'success': True})
 

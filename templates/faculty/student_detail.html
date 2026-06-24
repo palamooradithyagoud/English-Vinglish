@@ -101,17 +101,7 @@
             </div>
         </div>
         
-        <!-- Quiz Accuracy Trend Chart -->
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-4">
-                    <h3 class="h6 fw-bold text-secondary mb-3">Quiz Score Accuracy Trend</h3>
-                    <div style="position: relative; height: 260px;">
-                        <canvas id="accuracyTrendChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         
         <!-- Weekly Activity Chart -->
         <div class="col-md-6">
@@ -125,70 +115,10 @@
             </div>
         </div>
         
-        <!-- Level Completion Breakdown Chart -->
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-4">
-                    <h3 class="h6 fw-bold text-secondary mb-3">Level Performance Breakdown</h3>
-                    <div style="position: relative; height: 260px;">
-                        <canvas id="levelCompletionChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
     
-    <!-- Attempt History Grid -->
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white py-3 border-0">
-            <h3 class="h5 fw-bold mb-0">Full Attempt History</h3>
-        </div>
-        <div class="card-body p-0">
-            {% if history %}
-                <div class="table-responsive">
-                    <table class="table align-middle table-hover mb-0">
-                        <thead>
-                            <tr class="text-secondary small fw-bold bg-light">
-                                <th class="py-3 px-4">Level</th>
-                                <th class="py-3">Score Details</th>
-                                <th class="py-3">Accuracy Percentage</th>
-                                <th class="py-3">Status</th>
-                                <th class="py-3">Completed Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in history %}
-                                <tr>
-                                    <td class="py-3 px-4 fw-semibold">Level {{ r.level }}</td>
-                                    <td>{{ r.score }} / 20 Correct</td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span>{{ r.percentage }}%</span>
-                                            <div class="progress" style="width: 100px; height: 6px; border-radius: 3px;">
-                                                <div class="progress-bar {% if r.percentage >= 70 %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ r.percentage }}%;"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if r.status == 'passed' %}
-                                            <span class="badge bg-success-subtle text-success">PASSED</span>
-                                        {% else %}
-                                            <span class="badge bg-danger-subtle text-danger">FAILED</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-secondary small">{{ r.completed_at }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <p class="text-muted mb-0">No quiz attempts logged for this student yet.</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
+
 </div>
 {% endblock %}
 
@@ -225,31 +155,7 @@
                 }
             });
             
-            // 2. Quiz Accuracy Chart
-            const accLabels = data.accuracy_trend.map(a => a.label);
-            const accVals = data.accuracy_trend.map(a => a.percentage);
-            new Chart(document.getElementById('accuracyTrendChart'), {
-                type: 'line',
-                data: {
-                    labels: accLabels.length ? accLabels : ['No Attempts'],
-                    datasets: [{
-                        label: 'Accuracy %',
-                        data: accVals.length ? accVals : [0],
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'transparent',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#3B82F6',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { min: 0, max: 100 }
-                    }
-                }
-            });
+
             
             // 3. Weekly Activity Chart
             const weekLabels = data.weekly_activity.map(w => w.day);
@@ -274,28 +180,7 @@
                 }
             });
             
-            // 4. Level Completion Chart
-            const lvlLabels = data.level_completions.map(l => `Level ${l.level}`);
-            const lvlVals = data.level_completions.map(l => l.percentage);
-            new Chart(document.getElementById('levelCompletionChart'), {
-                type: 'bar',
-                data: {
-                    labels: lvlLabels.length ? lvlLabels : ['None Completed'],
-                    datasets: [{
-                        label: 'Completion Score %',
-                        data: lvlVals.length ? lvlVals : [0],
-                        backgroundColor: '#8B5CF6',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { min: 0, max: 100 }
-                    }
-                }
-            });
+
             
         } catch (err) {
             console.error("Failed to load analytics charts:", err);

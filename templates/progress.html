@@ -4,7 +4,11 @@
 
 {% block head %}
 <style>
-    /* Premium SaaS Style Overrides for Progress and Overlays */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     .progress-workspace, .overlay-container, .btn-primary, .btn-secondary {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }
@@ -1220,130 +1224,11 @@
 
 {% block content %}
 <main class="progress-workspace">
-    <div class="progress-map-card">
-        <!-- Section: Boost Your Learning Extra Activities -->
-        <div class="extra-learning-section" style="margin-bottom: 40px;">
-            <h2 class="extra-section-title">✨ Boost Your Learning</h2>
-            <p class="extra-section-subtitle">Take control of your path with interactive tools to master English concepts.</p>
-            
-            <div class="extra-cards-grid">
-                <!-- Learn Grammar Card -->
-                <div class="extra-card" id="card-grammar" onclick="openLearningActivity('grammar')">
-                    <div class="extra-card-icon grammar-icon">📚</div>
-                    <h3>Learn Grammar</h3>
-                    <p>Review core syntactic principles, subject-verb rules, and tense alignments.</p>
-                    <span class="btn-extra-go">Explore lessons</span>
-                </div>
-                
-                <!-- Play Games Card -->
-                <div class="extra-card" id="card-games" onclick="openLearningActivity('games')">
-                    <div class="extra-card-icon games-icon">🎮</div>
-                    <h3>Play Games</h3>
-                    <p>Challenge yourself with Bujji's Word Scramble and unlock bonus XP.</p>
-                    <span class="btn-extra-go">Play Now</span>
-                </div>
-                
-                <!-- Stories Card -->
-                <div class="extra-card" id="card-stories" onclick="openLearningActivity('stories')">
-                    <div class="extra-card-icon stories-icon">📖</div>
-                    <h3>Read Stories</h3>
-                    <p>Enjoy stories with inline click definitions to build vocabulary.</p>
-                    <span class="btn-extra-go">Start Reading</span>
-                </div>
-                
-                <!-- Practice Card -->
-                <div class="extra-card" id="card-practice" onclick="openLearningActivity('practice')">
-                    <div class="extra-card-icon practice-icon">⚡</div>
-                    <h3>Practice Arena</h3>
-                    <p>Answer questions from Level 1 to 5 with instant correction and guidance.</p>
-                    <span class="btn-extra-go">Begin Practice</span>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="map-title" style="margin-top: 20px;">My Learning Path</h2>
-        <p class="map-subtitle">Clear each quiz with 70% or more to unlock the next level!</p>
-
-        <!-- Dynamic Roadmap Path -->
-        <div class="roadmap-container">
-            {% for lvl in levels %}
-                <div class="roadmap-step step-{{ lvl.status }}">
-                    <!-- Connector Line between nodes -->
-                    {% if not loop.first %}
-                        <div class="connector-line line-to-{{ lvl.number }} {% if lvl.status != 'locked' %}line-active{% endif %}"></div>
-                    {% endif %}
-                    
-                    <div class="step-node-container">
-                        <!-- Node Icon Wrapper -->
-                        <div class="step-node" title="Level {{ lvl.number }} - {% if lvl.status == 'completed' %}Completed{% elif lvl.status == 'unlocked' %}Unlocked{% else %}Locked{% endif %}">
-                            <span class="step-icon">
-                                {% if lvl.status == 'completed' %}
-                                    <!-- Green Check -->
-                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                    </svg>
-                                {% elif lvl.status == 'unlocked' %}
-                                    <!-- Unlocked Lock -->
-                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6-5c1.66 0 3 1.34 3 3v2H9V6c0-1.66 1.34-3 3-3z"/>
-                                    </svg>
-                                {% else %}
-                                    <!-- Locked Lock -->
-                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                                    </svg>
-                                {% endif %}
-                            </span>
-                        </div>
-
-                        <!-- Step Info Label -->
-                        <div class="step-label">
-                            <span class="lvl-title">Level {{ lvl.number }}</span>
-                            {% if lvl.number == 1 %}
-                                <span class="lvl-name">English Basics</span>
-                            {% elif lvl.number == 2 %}
-                                <span class="lvl-name">Grammar & Syntax</span>
-                            {% elif lvl.number == 3 %}
-                                <span class="lvl-name">Advanced Vocabulary</span>
-                            {% elif lvl.number == 4 %}
-                                <span class="lvl-name">Comprehension</span>
-                            {% else %}
-                                <span class="lvl-name">Professional Comm</span>
-                            {% endif %}
-                            
-                            <span class="lvl-status-text">
-                                {% if lvl.status == 'completed' %}
-                                    Completed ✅
-                                {% elif lvl.status == 'unlocked' %}
-                                    Unlocked 🔓
-                                {% else %}
-                                    Locked 🔒
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Action Link -->
-                    {% if lvl.status == 'unlocked' or lvl.status == 'completed' %}
-                        {% if lvl.number == 1 or lvl.number == 2 or lvl.number == 3 %}
-                            <a href="{{ url_for('quiz.quiz_page', level=lvl.number) }}" class="btn-primary step-action-btn">
-                                {% if lvl.status == 'completed' %}Retry{% else %}Attempt{% endif %}
-                            </a>
-                        {% else %}
-                            <button class="btn-primary step-action-btn" onclick="alert('Level {{ lvl.number }} quiz content is currently in development. Well done for unlocking it!');">
-                                Attempt
-                            </button>
-                        {% endif %}
-                    {% else %}
-                        <button class="btn-primary step-action-btn" disabled>Locked</button>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-
-        <div class="map-footer-nav">
-            <a href="{{ url_for('dashboard.home') }}" class="btn-secondary">Back to Dashboard</a>
-        </div>
+    <div class="progress-map-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; border: 1px solid #E2E8F0; border-radius: 12px; padding: 40px 32px; background: #FFFFFF;">
+        <div class="spinner" style="border: 4px solid #E2E8F0; border-top: 4px solid #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+        <h2 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Loading Learning Activity...</h2>
+        <p style="color: #64748B; font-size: 14px; max-width: 300px; margin-bottom: 24px;">Please wait while we prepare your study workspace.</p>
+        <a href="{{ url_for('dashboard.home') }}" class="btn-secondary" style="font-weight: 700;">Back to Dashboard</a>
     </div>
 
     <!-- ==========================================================================
@@ -1385,21 +1270,37 @@
     <div class="overlay-page" id="overlay-games">
         <div class="overlay-container">
             <div class="overlay-header">
-                <div class="overlay-title-group">
+                <div class="overlay-title-group" style="display: flex; align-items: center;">
+                    <button class="btn-game-back" id="btn-game-back" onclick="showGameSelectionMenu()" style="display: none; background: none; border: none; font-size: 16px; color: #64748B; cursor: pointer; padding: 4px 8px; margin-right: 8px; font-weight: 700; align-items: center; gap: 4px;">⬅ Back</button>
                     <span class="overlay-title-icon">🎮</span>
                     <h2 id="game-overlay-title">Play Games</h2>
                 </div>
                 <button class="btn-overlay-close" onclick="closeOverlay('games')" title="Close Overlay">&times;</button>
             </div>
-            <div class="overlay-body" style="display: flex; align-items: center; justify-content: center;">
-                <div class="game-workspace">
-                    <!-- Game Tab Selector -->
-                    <div class="game-selector-tabs">
-                        <button class="game-tab-btn active" id="btn-scramble" onclick="switchGameMode('scramble')">🔠 Word Scramble</button>
-                        <button class="game-tab-btn" id="btn-connect" onclick="switchGameMode('connect')">🔗 Word Connect</button>
+            <div class="overlay-body" style="display: flex; align-items: center; justify-content: center; padding: 24px;">
+                <div class="game-workspace" style="display: flex; flex-direction: column; width: 100%; max-width: 500px; gap: 16px;">
+                    
+                    <!-- Game Selection Menu -->
+                    <div class="game-selection-menu" id="game-selection-menu" style="display: flex; gap: 20px; justify-content: center; width: 100%; box-sizing: border-box;">
+                        <!-- Scramble Card -->
+                        <div class="game-select-card" onclick="launchGame('scramble')" style="background: #ffffff; border: 2px solid #E2E8F0; border-radius: 16px; padding: 24px; text-align: center; flex: 1; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center;">
+                            <div style="font-size: 48px; margin-bottom: 12px;">🔠</div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #0F172A; font-weight: 800;">Word Scramble</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748B; line-height: 1.4; height: 34px;">Unscramble the letters to find the correct words</p>
+                            <span class="btn-primary" style="padding: 8px 16px; font-size: 13px; border-radius: 8px; pointer-events: none; width: 100%; box-sizing: border-box; display: inline-block;">Play Scramble</span>
+                        </div>
+                        
+                        <!-- Connect Card -->
+                        <div class="game-select-card" onclick="launchGame('connect')" style="background: #ffffff; border: 2px solid #E2E8F0; border-radius: 16px; padding: 24px; text-align: center; flex: 1; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center;">
+                            <div style="font-size: 48px; margin-bottom: 12px;">🔗</div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #0F172A; font-weight: 800;">Word Connect</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748B; line-height: 1.4; height: 34px;">Swipe to connect letters and build matching words</p>
+                            <span class="btn-primary" style="padding: 8px 16px; font-size: 13px; border-radius: 8px; pointer-events: none; width: 100%; box-sizing: border-box; display: inline-block;">Play Connect</span>
+                        </div>
                     </div>
 
-                    <div class="game-hud">
+                    <!-- HUD -->
+                    <div class="game-hud" id="game-hud" style="display: none; justify-content: space-around; width: 100%; border-bottom: 1px solid #E2E8F0; padding-bottom: 12px;">
                         <div class="hud-item xp">
                             <span>⚡</span> <span id="game-xp-score">0</span> XP
                         </div>
@@ -1409,7 +1310,7 @@
                     </div>
 
                     <!-- 1. Word Scramble Board -->
-                    <div class="game-board-card" id="scramble-game-board" style="display: flex; flex-direction: column; width: 100%;">
+                    <div class="game-board-card" id="scramble-game-board" style="display: none; flex-direction: column; width: 100%;">
                         <div class="scrambled-tiles-container" id="scrambled-tiles">
                             <!-- Tiles dynamically populated -->
                         </div>
@@ -1511,9 +1412,9 @@
                                     </div>
                                 </div>
 
-                                <!-- Take Quiz Button -->
-                                <button id="start-quiz-btn" class="btn-primary" style="width: 100%; margin-bottom: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="startStoryQuiz()" disabled>
-                                    🔒 Read to Unlock Quiz
+                                <!-- Claim XP Button -->
+                                <button id="claim-story-xp-btn" class="btn-primary" style="width: 100%; margin-bottom: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="claimStoryXP()" disabled>
+                                    🔒 Read to Complete
                                 </button>
 
                                 <h3 style="font-size: 15px; font-weight: 800; border-bottom: 2px solid var(--color-border); padding-bottom: 8px; color: var(--color-text-main);">Word Helper</h3>
@@ -1525,47 +1426,6 @@
                                     <span class="word-tag">Vocabulary</span>
                                     <p id="vocab-desc">Definition goes here.</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Story Quiz Mode -->
-                        <div class="story-quiz-container" id="story-quiz-mode" style="display: none; flex-direction: column; gap: 20px; height: 100%; min-height: 0;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--color-border); padding-bottom: 12px; margin-bottom: 10px;">
-                                <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); display: flex; align-items: center; gap: 8px;">
-                                    📝 Story Comprehension Quiz
-                                </h3>
-                                <button class="btn-secondary" onclick="exitStoryQuiz()" style="padding: 8px 16px; font-weight: 800;">
-                                    ⬅️ Back to Story
-                                </button>
-                            </div>
-                            
-                            <div id="story-quiz-questions-list" style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; padding-right: 8px; flex-grow: 1;">
-                                <!-- Dynamically populated question cards -->
-                            </div>
-                            
-                            <div id="story-quiz-footer" style="border-top: 2px solid var(--color-border); padding-top: 15px; display: flex; align-items: center; justify-content: space-between; background: #fff;">
-                                <span id="story-quiz-status-text" style="font-weight: 700; color: var(--color-text-muted);">Please answer all questions.</span>
-                                <button id="story-quiz-submit-btn" class="btn-primary" onclick="submitStoryQuiz()" style="padding: 12px 24px; font-weight: 800;">
-                                    Submit Answers
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Story Quiz Results Mode -->
-                        <div id="story-quiz-results" style="display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; padding: 40px 20px; height: 100%;">
-                            <div id="story-quiz-result-icon" class="quiz-results-bounce" style="font-size: 64px;">🏆</div>
-                            <h2 id="story-quiz-result-title" style="font-size: 26px; font-weight: 800; color: var(--color-text-main);">Quiz Completed!</h2>
-                            <div id="story-quiz-result-score" style="font-size: 36px; font-weight: 800; color: var(--color-orange); background: #FFF4E5; padding: 10px 24px; border-radius: 20px; border: 2px solid var(--color-orange);">3 / 3</div>
-                            <p id="story-quiz-result-desc" style="font-size: 15px; font-weight: 600; color: var(--color-text-muted); max-width: 400px; line-height: 1.5;">
-                                Great job! You answered all questions correctly and earned 15 XP!
-                            </p>
-                            <div style="display: flex; gap: 12px; margin-top: 10px;">
-                                <button id="story-quiz-result-action-btn" class="btn-primary" onclick="retryStoryQuiz()" style="padding: 12px 24px; font-weight: 800;">
-                                    Try Again
-                                </button>
-                                <button class="btn-secondary" onclick="exitStoryQuiz()" style="padding: 12px 24px; font-weight: 800;">
-                                    Back to Stories
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -1659,8 +1519,34 @@
     // ==========================================================================
     // OVERLAY MANAGEMENT CONTROLLERS
     // ==========================================================================
+    function updateSidebarActiveLink(activity) {
+        const sidebarItems = document.querySelectorAll('.sidebar-menu-item');
+        if (!sidebarItems.length) return;
+        
+        sidebarItems.forEach(item => {
+            item.classList.remove('active');
+            const href = item.getAttribute('href');
+            if (activity) {
+                if (href && href.includes('activity=' + activity)) {
+                    item.classList.add('active');
+                }
+            } else {
+                if (href && (href.endsWith('/progress') || href.endsWith('/progress/')) && item.textContent.includes('Progress')) {
+                    item.classList.add('active');
+                }
+            }
+        });
+    }
+
+    function hideAllOverlays() {
+        document.querySelectorAll('.overlay-page').forEach(o => {
+            o.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+    }
+
     function openLearningActivity(activity) {
-        closeAllOverlays();
+        hideAllOverlays();
         
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playPop();
@@ -1682,24 +1568,28 @@
         } else if (activity === 'practice') {
             initPracticeOverlay();
         }
+        
+        updateSidebarActiveLink(activity);
     }
 
     function closeOverlay(activity) {
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playPop();
         }
-        const overlay = document.getElementById('overlay-' + activity);
-        if (overlay) {
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
+        if (typeof synth !== 'undefined' && synth) {
+            synth.cancel();
         }
+        window.location.href = "{{ url_for('dashboard.home') }}";
     }
 
     function closeAllOverlays() {
-        document.querySelectorAll('.overlay-page').forEach(o => {
-            o.classList.remove('active');
-        });
-        document.body.style.overflow = '';
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+        if (typeof synth !== 'undefined' && synth) {
+            synth.cancel();
+        }
+        window.location.href = "{{ url_for('dashboard.home') }}";
     }
 
     // Close overlays if user clicks background backdrop
@@ -1765,7 +1655,9 @@
         gameStreak = 0;
         document.getElementById('game-xp-score').textContent = gameScore;
         document.getElementById('game-streak-counter').textContent = gameStreak;
-        switchGameMode('scramble');
+        
+        // Show selection menu initially
+        showGameSelectionMenu();
         
         // Bind Enter key press to submit scramble guess
         const input = document.getElementById('input-scramble-guess');
@@ -1776,26 +1668,34 @@
         };
     }
 
-    function switchGameMode(mode) {
+    function showGameSelectionMenu() {
+        document.getElementById('game-selection-menu').style.display = 'flex';
+        document.getElementById('scramble-game-board').style.display = 'none';
+        document.getElementById('connect-game-board').style.display = 'none';
+        document.getElementById('game-hud').style.display = 'none';
+        document.getElementById('btn-game-back').style.display = 'none';
+        document.getElementById('game-overlay-title').textContent = 'Play Games';
+        
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playPop();
+        }
+    }
+
+    function launchGame(mode) {
         activeGameMode = mode;
-        const btnScramble = document.getElementById('btn-scramble');
-        const btnConnect = document.getElementById('btn-connect');
-        const boardScramble = document.getElementById('scramble-game-board');
-        const boardConnect = document.getElementById('connect-game-board');
+        document.getElementById('game-selection-menu').style.display = 'none';
+        document.getElementById('game-hud').style.display = 'flex';
+        document.getElementById('btn-game-back').style.display = 'inline-flex';
         
         if (mode === 'scramble') {
-            btnScramble.classList.add('active');
-            btnConnect.classList.remove('active');
-            boardScramble.style.display = 'flex';
-            boardConnect.style.display = 'none';
+            document.getElementById('scramble-game-board').style.display = 'flex';
+            document.getElementById('connect-game-board').style.display = 'none';
             document.getElementById('game-overlay-title').textContent = 'Word Scramble';
             document.getElementById('game-feedback-banner').classList.remove('show');
             loadScrambleWord();
         } else {
-            btnScramble.classList.remove('active');
-            btnConnect.classList.add('active');
-            boardScramble.style.display = 'none';
-            boardConnect.style.display = 'flex';
+            document.getElementById('scramble-game-board').style.display = 'none';
+            document.getElementById('connect-game-board').style.display = 'flex';
             document.getElementById('game-overlay-title').textContent = 'Word Connect';
             initConnectGame();
         }
@@ -2258,15 +2158,27 @@
         document.getElementById('story-progress-ascii').textContent = getAsciiProgress(progressPercent);
         document.getElementById('story-progress-fill').style.width = `${progressPercent}%`;
 
-        const quizBtn = document.getElementById('start-quiz-btn');
+        const claimBtn = document.getElementById('claim-story-xp-btn');
         if (progressPercent >= 100) {
-            quizBtn.disabled = false;
-            quizBtn.innerHTML = "📝 Take Story Quiz";
-            quizBtn.classList.add('pulse-quiz-btn');
+            if (claimBtn.getAttribute('data-claimed') === 'true') {
+                claimBtn.disabled = true;
+                claimBtn.innerHTML = "✅ Story Completed! +15 XP Claimed";
+                claimBtn.classList.remove('pulse-quiz-btn');
+            } else {
+                claimBtn.disabled = false;
+                claimBtn.innerHTML = "🎁 Claim 15 XP";
+                claimBtn.classList.add('pulse-quiz-btn');
+            }
         } else {
-            quizBtn.disabled = true;
-            quizBtn.innerHTML = "🔒 Read to Unlock Quiz";
-            quizBtn.classList.remove('pulse-quiz-btn');
+            if (claimBtn.getAttribute('data-claimed') === 'true') {
+                claimBtn.disabled = true;
+                claimBtn.innerHTML = "✅ Story Completed! +15 XP Claimed";
+                claimBtn.classList.remove('pulse-quiz-btn');
+            } else {
+                claimBtn.disabled = true;
+                claimBtn.innerHTML = "🔒 Read to Complete";
+                claimBtn.classList.remove('pulse-quiz-btn');
+            }
         }
     }
 
@@ -2286,10 +2198,17 @@
             updateAudioButtons('stopped');
         }
 
+        // Reset claim button state for this story
+        const claimBtn = document.getElementById('claim-story-xp-btn');
+        if (claimBtn) {
+            claimBtn.removeAttribute('data-claimed');
+            claimBtn.disabled = true;
+            claimBtn.innerHTML = "🔒 Read to Complete";
+            claimBtn.classList.remove('pulse-quiz-btn');
+        }
+
         // Return to Reading Mode
         document.getElementById('story-reading-mode').style.display = 'flex';
-        document.getElementById('story-quiz-mode').style.display = 'none';
-        document.getElementById('story-quiz-results').style.display = 'none';
 
         const story = stories[idx];
         if (!story) return;
@@ -2405,220 +2324,48 @@
         }
     }
 
-    // Story Quiz controls
-    function startStoryQuiz() {
-        if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playBleepBloop();
-        }
-
-        if (synth) {
-            synth.cancel();
-            updateAudioButtons('stopped');
-        }
-
-        document.getElementById('story-reading-mode').style.display = 'none';
-        document.getElementById('story-quiz-mode').style.display = 'flex';
-        document.getElementById('story-quiz-results').style.display = 'none';
-
-        renderStoryQuiz();
-    }
-
-    function renderStoryQuiz() {
+    // Story XP Claim controls
+    async function claimStoryXP() {
+        const claimBtn = document.getElementById('claim-story-xp-btn');
+        if (claimBtn.disabled) return;
+        
+        claimBtn.disabled = true;
+        claimBtn.innerHTML = "Claiming XP...";
+        
         const story = stories[currentStoryIndex];
-        const questionsList = document.getElementById('story-quiz-questions-list');
-        questionsList.innerHTML = '';
-        quizAnswers = {};
-
-        document.getElementById('story-quiz-submit-btn').disabled = true;
-        document.getElementById('story-quiz-status-text').textContent = "Please answer all questions.";
-        document.getElementById('story-quiz-status-text').style.color = "var(--color-text-muted)";
-
-        if (!story.questions || story.questions.length === 0) {
-            questionsList.innerHTML = '<p style="text-align:center; padding:20px; font-weight:700;">No questions available for this story.</p>';
-            return;
-        }
-
-        story.questions.forEach((q, qIdx) => {
-            const card = document.createElement('div');
-            card.className = 'story-quiz-question-card';
-
-            const qText = document.createElement('p');
-            qText.className = 'story-quiz-question-text';
-            qText.textContent = `${qIdx + 1}. ${q.question}`;
-            card.appendChild(qText);
-
-            const optionsList = document.createElement('div');
-            optionsList.className = 'quiz-options-list';
-
-            q.options.forEach((opt, optIdx) => {
-                const label = document.createElement('label');
-                label.className = 'quiz-option-label';
-
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = `story-q-${qIdx}`;
-                radio.value = optIdx;
-
-                radio.addEventListener('change', () => {
-                    quizAnswers[qIdx] = optIdx;
-                    if (typeof BujjiSynth !== 'undefined') {
-                        BujjiSynth.playPop();
-                    }
-                    checkQuizCompletion();
-                });
-
-                const textSpan = document.createElement('span');
-                textSpan.textContent = opt;
-
-                label.appendChild(radio);
-                label.appendChild(textSpan);
-                optionsList.appendChild(label);
+        
+        try {
+            const response = await fetch('/api/earn-xp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    xp: 15,
+                    activity_type: 'STORY_READ',
+                    description: `Completed reading story: ${story.title}`
+                })
             });
-
-            card.appendChild(optionsList);
-            questionsList.appendChild(card);
-        });
-    }
-
-    function checkQuizCompletion() {
-        const story = stories[currentStoryIndex];
-        const answeredCount = Object.keys(quizAnswers).length;
-        const totalQuestions = story.questions ? story.questions.length : 0;
-
-        const submitBtn = document.getElementById('story-quiz-submit-btn');
-        const statusText = document.getElementById('story-quiz-status-text');
-
-        if (answeredCount === totalQuestions) {
-            submitBtn.disabled = false;
-            statusText.textContent = "All questions answered! Ready to submit.";
-            statusText.style.color = "var(--color-primary-press)";
-        } else {
-            submitBtn.disabled = true;
-            statusText.textContent = `${answeredCount} of ${totalQuestions} answered.`;
-            statusText.style.color = "var(--color-text-muted)";
-        }
-    }
-
-    async function submitStoryQuiz() {
-        const story = stories[currentStoryIndex];
-        const questions = story.questions || [];
-        let correctCount = 0;
-
-        questions.forEach((q, qIdx) => {
-            const selectedOptIdx = quizAnswers[qIdx];
-            const correctOptIdx = q.correct_answer;
-
-            const radios = document.getElementsByName(`story-q-${qIdx}`);
-            radios.forEach(radio => {
-                const label = radio.parentElement;
-                radio.disabled = true;
-
-                const optVal = parseInt(radio.value);
-                if (optVal === correctOptIdx) {
-                    label.classList.add('option-correct');
-                } else if (optVal === selectedOptIdx) {
-                    label.classList.add('option-incorrect');
+            const data = await response.json();
+            if (data.success) {
+                if (typeof BujjiSynth !== 'undefined') {
+                    BujjiSynth.playSuccess();
                 }
-            });
-
-            if (selectedOptIdx === correctOptIdx) {
-                correctCount++;
+                claimBtn.setAttribute('data-claimed', 'true');
+                claimBtn.innerHTML = "✅ Story Completed! +15 XP Claimed";
+                claimBtn.classList.remove('pulse-quiz-btn');
+                
+                alert(`Congratulations! You earned 15 XP for completing '${story.title}'!`);
+            } else {
+                throw new Error("API error");
             }
-        });
-
-        const total = questions.length;
-        const percentage = (correctCount / total) * 100;
-        const passed = percentage >= 70;
-
-        document.getElementById('story-quiz-mode').style.display = 'none';
-
-        const resultsDiv = document.getElementById('story-quiz-results');
-        resultsDiv.style.display = 'flex';
-
-        const scoreBanner = document.getElementById('story-quiz-result-score');
-        scoreBanner.textContent = `${correctCount} / ${total}`;
-
-        const iconDiv = document.getElementById('story-quiz-result-icon');
-        const titleDiv = document.getElementById('story-quiz-result-title');
-        const descDiv = document.getElementById('story-quiz-result-desc');
-        const actionBtn = document.getElementById('story-quiz-result-action-btn');
-
-        if (passed) {
-            iconDiv.textContent = "🏆";
-            iconDiv.className = "quiz-results-bounce";
-            titleDiv.textContent = "Spectacular Job!";
-            descDiv.innerHTML = `You passed the quiz with <strong>${percentage.toFixed(0)}%</strong> correct answers!<br><strong>+15 XP</strong> has been awarded.`;
-
-            if (typeof BujjiSynth !== 'undefined') {
-                BujjiSynth.playSuccess();
-            }
-
-            try {
-                await fetch('/api/earn-xp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        xp: 15,
-                        activity_type: 'STORY_QUIZ',
-                        description: `Passed quiz for '${story.title}' with score ${correctCount}/${total}`
-                    })
-                });
-            } catch(e) {
-                console.error("Error rewarding XP:", e);
-            }
-
-            actionBtn.style.display = 'none';
-        } else {
-            iconDiv.textContent = "😢";
-            iconDiv.className = "";
-            titleDiv.textContent = "Keep Practicing!";
-            descDiv.innerHTML = `You got <strong>${correctCount}</strong> out of <strong>${total}</strong> questions correct.<br>Read the story again and try to score higher!`;
-
-            if (typeof BujjiSynth !== 'undefined') {
-                BujjiSynth.playFailure();
-            }
-
-            actionBtn.style.display = 'inline-block';
-            actionBtn.textContent = "Try Again";
+        } catch(e) {
+            console.error("Error claiming XP:", e);
+            alert("Failed to claim XP. Please try again.");
+            claimBtn.disabled = false;
+            claimBtn.innerHTML = "🎁 Claim 15 XP";
         }
     }
 
-    function retryStoryQuiz() {
-        document.getElementById('story-quiz-results').style.display = 'none';
-        document.getElementById('story-quiz-mode').style.display = 'flex';
-        renderStoryQuiz();
-    }
-
-    function exitStoryQuiz() {
-        document.getElementById('story-quiz-mode').style.display = 'none';
-        document.getElementById('story-quiz-results').style.display = 'none';
-        document.getElementById('story-reading-mode').style.display = 'flex';
-
-        const textView = document.getElementById('story-text-view');
-        if (textView) textView.scrollTop = 0;
-        updateReadingProgress();
-    }
-
-    // Intercept closing actions to clean up Web Speech TTS
-    const originalCloseOverlay = closeOverlay;
-    closeOverlay = function(activity) {
-        if (activity === 'stories') {
-            if (synth) {
-                synth.cancel();
-                updateAudioButtons('stopped');
-            }
-        }
-        originalCloseOverlay(activity);
-    };
-
-    const originalCloseAllOverlays = closeAllOverlays;
-    closeAllOverlays = function() {
-        if (synth) {
-            synth.cancel();
-            updateAudioButtons('stopped');
-        }
-        originalCloseAllOverlays();
-    };
+    // Redirection and synthesis cancel are handled directly in closeOverlay/closeAllOverlays.
 
     // ==========================================================================
     // 4. PRACTICE ARENA LOGIC
@@ -2817,5 +2564,17 @@
             desc.textContent = "A great starting point! Re-read lessons and practice again to boost your score.";
         }
     }
+
+    // Auto-open learning activity if passed as query parameter
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activity = urlParams.get('activity');
+        if (activity) {
+            // Short delay to let companion load
+            setTimeout(() => {
+                openLearningActivity(activity);
+            }, 100);
+        }
+    });
 </script>
 {% endblock %}

@@ -76,40 +76,6 @@ def make_student_pdf(student, progress, levels_completed):
     story.append(details_table)
     story.append(Spacer(1, 20))
     
-    story.append(Paragraph("Quiz Attempt History", section_style))
-    
-    table_data = [[
-        Paragraph("<b>Attempt</b>", body_style),
-        Paragraph("<b>Level</b>", body_style),
-        Paragraph("<b>Score</b>", body_style),
-        Paragraph("<b>Percentage</b>", body_style),
-        Paragraph("<b>Status</b>", body_style),
-        Paragraph("<b>Completed At</b>", body_style)
-    ]]
-    
-    for idx, r in enumerate(progress):
-        status_text = f"<font color='green'><b>PASSED</b></font>" if r['status'] == 'passed' else f"<font color='red'><b>FAILED</b></font>"
-        table_data.append([
-            Paragraph(str(idx + 1), body_style),
-            Paragraph(f"Level {r['level']}", body_style),
-            Paragraph(f"{r['score']} / 20", body_style),
-            Paragraph(f"{r['percentage']}%", body_style),
-            Paragraph(status_text, body_style),
-            Paragraph(r['completed_at'].strftime("%Y-%m-%d %H:%M"), body_style)
-        ])
-        
-    history_table = Table(table_data, colWidths=[60, 60, 80, 80, 80, 160])
-    history_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F8FAFC')),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('LINEBELOW', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
-    ]))
-    
-    story.append(history_table)
-    
     doc.build(story)
     buffer.seek(0)
     return buffer
@@ -259,17 +225,7 @@ def student_excel(student_id):
     writer.writerow(["Current Level", student['current_level']])
     writer.writerow([])
     
-    writer.writerow(["Quiz Attempt History"])
-    writer.writerow(["Attempt #", "Level", "Score", "Percentage", "Status", "Completed At"])
-    for idx, r in enumerate(progress):
-        writer.writerow([
-            idx + 1,
-            f"Level {r['level']}",
-            f"{r['score']} / 20",
-            f"{r['percentage']}%",
-            r['status'].upper(),
-            r['completed_at'].strftime("%Y-%m-%d %H:%M")
-        ])
+
         
     filename = f"student_report_{student['roll_number']}.csv"
     response = Response(output.getvalue(), mimetype='text/csv')
