@@ -3136,17 +3136,80 @@
                 <div id="speaking-results-panel" style="display:none; width:100%;">
                     <!-- Populated dynamically upon Stop & Analyze -->
                 </div>
+
+                <!-- Mic permission status (shown before recording) -->
+                <div id="mic-permission-banner" style="margin-top:12px; display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#64748B;">
+                    <span id="mic-permission-icon" style="font-size:18px;">🎤</span>
+                    <span id="mic-permission-label">Microphone: checking...</span>
+                </div>
             </div>
         `;
 
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playPop();
         }
+        setTimeout(checkMicPermission, 100);
+    }
+
+    function checkMicPermission() {
+        const icon = document.getElementById('mic-permission-icon');
+        const label = document.getElementById('mic-permission-label');
+        if (!icon || !label) return;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            icon.textContent = '❌';
+            label.textContent = 'Microphone not supported in this browser. Use Chrome or Edge.';
+            label.style.color = '#EF4444';
+            return;
+        }
+
+        navigator.permissions && navigator.permissions.query({ name: 'microphone' }).then(perm => {
+            if (perm.state === 'granted') {
+                icon.textContent = '✅';
+                label.textContent = 'Microphone ready — click the mic button to start speaking.';
+                label.style.color = '#16A34A';
+            } else if (perm.state === 'denied') {
+                icon.textContent = '🚫';
+                label.textContent = 'Microphone blocked! Click the 🔒 lock icon in your browser address bar → allow mic → refresh.';
+                label.style.color = '#EF4444';
+            } else {
+                icon.textContent = '⚠️';
+                label.textContent = 'Microphone not yet allowed — click the mic button and then Allow when the browser asks.';
+                label.style.color = '#D97706';
+            }
+        }).catch(() => {
+            icon.textContent = '🎤';
+            label.textContent = 'Click the mic button to start. Allow microphone access when prompted.';
+        });
     }
 
     function toggleSpeakingMic(id, rewardXp) {
         if (!isSpeakingRecording) {
-            startSpeakingChallenge(id, rewardXp);
+            // Request mic permission explicitly first via getUserMedia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                const statusEl = document.getElementById('speaking-status-text');
+                if (statusEl) { statusEl.textContent = '❌ Microphone not supported. Use Chrome or Edge.'; statusEl.style.color = '#EF4444'; }
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    // Permission granted — stop the raw stream (recognition manages its own)
+                    stream.getTracks().forEach(t => t.stop());
+                    // Update banner
+                    const icon = document.getElementById('mic-permission-icon');
+                    const lbl = document.getElementById('mic-permission-label');
+                    if (icon) icon.textContent = '✅';
+                    if (lbl) { lbl.textContent = 'Microphone active'; lbl.style.color = '#16A34A'; }
+                    startSpeakingChallenge(id, rewardXp);
+                })
+                .catch(err => {
+                    const icon = document.getElementById('mic-permission-icon');
+                    const lbl = document.getElementById('mic-permission-label');
+                    if (icon) icon.textContent = '🚫';
+                    if (lbl) { lbl.textContent = 'Mic blocked! Click the 🔒 lock in the address bar → set Microphone to Allow → refresh.'; lbl.style.color = '#EF4444'; }
+                    const statusEl = document.getElementById('speaking-status-text');
+                    if (statusEl) { statusEl.textContent = '🚫 Microphone blocked — see instructions below.'; statusEl.style.color = '#EF4444'; }
+                });
         } else {
             stopSpeakingAndAnalyze(id, rewardXp);
         }
