@@ -3253,6 +3253,47 @@
             el.dataset.fullTranscript = fullTranscript;
         }
 
+        let speechDetected = false;
+
+        function showManualInputFallback(reason) {
+            // Switch to manual text entry mode
+            const wrapper = document.getElementById('speaking-transcript-wrapper');
+            if (!wrapper) return;
+            const timerEl = document.getElementById('speaking-timer-display');
+            const timerVal = timerEl ? timerEl.textContent : '00:00';
+
+            wrapper.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h4 style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#64748B; margin:0;">✍️ Type What You Said</h4>
+                    <span style="font-size:0.72rem; color:#EF4444;">${timerVal}</span>
+                </div>
+                <p style="font-size:0.72rem; color:#F59E0B; margin:0 0 10px 0; font-weight:600;">
+                    ${reason}
+                </p>
+                <textarea id="manual-speech-input"
+                    placeholder="Type exactly what you said or read aloud here..."
+                    style="width:100%; min-height:80px; border:2px solid #E2E8F0; border-radius:10px; padding:10px 14px;
+                           font-size:0.88rem; color:#1E293B; resize:vertical; box-sizing:border-box; font-family:inherit;
+                           outline:none; line-height:1.5;"
+                    oninput="fullTranscript = this.value.trim();"
+                ></textarea>
+                <div style="margin-top:8px; display:flex; gap:8px;">
+                    <button onclick="stopSpeakingAndAnalyze('${id}', ${rewardXp})"
+                        style="background:#0F172A; color:#fff; border:none; border-radius:8px; padding:8px 20px;
+                               font-size:0.82rem; font-weight:700; cursor:pointer; flex:1;">
+                        ✅ Submit & Analyze
+                    </button>
+                </div>
+            `;
+            // Stop the timer
+            if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
+            isSpeakingRecording = false;
+            const micBtn = document.getElementById('speaking-mic-action');
+            if (micBtn) { micBtn.classList.remove('recording'); micBtn.innerHTML = '🎙️'; }
+            const statusEl = document.getElementById('speaking-status-text');
+            if (statusEl) statusEl.textContent = 'Type your response below and click Submit.';
+        }
+
         if (recognitionInstance) {
             // Assign handlers BEFORE start()
             recognitionInstance.continuous = true;
@@ -3260,6 +3301,7 @@
             recognitionInstance.lang = 'en-US';
 
             recognitionInstance.onresult = (event) => {
+                speechDetected = true;
                 let interimText = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     const segment = event.results[i][0].transcript;
@@ -3275,9 +3317,12 @@
             recognitionInstance.onerror = (e) => {
                 console.warn('Speech recognition error:', e.error);
                 if (e.error === 'not-allowed' || e.error === 'permission-denied') {
-                    const el = document.getElementById('speaking-live-transcript');
-                    if (el) el.innerHTML = '<span style="color:#EF4444; font-weight:700;">⚠️ Microphone access denied. Please allow microphone in browser settings and refresh.</span>';
-                    isSpeakingRecording = false;
+                    showManualInputFallback('⚠️ Microphone blocked by browser. Type your response below.');
+                } else if (e.error === 'network') {
+                    // Brave browser blocks the Google Speech API network call
+                    showManualInputFallback('⚠️ Speech-to-text blocked by your browser (Brave/Firefox shield). Type what you said below:');
+                } else if (e.error === 'no-speech') {
+                    // silence — let onend restart it, don't fallback yet
                 }
             };
 
@@ -3291,19 +3336,19 @@
             try {
                 recognitionInstance.start();
             } catch(e) {
-                // Already started (e.g. InvalidStateError) — ignore, onend will restart
                 console.warn('Recognition start skipped:', e.message);
             }
-        } else {
-            // Browser doesn't support Web Speech API — simulate with the prompt text
-            const el = document.getElementById('speaking-live-transcript');
-            if (el) el.innerHTML = '<span style="color:#F59E0B; font-weight:600;">⚠️ Speech API not supported in this browser. Using simulation mode.</span>';
+
+            // After 5 seconds, if nothing captured, show manual fallback
             setTimeout(() => {
-                if (isSpeakingRecording) {
-                    fullTranscript = activeSpeakingPrompt.replace(/Word:|Pronounce:|Topic:|Roleplay:/, '').trim();
-                    updateTranscriptUI('');
+                if (isSpeakingRecording && !speechDetected && !fullTranscript) {
+                    showManualInputFallback('⚠️ No speech detected after 5 seconds. Your browser may be blocking speech recognition. Type what you said:');
                 }
-            }, 2000);
+            }, 5000);
+
+        } else {
+            // No Speech API at all — go straight to manual input
+            showManualInputFallback('⚠️ Speech recognition is not supported in this browser. Type what you said:');
         }
 
         if (typeof BujjiSynth !== 'undefined') {
