@@ -4,7 +4,7 @@
 
 {% block head %}
 <style>
-    /* Clean SaaS Layout variables & styles */
+    /* Premium SaaS Dashboard variables & style rules */
     .saas-dashboard-container {
         width: 100%;
         max-width: 1200px;
@@ -17,21 +17,148 @@
         color: #1E293B;
     }
 
-    .saas-header {
-        margin-bottom: 8px;
+    /* SaaS Hero Banner card style */
+    .saas-hero-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 20px;
+        padding: 32px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #ffffff;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
     }
-
-    .saas-header h1 {
-        font-size: 28px;
+    
+    .hero-left-content {
+        z-index: 2;
+    }
+    
+    .hero-badge {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #60a5fa;
+        padding: 6px 12px;
+        font-size: 12px;
         font-weight: 700;
-        color: #0F172A;
-        letter-spacing: -0.5px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 16px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
-
-    .saas-header p {
-        font-size: 15px;
-        color: #64748B;
-        margin-top: 4px;
+    
+    .hero-title {
+        font-size: 32px !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        letter-spacing: -0.5px;
+        margin: 0 0 10px 0;
+    }
+    
+    .hero-subtitle {
+        font-size: 15px !important;
+        color: #94a3b8 !important;
+        max-width: 520px;
+        line-height: 1.6;
+        margin: 0 0 24px 0;
+    }
+    
+    .hero-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    .hero-btn-main {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+        border: none !important;
+        padding: 12px 24px !important;
+        font-size: 14px !important;
+        border-radius: 10px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .hero-btn-main:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
+    }
+    
+    .hero-btn-sub {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        padding: 12px 24px !important;
+        font-size: 14px !important;
+        border-radius: 10px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .hero-btn-sub:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px);
+    }
+    
+    .hero-mascot-illustration {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 20px;
+        z-index: 2;
+    }
+    
+    .hero-glow-bubble {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+        right: -50px;
+        top: -50px;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .hero-stats-quick {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    .quick-stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .q-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .q-val {
+        font-size: 16px;
+        font-weight: 800;
+        color: #3b82f6;
+    }
+    
+    .quick-stat-divider {
+        width: 1px;
+        height: 30px;
+        background-color: rgba(255, 255, 255, 0.1);
     }
 
     /* Grid layout for stats cards */
@@ -42,41 +169,81 @@
     }
 
     .saas-stat-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-top: 4px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 20px 24px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         display: flex;
         flex-direction: column;
         gap: 8px;
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     .saas-stat-card:hover {
-        transform: translateY(-2px);
-        border-color: #CBD5E1;
+        transform: translateY(-4px);
+    }
+
+    .saas-stat-card.stat-lvl { border-top-color: #3b82f6; }
+    .saas-stat-card.stat-lvl:hover { border-color: #3b82f6; box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.15); }
+    
+    .saas-stat-card.stat-xp { border-top-color: #fbbf24; }
+    .saas-stat-card.stat-xp:hover { border-color: #fbbf24; box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.15); }
+    
+    .saas-stat-card.stat-streak { border-top-color: #f97316; }
+    .saas-stat-card.stat-streak:hover { border-color: #f97316; box-shadow: 0 10px 20px -5px rgba(249, 115, 22, 0.15); }
+    
+    .saas-stat-card.stat-miles { border-top-color: #10b981; }
+    .saas-stat-card.stat-miles:hover { border-color: #10b981; box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.15); }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
     }
 
     .saas-stat-label {
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
+        color: #64748b;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #64748B;
     }
+
+    .saas-stat-icon-bg {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .bg-blue { background-color: #eff6ff; }
+    .bg-amber { background-color: #fefbeb; }
+    .bg-orange { background-color: #fff7ed; }
+    .bg-green { background-color: #f0fdf4; }
 
     .saas-stat-value {
         font-size: 26px;
-        font-weight: 700;
-        color: #0F172A;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-top: 4px;
     }
 
-    .saas-stat-icon {
-        font-size: 20px;
+    .val-blue { color: #2563eb; }
+    .val-amber { color: #d97706; }
+    .val-orange { color: #ea580c; }
+    .val-green { color: #16a34a; }
+
+    .stat-card-desc {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 0;
+        font-weight: 500;
     }
 
     /* Two-column split layout */
@@ -103,17 +270,23 @@
 
     .saas-card {
         background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .saas-card:hover {
+        border-color: rgba(203, 213, 225, 0.9);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
     }
 
     .saas-card-title {
         font-size: 16px;
         font-weight: 700;
         color: #0F172A;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -122,7 +295,7 @@
     }
 
     .saas-btn-primary {
-        background-color: #0F172A;
+        background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%);
         color: #FFFFFF;
         border: none;
         padding: 10px 18px;
@@ -130,7 +303,7 @@
         font-weight: 600;
         border-radius: 8px;
         cursor: pointer;
-        transition: background-color 0.15s ease;
+        transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -138,8 +311,10 @@
     }
 
     .saas-btn-primary:hover {
-        background-color: #1E293B;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         color: #FFFFFF;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
 
     .saas-btn-secondary {
@@ -151,7 +326,7 @@
         font-weight: 600;
         border-radius: 8px;
         cursor: pointer;
-        transition: background-color 0.15s ease, border-color 0.15s ease;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -162,6 +337,7 @@
         background-color: #F8FAFC;
         border-color: #94A3B8;
         color: #1E293B;
+        transform: translateY(-1px);
     }
 
     /* List layouts */
@@ -175,102 +351,248 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px;
+        padding: 16px 20px;
         background-color: #F8FAFC;
         border: 1px solid #F1F5F9;
-        border-radius: 8px;
-        transition: border-color 0.15s ease;
+        border-radius: 12px;
+        transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
     }
 
     .saas-list-item:hover {
         border-color: #E2E8F0;
+        background-color: #F1F5F9;
+        transform: translateX(2px);
     }
 
     .saas-item-title {
-        font-weight: 600;
+        font-weight: 700;
         color: #0F172A;
-        font-size: 14.5px;
+        font-size: 15px;
     }
 
     .saas-item-subtitle {
-        font-size: 12.5px;
+        font-size: 13px;
         color: #64748B;
         margin-top: 4px;
+        font-weight: 500;
     }
 
     .saas-badge {
         font-size: 11.5px;
-        font-weight: 600;
+        font-weight: 700;
         padding: 4px 10px;
         border-radius: 6px;
     }
 
     .saas-badge-success {
-        background-color: #DCFCE7;
-        color: #15803D;
+        background-color: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
     }
 
     .saas-badge-warning {
-        background-color: #FEF3C7;
-        color: #B45309;
+        background-color: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fde68a;
     }
 
     .saas-badge-info {
-        background-color: #DBEAFE;
-        color: #1D4ED8;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #dbeafe;
     }
 
-    /* Table styles */
-    .saas-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13.5px;
+    /* Profile Sidecard Upgrade styles */
+    .saas-profile-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        padding: 0 !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
     }
-
-    .saas-table th {
-        text-align: left;
-        color: #64748B;
-        font-weight: 600;
-        padding: 10px 12px;
-        border-bottom: 1px solid #E2E8F0;
-        text-transform: uppercase;
-        font-size: 11px;
+    
+    .profile-cover-accent {
+        height: 80px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        position: relative;
+    }
+    
+    .profile-card-body {
+        padding: 24px;
+        position: relative;
+        margin-top: -36px;
+    }
+    
+    .student-avatar-banner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .student-avatar-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid #ffffff;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.2);
         letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    
+    .student-avatar-details {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .student-profile-name {
+        font-size: 17px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+    
+    .student-profile-email {
+        font-size: 13px;
+        color: #64748b;
+        margin: 4px 0 0 0;
+        font-weight: 500;
+    }
+    
+    .profile-row-icon {
+        margin-right: 6px;
+        font-size: 14px;
+        opacity: 0.8;
     }
 
-    .saas-table td {
-        padding: 12px;
-        border-bottom: 1px solid #F1F5F9;
-        color: #334155;
-    }
-
-    .saas-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Profile grid */
     .saas-profile-grid {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        margin-top: 20px;
     }
 
     .saas-profile-row {
         display: flex;
         justify-content: space-between;
-        padding-bottom: 8px;
-        border-bottom: 1px dashed #E2E8F0;
+        padding: 12px 14px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 10px;
         font-size: 13.5px;
+        align-items: center;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .saas-profile-row:hover {
+        border-color: #e2e8f0;
+        background-color: #f1f5f9;
     }
 
     .saas-profile-label {
         color: #64748B;
-        font-weight: 500;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
     }
 
     .saas-profile-value {
         color: #0F172A;
-        font-weight: 600;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    /* Performance card styling */
+    .saas-performance-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .performance-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    
+    .performance-item {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .performance-item:hover {
+        transform: translateY(-2px);
+        border-color: #cbd5e1;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.03);
+    }
+    
+    .perf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .perf-level-badge {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    
+    .perf-score-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12.5px;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .perf-score-value {
+        font-weight: 700;
+        color: #0f172a;
+    }
+    
+    .perf-progress-bar-track {
+        height: 8px;
+        background-color: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .perf-progress-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .perf-progress-bar-fill.fill-success {
+        background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+    }
+    
+    .perf-progress-bar-fill.fill-warning {
+        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
     }
 
     @media (max-width: 991px) {
@@ -282,6 +604,20 @@
         }
         .saas-side-col {
             position: static;
+        }
+        .saas-hero-banner {
+            flex-direction: column;
+            align-items: start;
+            gap: 24px;
+            padding: 28px 30px;
+        }
+        .hero-mascot-illustration {
+            align-items: start;
+            width: 100%;
+        }
+        .hero-stats-quick {
+            width: 100%;
+            justify-content: space-around;
         }
     }
 
@@ -334,54 +670,73 @@
 {% endif %}
 
 <main class="saas-dashboard-container">
-    <!-- Welcome Header & Main Quick Action -->
-    <header class="saas-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div>
-            <h1>Good Evening, {{ student.full_name }} 👋</h1>
-            <p>Ready to level up your communication skills today?</p>
+    <!-- Welcome Header SaaS Hero Banner -->
+    <div class="saas-hero-banner">
+        <div class="hero-left-content">
+            <div class="hero-badge">🎯 Learning Journey</div>
+            <h1 class="hero-title">Welcome back, {{ student.full_name.split(' ')[0] }}! 👋</h1>
+            <p class="hero-subtitle">You're making great progress. Continue your learning path to level up your communication skills!</p>
+            <div class="hero-actions">
+                {% if student.current_level == 1 %}
+                    <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary hero-btn-main">Start Basic Learning</a>
+                {% else %}
+                    <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary hero-btn-main">Continue Level {{ student.current_level }}</a>
+                {% endif %}
+                <a href="{{ url_for('dashboard.progress') }}" class="saas-btn-secondary hero-btn-sub">View Journey Path</a>
+            </div>
         </div>
-        <div>
-            {% if student.current_level == 1 %}
-                <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary">Start Basic Learning</a>
-            {% else %}
-                <a href="{{ url_for('quiz.quiz_page') }}" class="saas-btn-primary">Continue Level {{ student.current_level }}</a>
-            {% endif %}
-            <a href="{{ url_for('dashboard.progress') }}" class="saas-btn-secondary" style="margin-left: 8px;">View Journey Path</a>
+        <div class="hero-mascot-illustration">
+            <div class="hero-glow-bubble"></div>
+            <div class="hero-stats-quick">
+                <div class="quick-stat-item">
+                    <span class="q-label">Current Level</span>
+                    <span class="q-val">Lvl {{ student.current_level }}</span>
+                </div>
+                <div class="quick-stat-divider"></div>
+                <div class="quick-stat-item">
+                    <span class="q-label">XP points</span>
+                    <span class="q-val">{{ student.xp }} XP</span>
+                </div>
+            </div>
         </div>
-    </header>
+    </div>
 
     <!-- Stats Cards Grid -->
     <div class="saas-stats-grid">
-        <div class="saas-stat-card">
-            <span class="saas-stat-label">Current Level</span>
-            <div class="saas-stat-value">
-                <span class="saas-stat-icon">🎯</span>
-                <span>Level {{ student.current_level }}</span>
+        <div class="saas-stat-card stat-lvl">
+            <div class="stat-header">
+                <span class="saas-stat-label">Current Level</span>
+                <span class="saas-stat-icon-bg bg-blue">🎯</span>
             </div>
+            <div class="saas-stat-value val-blue">Level {{ student.current_level }}</div>
+            <p class="stat-card-desc">Active study path level</p>
         </div>
 
-        <div class="saas-stat-card">
-            <span class="saas-stat-label">Total XP Points</span>
-            <div class="saas-stat-value">
-                <span class="saas-stat-icon">⚡</span>
-                <span>{{ student.xp }} XP</span>
+        <div class="saas-stat-card stat-xp">
+            <div class="stat-header">
+                <span class="saas-stat-label">Total XP Points</span>
+                <span class="saas-stat-icon-bg bg-amber">⚡</span>
             </div>
+            <div class="saas-stat-value val-amber">{{ student.xp }} XP</div>
+            <p class="stat-card-desc">Total experience earned</p>
         </div>
 
-        <div class="saas-stat-card">
-            <span class="saas-stat-label">Active Streak</span>
-            <div class="saas-stat-value" style="color: #F59E0B;">
-                <span class="saas-stat-icon">🔥</span>
-                <span>{{ student.streak }} Days</span>
+        <div class="saas-stat-card stat-streak">
+            <div class="stat-header">
+                <span class="saas-stat-label">Active Streak</span>
+                <span class="saas-stat-icon-bg bg-orange">🔥</span>
             </div>
+            <div class="saas-stat-value val-orange">{{ student.streak }} Days</div>
+            <p class="stat-card-desc">Consecutive active days</p>
         </div>
 
-        <div class="saas-stat-card">
-            <span class="saas-stat-label">Milestones Cleared</span>
-            <div class="saas-stat-value" style="color: #10B981;">
-                <span class="saas-stat-icon">🏆</span>
-                <span>{{ student.levels_completed }} / 5</span>
+        <div class="saas-stat-card stat-miles">
+            <div class="stat-header">
+                <span class="saas-stat-label">Milestones Cleared</span>
+                <span class="saas-stat-icon-bg bg-green">🏆</span>
             </div>
+            <div class="saas-stat-value val-green">{{ student.levels_completed }} / 5</div>
+            <p class="stat-card-desc">Unique levels completed</p>
         </div>
     </div>
 
@@ -457,66 +812,69 @@
         <!-- Sidebar Column (Right) -->
         <div class="saas-side-col">
             <!-- Student Profile Metadata -->
-            <div class="saas-card">
-                <h2 class="saas-card-title" style="margin-bottom: 12px; border-bottom: none; padding-bottom: 0;">
-                    <span>👤</span> Student Profile
-                </h2>
-                <div class="saas-profile-grid">
-                    <div class="saas-profile-row">
-                        <span class="saas-profile-label">Full Name</span>
-                        <span class="saas-profile-value">{{ student.full_name }}</span>
+            <div class="saas-card saas-profile-card">
+                <div class="profile-cover-accent"></div>
+                <div class="profile-card-body">
+                    <div class="student-avatar-banner">
+                        <div class="student-avatar-circle">
+                            {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
+                        </div>
+                        <div class="student-avatar-details">
+                            <h3 class="student-profile-name">{{ student.full_name }}</h3>
+                            <p class="student-profile-email">{{ student.email }}</p>
+                        </div>
                     </div>
-                    <div class="saas-profile-row">
-                        <span class="saas-profile-label">Roll Number</span>
-                        <span class="saas-profile-value">{{ student.roll_number }}</span>
-                    </div>
-                    <div class="saas-profile-row">
-                        <span class="saas-profile-label">Branch</span>
-                        <span class="saas-profile-value">{{ student.branch }}</span>
-                    </div>
-                    <div class="saas-profile-row">
-                        <span class="saas-profile-label">Year</span>
-                        <span class="saas-profile-value">{{ student.year }} Year</span>
-                    </div>
-                    <div class="saas-profile-row" style="border-bottom: none; padding-bottom: 0;">
-                        <span class="saas-profile-label">Email</span>
-                        <span class="saas-profile-value" style="font-size: 12px; font-weight: 500;">{{ student.email }}</span>
+                    <div class="saas-profile-grid">
+                        <div class="saas-profile-row">
+                            <span class="saas-profile-label">
+                                <span class="profile-row-icon">🆔</span> Roll Number
+                            </span>
+                            <span class="saas-profile-value">{{ student.roll_number }}</span>
+                        </div>
+                        <div class="saas-profile-row">
+                            <span class="saas-profile-label">
+                                <span class="profile-row-icon">🎓</span> Branch
+                            </span>
+                            <span class="saas-profile-value">{{ student.branch }}</span>
+                        </div>
+                        <div class="saas-profile-row">
+                            <span class="saas-profile-label">
+                                <span class="profile-row-icon">📅</span> Year
+                            </span>
+                            <span class="saas-profile-value">{{ student.year }} Year</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Quiz History & Analytics -->
-            <div class="saas-card">
-                <h2 class="saas-card-title">
+            <div class="saas-card saas-performance-card">
+                <h2 class="saas-card-title" style="border-bottom: none; padding-bottom: 0; margin-bottom: 20px;">
                     <span>📊</span> Recent Performance
                 </h2>
                 {% if history %}
-                    <div style="overflow-x: auto;">
-                        <table class="saas-table">
-                            <thead>
-                                <tr>
-                                    <th>Level</th>
-                                    <th>Score</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for attempt in history %}
-                                    <tr>
-                                        <td style="font-weight: 600;">Level {{ attempt.level }}</td>
-                                        <td style="font-weight: 600;">{{ attempt.score }}/20</td>
-                                        <td>
-                                            <span class="saas-badge {% if attempt.status == 'passed' %}saas-badge-success{% else %}saas-badge-warning{% endif %}">
-                                                {{ attempt.status.upper() }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="performance-list">
+                        {% for attempt in history %}
+                            <div class="performance-item">
+                                <div class="perf-header">
+                                    <span class="perf-level-badge">Level {{ attempt.level }}</span>
+                                    <span class="saas-badge {% if attempt.status == 'passed' %}saas-badge-success{% else %}saas-badge-warning{% endif %}">
+                                        {{ attempt.status.upper() }}
+                                    </span>
+                                </div>
+                                <div class="perf-score-row">
+                                    <span class="perf-score-label">Accuracy Score</span>
+                                    <span class="perf-score-value">{{ attempt.score }}/20 ({{ attempt.percentage }}%)</span>
+                                </div>
+                                <div class="perf-progress-bar-track">
+                                    <div class="perf-progress-bar-fill {% if attempt.status == 'passed' %}fill-success{% else %}fill-warning{% endif %}" 
+                                         style="width: {{ attempt.percentage }}%;"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% else %}
-                    <div style="text-align: center; padding: 16px; color: #64748B; font-size: 13px;">
+                    <div style="text-align: center; padding: 24px; color: #64748B; font-size: 13.5px;">
                         No quiz attempts logged yet.
                     </div>
                 {% endif %}
