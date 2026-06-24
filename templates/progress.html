@@ -3407,22 +3407,57 @@
 
         const comparisonHTML = buildComparisonHTML(spokenText, activeSpeakingPrompt);
 
-        // Compute simulated pronunciation & fluency scores
-        const wordCount = spokenText ? spokenText.split(/\s+/).length : 0;
-        const randomPron = Math.min(99, Math.floor(Math.random() * 20) + (wordCount > 5 ? 78 : 65));
-        const randomFluency = Math.min(99, Math.floor(Math.random() * 15) + (durationSecs > 5 ? 80 : 68));
+        // ── REAL MATCH-BASED SCORING ──────────────────────────────────────
+        const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+
+        const promptWords   = activeSpeakingPrompt ? clean(activeSpeakingPrompt).split(/\s+/).filter(Boolean) : [];
+        const spokenWords   = spokenText           ? clean(spokenText).split(/\s+/).filter(Boolean)           : [];
+        const wordCount     = spokenWords.length;
+
+        // Accuracy: what % of the prompt's words appear in what was spoken
+        const matchedWords  = promptWords.filter(pw => spokenWords.includes(pw));
+        const accuracy      = promptWords.length > 0
+            ? Math.round((matchedWords.length / promptWords.length) * 100)
+            : 0;
+
+        // Pronunciation: accuracy-weighted, with a small ±5 natural variance
+        const pronBase      = accuracy;
+        const pronVariance  = Math.floor(Math.random() * 11) - 5; // -5 to +5
+        const pronScore     = Math.max(0, Math.min(100, pronBase + pronVariance));
+
+        // Fluency: words per second (ideal is ~2–3 wps), scaled by accuracy
+        const wps           = durationSecs > 0 ? wordCount / durationSecs : 0;
+        const wpsScore      = Math.min(100, Math.round(wps * 40));   // 2.5 wps → 100
+        const fluencyScore  = Math.round((wpsScore * 0.4) + (accuracy * 0.6)); // blend
+
+        // Overall grade
+        const overall = accuracy >= 90 ? 'A' : accuracy >= 75 ? 'B' : accuracy >= 55 ? 'C' : accuracy >= 35 ? 'D' : 'F';
+        const gradeColor = accuracy >= 75 ? '#16A34A' : accuracy >= 55 ? '#D97706' : '#DC2626';
+        const gradeEmoji = accuracy >= 75 ? '🏆' : accuracy >= 40 ? '💪' : '📚';
+
+        // Can they claim XP? Only if they at least matched 30% of the prompt
+        const canClaimXp = accuracy >= 30 || wordCount === 0; // 0 words → still allow (typed fallback)
+        const earnedXp   = accuracy >= 90 ? rewardXp
+                         : accuracy >= 70 ? Math.round(rewardXp * 0.75)
+                         : accuracy >= 50 ? Math.round(rewardXp * 0.5)
+                         : accuracy >= 30 ? Math.round(rewardXp * 0.25)
+                         : 0;
+
+        // Contextual tips
+        const tipsByScore = accuracy >= 85
+            ? ["Outstanding accuracy! 🎉 Focus on maintaining this quality with longer sentences.",
+               "Excellent match! Now work on speaking even more smoothly without pausing."]
+            : accuracy >= 65
+            ? ["Good effort! Try to include more words from the prompt for better coverage.",
+               "You got the main words right. Focus on not skipping smaller connecting words."]
+            : accuracy >= 40
+            ? ["You're getting there! Read the prompt slowly, then speak it back word-for-word.",
+               "Try again — say each word clearly and at a steady pace to improve your accuracy."]
+            : ["Don't give up! Read the sentence first, then close your eyes and repeat it.",
+               "Tip: Practice each phrase 3 times before recording to improve retention."];
+        const tip = tipsByScore[Math.floor(Math.random() * tipsByScore.length)];
 
         const durationStr = `${String(Math.floor(durationSecs / 60)).padStart(2,'0')}:${String(durationSecs % 60).padStart(2,'0')}`;
-
-        // Bujji tips based on score
-        const tips = [
-            "Great effort! Focus on pausing slightly between sentences to sound more natural.",
-            "Your pronunciation is improving! Try to speak a little slower for better clarity.",
-            "Excellent flow! Keep practicing stress patterns on longer words.",
-            "Good job! Maintaining a steady pace will help your fluency score go higher.",
-            "Well done! Try reading aloud for 5 minutes every day to build more confidence."
-        ];
-        const tip = tips[Math.floor(Math.random() * tips.length)];
 
         // Show analysis results card
         document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
@@ -3431,12 +3466,18 @@
         resultsPanel.innerHTML = `
             <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
 
-                <!-- Header -->
-                <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">📊</span>
-                    <div>
-                        <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">Speech Analysis Report</div>
-                        <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words spoken</div>
+                <!-- Header with grade -->
+                <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:24px;">📊</span>
+                        <div>
+                            <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">Speech Analysis Report</div>
+                            <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words · ${matchedWords.length}/${promptWords.length} prompt words matched</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; background:rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px;">
+                        <div style="font-size:2rem; font-weight:900; color:${gradeColor === '#16A34A' ? '#4ADE80' : gradeColor === '#D97706' ? '#FCD34D' : '#FCA5A5'};">${overall}</div>
+                        <div style="font-size:0.65rem; color:#94A3B8; text-transform:uppercase;">Grade</div>
                     </div>
                 </div>
 
@@ -3447,9 +3488,9 @@
                         ? `<div style="line-height:2; word-spacing:4px;">${comparisonHTML}</div>
                            <div style="margin-top:10px; display:flex; gap:16px; font-size:0.72rem; color:#64748B;">
                                <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#DCFCE7;margin-right:4px;"></span>Matched prompt words</span>
-                               <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#FEE2E2;margin-right:4px;"></span>Different / extra words</span>
+                               <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#FEE2E2;margin-right:4px;"></span>Not in prompt</span>
                            </div>`
-                        : `<div style="color:#94A3B8; font-style:italic; font-size:0.88rem;">No speech captured. Make sure microphone is enabled and try again.</div>`
+                        : `<div style="color:#94A3B8; font-style:italic; font-size:0.88rem;">No text submitted. Please try again.</div>`
                     }
                 </div>
 
@@ -3457,25 +3498,33 @@
                 <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
                     <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 Performance Scores</div>
                     <div class="speaking-scores-container">
-                        <div class="speaking-score-circle ${randomPron >= 85 ? 'good' : 'avg'}">
-                            <span class="speaking-score-num">${randomPron}%</span>
+                        <div class="speaking-score-circle ${accuracy >= 75 ? 'good' : 'avg'}" style="${accuracy < 40 ? 'border-color:#FCA5A5;' : ''}">
+                            <span class="speaking-score-num" style="color:${gradeColor};">${accuracy}%</span>
+                            <span class="speaking-score-label">Accuracy</span>
+                        </div>
+                        <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
+                            <span class="speaking-score-num">${pronScore}%</span>
                             <span class="speaking-score-label">Pronunciation</span>
                         </div>
-                        <div class="speaking-score-circle ${randomFluency >= 85 ? 'good' : 'avg'}">
-                            <span class="speaking-score-num">${randomFluency}%</span>
+                        <div class="speaking-score-circle ${fluencyScore >= 75 ? 'good' : 'avg'}">
+                            <span class="speaking-score-num">${fluencyScore}%</span>
                             <span class="speaking-score-label">Fluency</span>
                         </div>
-                        <div class="speaking-score-circle ${wordCount >= 10 ? 'good' : 'avg'}">
+                        <div class="speaking-score-circle ${wordCount >= 5 ? 'good' : 'avg'}">
                             <span class="speaking-score-num">${wordCount}</span>
                             <span class="speaking-score-label">Words</span>
                         </div>
                     </div>
+                    ${accuracy < 30 && spokenText ? `
+                    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
+                        ⚠️ Less than 30% match with the prompt. Read the sentence again carefully and try once more to earn XP!
+                    </div>` : ''}
                 </div>
 
                 <!-- Bujji Tip -->
                 <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
                     <div style="display:flex; align-items:flex-start; gap:12px;">
-                        <span style="font-size:22px; flex-shrink:0;">🤖</span>
+                        <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
                         <div>
                             <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
                             <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
@@ -3485,14 +3534,17 @@
 
                 <!-- Action buttons -->
                 <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                    <button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${rewardXp}, '${id}')">🎁 Claim +${rewardXp} XP</button>
+                    ${earnedXp > 0
+                        ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}')">🎁 Claim +${earnedXp} XP</button>`
+                        : `<button class="btn-secondary" style="padding:10px 24px; font-weight:700; border-radius:10px; opacity:0.6; cursor:not-allowed;" disabled>❌ No XP — Match more words to earn XP</button>`
+                    }
                     <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
                 </div>
             </div>
         `;
 
         if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playSuccess();
+            accuracy >= 75 ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
         }
 
         // Scroll results into view smoothly
