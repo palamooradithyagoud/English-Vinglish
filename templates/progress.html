@@ -3163,7 +3163,10 @@
         document.getElementById('speaking-transcript-wrapper').style.display = 'block';
 
         const transcriptText = document.getElementById('speaking-live-transcript');
-        transcriptText.textContent = 'Listening to your voice...';
+        transcriptText.innerHTML = '<span style="color:#94A3B8; font-style:italic;">Listening to your voice...</span>';
+
+        // Accumulator for the full spoken transcript across multiple segments
+        let fullTranscript = '';
 
         currentSpeakingSeconds = 0;
         const timerDisplay = document.getElementById('speaking-timer-display');
@@ -3178,26 +3181,38 @@
 
         if (recognitionInstance) {
             try {
+                // Enable continuous + interim results for best accuracy
+                recognitionInstance.continuous = true;
+                recognitionInstance.interimResults = true;
                 recognitionInstance.start();
                 recognitionInstance.onresult = (event) => {
-                    let finalTranscript = '';
+                    let interimText = '';
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        const segment = event.results[i][0].transcript;
                         if (event.results[i].isFinal) {
-                            finalTranscript += event.results[i][0].transcript;
+                            fullTranscript += (fullTranscript ? ' ' : '') + segment.trim();
+                        } else {
+                            interimText += segment;
                         }
                     }
-                    if (finalTranscript) {
-                        transcriptText.textContent = finalTranscript;
-                    }
+                    // Show finalised text + grey interim
+                    transcriptText.innerHTML = `${fullTranscript ? `<span style="color:#1E293B; font-weight:500;">${fullTranscript}</span>` : ''}<span style="color:#94A3B8; font-style:italic;">${interimText ? ' ' + interimText : (fullTranscript ? '' : 'Listening to your voice...')}</span>`;
+                    // Store full transcript where stopSpeakingAndAnalyze can read it
+                    transcriptText.dataset.fullTranscript = fullTranscript;
+                };
+                recognitionInstance.onerror = (e) => {
+                    console.warn('Speech recognition error:', e.error);
                 };
             } catch(e) {
                 console.error("SpeechRecognition start error:", e);
             }
         } else {
-            // Simulated speech-to-text placeholder
+            // Simulated speech-to-text placeholder for browsers without API
             setTimeout(() => {
                 if (isSpeakingRecording) {
-                    transcriptText.textContent = `"${activeSpeakingPrompt.replace(/Word:|Pronounce:|Topic:|Roleplay:/, '').trim()}" ... (Analyzing fluency and phonetic accuracy)`;
+                    fullTranscript = activeSpeakingPrompt.replace(/Word:|Pronounce:|Topic:|Roleplay:/, '').trim();
+                    transcriptText.innerHTML = `<span style="color:#1E293B; font-weight:500;">${fullTranscript}</span>`;
+                    transcriptText.dataset.fullTranscript = fullTranscript;
                 }
             }, 3000);
         }
@@ -3216,12 +3231,22 @@
             micBtn.innerHTML = '🎙️';
         }
 
-        document.getElementById('speaking-status-text').textContent = 'Speech Analysis Complete!';
+        document.getElementById('speaking-status-text').textContent = 'Analyzing your speech...';
         document.getElementById('speaking-waveform').style.display = 'none';
 
         if (currentSpeakingTimer) {
             clearInterval(currentSpeakingTimer);
         }
+
+        // Capture what the speaker actually said (prefer accumulated dataset value)
+        const liveTranscriptEl = document.getElementById('speaking-live-transcript');
+        const spokenText = (liveTranscriptEl && liveTranscriptEl.dataset.fullTranscript)
+            ? liveTranscriptEl.dataset.fullTranscript.trim()
+            : (liveTranscriptEl && liveTranscriptEl.textContent !== 'Listening to your voice...'
+                ? liveTranscriptEl.textContent.trim()
+                : '');
+
+        const durationSecs = currentSpeakingSeconds;
 
         if (recognitionInstance) {
             try {
@@ -3231,37 +3256,110 @@
             }
         }
 
-        // Compute simulated pronunciation & fluency scores
-        const randomPron = Math.floor(Math.random() * 25) + 75; // 75 - 99%
-        const randomFluency = Math.floor(Math.random() * 20) + 80; // 80 - 99%
+        // Build word-level comparison HTML
+        function buildComparisonHTML(spoken, prompt) {
+            if (!spoken) return '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>';
 
-        // Show analysis scores card
+            // Normalise: lowercase, strip punctuation
+            const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+            const promptWords = clean(prompt).split(/\s+/);
+            const spokenWords = spoken.split(/\s+/);
+
+            return spokenWords.map(word => {
+                const isMatch = promptWords.includes(clean(word));
+                return `<span style="
+                    display:inline-block;
+                    padding:2px 6px;
+                    margin:2px 2px;
+                    border-radius:6px;
+                    font-weight:600;
+                    background:${isMatch ? '#DCFCE7' : '#FEE2E2'};
+                    color:${isMatch ? '#166534' : '#991B1B'};
+                    font-size:0.92rem;
+                ">${word}</span>`;
+            }).join(' ');
+        }
+
+        const comparisonHTML = buildComparisonHTML(spokenText, activeSpeakingPrompt);
+
+        // Compute simulated pronunciation & fluency scores
+        const wordCount = spokenText ? spokenText.split(/\s+/).length : 0;
+        const randomPron = Math.min(99, Math.floor(Math.random() * 20) + (wordCount > 5 ? 78 : 65));
+        const randomFluency = Math.min(99, Math.floor(Math.random() * 15) + (durationSecs > 5 ? 80 : 68));
+
+        const durationStr = `${String(Math.floor(durationSecs / 60)).padStart(2,'0')}:${String(durationSecs % 60).padStart(2,'0')}`;
+
+        // Bujji tips based on score
+        const tips = [
+            "Great effort! Focus on pausing slightly between sentences to sound more natural.",
+            "Your pronunciation is improving! Try to speak a little slower for better clarity.",
+            "Excellent flow! Keep practicing stress patterns on longer words.",
+            "Good job! Maintaining a steady pace will help your fluency score go higher.",
+            "Well done! Try reading aloud for 5 minutes every day to build more confidence."
+        ];
+        const tip = tips[Math.floor(Math.random() * tips.length)];
+
+        // Show analysis results card
+        document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
         const resultsPanel = document.getElementById('speaking-results-panel');
         resultsPanel.style.display = 'block';
         resultsPanel.innerHTML = `
-            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:16px; padding:20px; box-sizing:border-box; margin-top:20px;">
-                <h3 style="font-size:0.95rem; font-weight:800; color:#0F172A; margin:0 0 12px 0;">📊 Pronunciation & Fluency Report</h3>
-                <div class="speaking-scores-container">
-                    <div class="speaking-score-circle ${randomPron >= 85 ? 'good' : 'avg'}">
-                        <span class="speaking-score-num">${randomPron}%</span>
-                        <span class="speaking-score-label">Pronunciation</span>
-                    </div>
-                    <div class="speaking-score-circle ${randomFluency >= 85 ? 'good' : 'avg'}">
-                        <span class="speaking-score-num">${randomFluency}%</span>
-                        <span class="speaking-score-label">Fluency</span>
-                    </div>
-                    <div class="speaking-score-circle good">
-                        <span class="speaking-score-num">Excellent</span>
-                        <span class="speaking-score-label">Intonation</span>
+            <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+
+                <!-- Header -->
+                <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:24px;">📊</span>
+                    <div>
+                        <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">Speech Analysis Report</div>
+                        <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words spoken</div>
                     </div>
                 </div>
 
-                <div style="text-align:left; background:#FAFAFA; padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid #F1F5F9;">
-                    <span style="font-size:0.8rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.4px;">Bujji Coach Tip:</span>
-                    <p style="font-size:0.8rem; color:#64748B; margin:4px 0 0 0; line-height:1.4;">"Great job with word stress! Work slightly on pauses between complex sentences to elevate your fluency rating above 90% next time."</p>
+                <!-- What You Said -->
+                <div style="background:#FFFFFF; padding:20px; border-bottom:1px solid #F1F5F9;">
+                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:10px;">🗣️ What You Said</div>
+                    ${spokenText
+                        ? `<div style="line-height:2; word-spacing:4px;">${comparisonHTML}</div>
+                           <div style="margin-top:10px; display:flex; gap:16px; font-size:0.72rem; color:#64748B;">
+                               <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#DCFCE7;margin-right:4px;"></span>Matched prompt words</span>
+                               <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#FEE2E2;margin-right:4px;"></span>Different / extra words</span>
+                           </div>`
+                        : `<div style="color:#94A3B8; font-style:italic; font-size:0.88rem;">No speech captured. Make sure microphone is enabled and try again.</div>`
+                    }
                 </div>
 
-                <div style="display:flex; justify-content:center; gap:16px;">
+                <!-- Score circles -->
+                <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
+                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 Performance Scores</div>
+                    <div class="speaking-scores-container">
+                        <div class="speaking-score-circle ${randomPron >= 85 ? 'good' : 'avg'}">
+                            <span class="speaking-score-num">${randomPron}%</span>
+                            <span class="speaking-score-label">Pronunciation</span>
+                        </div>
+                        <div class="speaking-score-circle ${randomFluency >= 85 ? 'good' : 'avg'}">
+                            <span class="speaking-score-num">${randomFluency}%</span>
+                            <span class="speaking-score-label">Fluency</span>
+                        </div>
+                        <div class="speaking-score-circle ${wordCount >= 10 ? 'good' : 'avg'}">
+                            <span class="speaking-score-num">${wordCount}</span>
+                            <span class="speaking-score-label">Words</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bujji Tip -->
+                <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
+                    <div style="display:flex; align-items:flex-start; gap:12px;">
+                        <span style="font-size:22px; flex-shrink:0;">🤖</span>
+                        <div>
+                            <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
+                            <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
                     <button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${rewardXp}, '${id}')">🎁 Claim +${rewardXp} XP</button>
                     <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
                 </div>
@@ -3271,6 +3369,9 @@
         if (typeof BujjiSynth !== 'undefined') {
             BujjiSynth.playSuccess();
         }
+
+        // Scroll results into view smoothly
+        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     async function claimSpeakingXP(xpToEarn, activityId) {
