@@ -1315,25 +1315,6 @@
                         </div>
                     </div>
                     
-                    <!-- Game Selection Menu -->
-                    <div class="game-selection-menu" id="game-selection-menu" style="display: flex; gap: 20px; justify-content: center; width: 100%; box-sizing: border-box;">
-                        <!-- Scramble Card -->
-                        <div class="game-select-card" onclick="launchGame('scramble')" style="background: #ffffff; border: 2px solid #E2E8F0; border-radius: 16px; padding: 24px; text-align: center; flex: 1; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center;">
-                            <div style="font-size: 48px; margin-bottom: 12px;">🔠</div>
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #0F172A; font-weight: 800;">Word Scramble</h3>
-                            <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748B; line-height: 1.4; height: 34px;">Unscramble the letters to find the correct words</p>
-                            <span class="btn-primary" style="padding: 8px 16px; font-size: 13px; border-radius: 8px; pointer-events: none; width: 100%; box-sizing: border-box; display: inline-block;">Play Scramble</span>
-                        </div>
-                        
-                        <!-- Connect Card -->
-                        <div class="game-select-card" onclick="launchGame('connect')" style="background: #ffffff; border: 2px solid #E2E8F0; border-radius: 16px; padding: 24px; text-align: center; flex: 1; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center;">
-                            <div style="font-size: 48px; margin-bottom: 12px;">🔗</div>
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #0F172A; font-weight: 800;">Word Connect</h3>
-                            <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748B; line-height: 1.4; height: 34px;">Swipe to connect letters and build matching words</p>
-                            <span class="btn-primary" style="padding: 8px 16px; font-size: 13px; border-radius: 8px; pointer-events: none; width: 100%; box-sizing: border-box; display: inline-block;">Play Connect</span>
-                        </div>
-                    </div>
-
                     <!-- HUD -->
                     <div class="game-hud" id="game-hud" style="display: none; justify-content: space-around; width: 100%; border-bottom: 1px solid #E2E8F0; padding-bottom: 12px;">
                         <div class="hud-item xp">
@@ -1341,23 +1322,6 @@
                         </div>
                         <div class="hud-item streak">
                             <span>🔥</span> <span id="game-streak-counter">0</span> Streak
-                        </div>
-                    </div>
-
-                    <!-- 1. Word Scramble Board -->
-                    <div class="game-board-card" id="scramble-game-board" style="display: none; flex-direction: column; width: 100%;">
-                        <div class="scrambled-tiles-container" id="scrambled-tiles">
-                            <!-- Tiles dynamically populated -->
-                        </div>
-                        <div class="hint-banner" id="game-hint-text">
-                            Hint text description
-                        </div>
-                        <div class="game-input-row">
-                            <input type="text" class="input-scramble-guess" id="input-scramble-guess" placeholder="Enter unscrambled word..." autocomplete="off">
-                            <button class="btn-primary btn-game-submit" onclick="submitScrambleGuess()">Submit</button>
-                        </div>
-                        <div class="feedback-banner" id="game-feedback-banner">
-                            Feedback
                         </div>
                     </div>
 
@@ -1748,8 +1712,6 @@
             const data = await response.json();
             
             if (data.completed_today) {
-                document.getElementById('game-selection-menu').style.display = 'none';
-                document.getElementById('scramble-game-board').style.display = 'none';
                 document.getElementById('connect-game-board').style.display = 'none';
                 document.getElementById('game-hud').style.display = 'none';
                 document.getElementById('btn-game-back').style.display = 'none';
@@ -1805,141 +1767,13 @@
         gameStreak = 0;
         document.getElementById('game-xp-score').textContent = gameScore;
         document.getElementById('game-streak-counter').textContent = gameStreak;
-        
-        const input = document.getElementById('input-scramble-guess');
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                submitScrambleGuess();
-            }
-        };
 
         const completed = await checkDailyGameStatus();
         if (!completed) {
-            showGameSelectionMenu();
-        }
-    }
-
-    function showGameSelectionMenu() {
-        document.getElementById('game-selection-menu').style.display = 'flex';
-        document.getElementById('scramble-game-board').style.display = 'none';
-        document.getElementById('connect-game-board').style.display = 'none';
-        document.getElementById('game-hud').style.display = 'none';
-        document.getElementById('btn-game-back').style.display = 'none';
-        document.getElementById('game-overlay-title').textContent = 'Play Games';
-        
-        if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playPop();
-        }
-    }
-
-    function launchGame(mode) {
-        activeGameMode = mode;
-        document.getElementById('game-selection-menu').style.display = 'none';
-        document.getElementById('game-hud').style.display = 'flex';
-        document.getElementById('btn-game-back').style.display = 'inline-flex';
-        
-        if (mode === 'scramble') {
-            document.getElementById('scramble-game-board').style.display = 'flex';
-            document.getElementById('connect-game-board').style.display = 'none';
-            document.getElementById('game-overlay-title').textContent = 'Word Scramble';
-            document.getElementById('game-feedback-banner').classList.remove('show');
-            loadScrambleWord();
-        } else {
-            document.getElementById('scramble-game-board').style.display = 'none';
+            document.getElementById('game-hud').style.display = 'flex';
             document.getElementById('connect-game-board').style.display = 'flex';
             document.getElementById('game-overlay-title').textContent = 'Word Connect';
             initConnectGame();
-        }
-        
-        if (typeof BujjiSynth !== 'undefined') {
-            BujjiSynth.playPop();
-        }
-    }
-
-    // --- WORD SCRAMBLE LOGIC ---
-    function loadScrambleWord() {
-        const wordData = scrambleWords[Math.floor(Math.random() * scrambleWords.length)];
-        activeWord = wordData.word;
-        
-        const tilesContainer = document.getElementById('scrambled-tiles');
-        tilesContainer.innerHTML = '';
-        
-        // Build letters tiles
-        for (let char of wordData.scrambled) {
-            const tile = document.createElement('div');
-            tile.className = 'letter-tile';
-            tile.textContent = char;
-            tilesContainer.appendChild(tile);
-        }
-        
-        document.getElementById('game-hint-text').innerHTML = `<strong>Hint:</strong> ${wordData.hint}`;
-        
-        const input = document.getElementById('input-scramble-guess');
-        input.value = '';
-        input.focus();
-    }
-
-    async function submitScrambleGuess() {
-        const input = document.getElementById('input-scramble-guess');
-        const guess = input.value.trim().toUpperCase();
-        const feedback = document.getElementById('game-feedback-banner');
-        
-        if (!guess) return;
-        
-        if (guess === activeWord) {
-            // Correct Answer
-            gameScore += 10;
-            gameStreak += 1;
-            document.getElementById('game-xp-score').textContent = gameScore;
-            document.getElementById('game-streak-counter').textContent = gameStreak;
-            
-            feedback.className = 'feedback-banner success show';
-            feedback.innerHTML = `🎉 Correct! <strong>${activeWord}</strong>. +10 XP awarded!`;
-            
-            if (typeof BujjiSynth !== 'undefined') {
-                BujjiSynth.playSuccess();
-            }
-            
-            try {
-                const response = await fetch('/api/game/log', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        game_type: 'WORD_SCRAMBLE',
-                        word_or_level: activeWord,
-                        score: 10,
-                        streak: gameStreak,
-                        earned_xp: 10
-                    })
-                });
-                const data = await response.json();
-                if (data.success && data.new_xp !== undefined) {
-                    const studentXpEl = document.getElementById('student-xp-display');
-                    if (studentXpEl) {
-                        studentXpEl.textContent = `${data.new_xp} XP`;
-                    }
-                }
-            } catch(e) {
-                console.error("Error rewarding XP:", e);
-            }
-            
-            setTimeout(() => {
-                feedback.classList.remove('show');
-                checkDailyGameStatus();
-            }, 2000);
-        } else {
-            gameStreak = 0;
-            document.getElementById('game-streak-counter').textContent = gameStreak;
-            
-            feedback.className = 'feedback-banner error show';
-            feedback.innerHTML = `❌ Incorrect. Try again!`;
-            
-            if (typeof BujjiSynth !== 'undefined') {
-                BujjiSynth.playFailure();
-            }
-            
-            input.classList.add('shake');
-            setTimeout(() => input.classList.remove('shake'), 400);
         }
     }
 
