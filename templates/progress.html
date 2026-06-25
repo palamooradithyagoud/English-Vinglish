@@ -2831,16 +2831,166 @@
     let currentSpeakingTimer = null;
     let currentSpeakingTask = null;
     let currentSpeakingSeconds = 0;
-    let recognitionInstance = null;
+    class BujjiSpeechManager {
+        constructor() {
+            this.recognition = null;
+            this.isRecording = false;
+            this.retryCount = 0;
+            this.maxRetries = 3;
+            this.recognitionActive = false;
+            this.lang = 'en-IN'; // Default optimized for Indian English accents
+            this.processedResultIndices = new Set();
+            
+            this.onTranscriptUpdate = null;
+            this.onErrorCallback = null;
+            this.onStartCallback = null;
+            this.onEndCallback = null;
+            
+            this.init();
+        }
+        
+        init() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = this.lang;
+                
+                this.recognition.onstart = () => this.handleStart();
+                this.recognition.onend = () => this.handleEnd();
+                this.recognition.onerror = (e) => this.handleError(e);
+                this.recognition.onresult = (e) => this.handleResult(e);
+            }
+        }
+        
+        start() {
+            if (!this.recognition) return false;
+            if (this.isRecording) return true;
+            
+            console.log("BujjiSpeechManager: starting recognition session");
+            this.isRecording = true;
+            this.retryCount = 0;
+            this.processedResultIndices.clear();
+            
+            try {
+                this.recognition.start();
+                this.recognitionActive = true;
+            } catch (e) {
+                console.warn("BujjiSpeechManager start error:", e.message);
+            }
+            return true;
+        }
+        
+        stop() {
+            if (!this.recognition) return;
+            console.log("BujjiSpeechManager: stopping recognition session");
+            this.isRecording = false;
+            this.recognitionActive = false;
+            try {
+                this.recognition.stop();
+            } catch (e) {
+                console.warn("BujjiSpeechManager stop error:", e.message);
+            }
+        }
+        
+        cancel() {
+            if (!this.recognition) return;
+            console.log("BujjiSpeechManager: cancelling recognition session");
+            this.isRecording = false;
+            this.recognitionActive = false;
+            try {
+                this.recognition.abort();
+            } catch (e) {
+                console.warn("BujjiSpeechManager abort error:", e.message);
+            }
+        }
+        
+        handleStart() {
+            console.log("BujjiSpeechManager: active");
+            if (this.onStartCallback) this.onStartCallback();
+        }
+        
+        handleEnd() {
+            console.log("BujjiSpeechManager: ended");
+            this.recognitionActive = false;
+            
+            if (this.isRecording) {
+                console.log("BujjiSpeechManager: unexpected end, restarting...");
+                setTimeout(() => {
+                    if (this.isRecording && !this.recognitionActive) {
+                        try {
+                            this.recognition.start();
+                            this.recognitionActive = true;
+                        } catch (e) {
+                            console.warn("BujjiSpeechManager auto-restart failed:", e.message);
+                        }
+                    }
+                }, 300);
+            } else {
+                if (this.onEndCallback) this.onEndCallback();
+            }
+        }
+        
+        handleError(event) {
+            console.error("BujjiSpeechManager error:", event.error);
+            
+            if (event.error === 'no-speech') {
+                return;
+            }
+            if (event.error === 'aborted') {
+                return;
+            }
+            
+            if (event.error === 'network') {
+                this.retryCount++;
+                if (this.retryCount <= this.maxRetries) {
+                    console.log(`BujjiSpeechManager network error, retrying (${this.retryCount}/${this.maxRetries})...`);
+                    this.stop();
+                    setTimeout(() => {
+                        if (this.isRecording) this.start();
+                    }, 1000);
+                    return;
+                }
+            }
+            
+            if (this.onErrorCallback) {
+                this.onErrorCallback(event.error);
+            }
+        }
+        
+        handleResult(event) {
+            let interimText = '';
+            let newFinalText = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const result = event.results[i];
+                const transcript = result[0].transcript;
+                
+                if (result.isFinal) {
+                    if (!this.processedResultIndices.has(i)) {
+                        this.processedResultIndices.add(i);
+                        const cleanSegment = transcript.trim();
+                        if (cleanSegment) {
+                            newFinalText += (newFinalText ? ' ' : '') + cleanSegment;
+                        }
+                    }
+                } else {
+                    interimText += transcript;
+                }
+            }
+            
+            if (this.onTranscriptUpdate) {
+                this.onTranscriptUpdate(newFinalText, interimText);
+            }
+        }
+    }
+
+    let speechManager = null;
     let fullTranscript = '';   // Module-level: persists across recognition restarts
 
-    // Initialize Web Speech API if supported
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognitionInstance = new SpeechRecognition();
-        recognitionInstance.continuous = true;
-        recognitionInstance.interimResults = true;
-        recognitionInstance.lang = 'en-US';
+        speechManager = new BujjiSpeechManager();
     }
 
     function initSpeakingOverlay() {
@@ -3070,8 +3220,8 @@
         if (currentSpeakingTimer) {
             clearInterval(currentSpeakingTimer);
         }
-        if (recognitionInstance && isSpeakingRecording) {
-            recognitionInstance.stop();
+        if (speechManager && isSpeakingRecording) {
+            speechManager.stop();
         }
         isSpeakingRecording = false;
 
@@ -3319,50 +3469,29 @@
             if (statusEl) statusEl.textContent = 'Type your response below and click Submit.';
         }
 
-        if (recognitionInstance) {
-            // Assign handlers BEFORE start()
-            recognitionInstance.continuous = true;
-            recognitionInstance.interimResults = true;
-            recognitionInstance.lang = 'en-US';
-
-            recognitionInstance.onresult = (event) => {
+        if (speechManager) {
+            speechManager.onTranscriptUpdate = (newFinalText, interimText) => {
                 speechDetected = true;
-                let interimText = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    const segment = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        fullTranscript += (fullTranscript ? ' ' : '') + segment.trim();
-                    } else {
-                        interimText += segment;
+                if (newFinalText) {
+                    if (!fullTranscript.endsWith(newFinalText)) {
+                        fullTranscript += (fullTranscript ? ' ' : '') + newFinalText;
                     }
                 }
                 updateTranscriptUI(interimText);
             };
 
-            recognitionInstance.onerror = (e) => {
-                console.warn('Speech recognition error:', e.error);
-                if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+            speechManager.onErrorCallback = (errorType) => {
+                console.warn('Speech recognition error in manager:', errorType);
+                if (errorType === 'not-allowed' || errorType === 'permission-denied') {
                     showManualInputFallback('⚠️ Microphone blocked by browser. Type your response below.');
-                } else if (e.error === 'network') {
-                    // Brave browser blocks the Google Speech API network call
+                } else if (errorType === 'network') {
                     showManualInputFallback('⚠️ Speech-to-text blocked by your browser (Brave/Firefox shield). Type what you said below:');
-                } else if (e.error === 'no-speech') {
-                    // silence — let onend restart it, don't fallback yet
+                } else {
+                    showManualInputFallback(`⚠️ Speech recognition error: ${errorType}. Type what you said:`);
                 }
             };
 
-            // Auto-restart when Chrome stops recognition after silence
-            recognitionInstance.onend = () => {
-                if (isSpeakingRecording) {
-                    try { recognitionInstance.start(); } catch(e) {}
-                }
-            };
-
-            try {
-                recognitionInstance.start();
-            } catch(e) {
-                console.warn('Recognition start skipped:', e.message);
-            }
+            speechManager.start();
 
             // After 5 seconds, if nothing captured, show manual fallback
             setTimeout(() => {
@@ -3398,8 +3527,8 @@
             clearInterval(currentSpeakingTimer);
         }
 
-        if (recognitionInstance) {
-            try { recognitionInstance.stop(); } catch(e) {}
+        if (speechManager) {
+            speechManager.stop();
         }
 
         // Read from module-level fullTranscript (most reliable)
@@ -3650,10 +3779,8 @@
     closeOverlay = function(activity) {
         if (activity === 'speaking') {
             if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
-            if (recognitionInstance && isSpeakingRecording) {
-                try {
-                    recognitionInstance.stop();
-                } catch(e) {}
+            if (speechManager && isSpeakingRecording) {
+                speechManager.stop();
             }
             isSpeakingRecording = false;
         }
@@ -3663,10 +3790,8 @@
     const originalCloseAllOverlaysSpeaking = closeAllOverlays;
     closeAllOverlays = function() {
         if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
-        if (recognitionInstance && isSpeakingRecording) {
-            try {
-                recognitionInstance.stop();
-            } catch(e) {}
+        if (speechManager && isSpeakingRecording) {
+            speechManager.stop();
         }
         isSpeakingRecording = false;
         originalCloseAllOverlaysSpeaking();
