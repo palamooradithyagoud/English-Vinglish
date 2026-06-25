@@ -2956,7 +2956,7 @@
                 data[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
             }
             
-            return new Blob([view], { type: 'audio/wav' });
+            return new Blob([buffer], { type: 'audio/wav' });
         }
     }
 
