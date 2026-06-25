@@ -1263,10 +1263,36 @@ def has_played_game_today(student_id):
         print(f"Error checking daily game status: {e}")
         return False
 
+def get_student_today_time_taken(student_id):
+    """
+    Retrieves the time taken by a student to complete today's daily game.
+    """
+    try:
+        response = supabase.table("game_attempts").select("*").eq("student_id", int(student_id)).execute()
+        attempts = response.data or []
+        today = datetime.now().date()
+        for a in attempts:
+            comp_at = parse_date(a.get("completed_at"))
+            if comp_at.date() == today:
+                gtype = a.get("game_type")
+                score = a.get("score", 0)
+                if gtype == 'WORD_CONNECT' and score == 20:
+                    word_or_level = a.get("word_or_level", "")
+                    if "|" in word_or_level:
+                        try:
+                            return int(word_or_level.split("|")[1])
+                        except ValueError:
+                            pass
+        return None
+    except Exception as e:
+        print(f"Error getting student today time taken: {e}")
+        return None
+
 def get_class_game_leaderboard(branch, year, current_student_id):
     """
-    Ranks students of the same branch and year by their total game XP (earned_xp in game_attempts).
-    Returns a list of dicts: [{'rank': 1, 'full_name': '...', 'game_xp': 100, 'is_current': True}]
+    Ranks students of the same branch and year by their total game XP (earned_xp in game_attempts)
+    and extracts today's completion time.
+    Returns a list of dicts: [{'rank': 1, 'full_name': '...', 'game_xp': 100, 'time_taken': 42, 'is_current': True}]
     """
     try:
         # 1. Fetch all students in this class
@@ -1278,14 +1304,30 @@ def get_class_game_leaderboard(branch, year, current_student_id):
         students = students_res.data or []
         
         # 2. Fetch all game attempts
-        attempts_res = supabase.table("game_attempts").select("student_id, earned_xp").execute()
+        attempts_res = supabase.table("game_attempts").select("student_id, earned_xp, word_or_level, game_type, score, completed_at").execute()
         attempts = attempts_res.data or []
         
-        # Map student_id to total game XP
+        today = datetime.now().date()
+        
+        # Map student_id to total game XP and today's time taken
         game_xp_map = {}
+        today_time_map = {}
         for a in attempts:
             sid = a.get("student_id")
             game_xp_map[sid] = game_xp_map.get(sid, 0) + a.get("earned_xp", 0)
+            
+            # Extract time taken if completed today
+            comp_at = parse_date(a.get("completed_at"))
+            if comp_at.date() == today:
+                gtype = a.get("game_type")
+                score = a.get("score", 0)
+                if gtype == 'WORD_CONNECT' and score == 20:
+                    word_or_level = a.get("word_or_level", "")
+                    if "|" in word_or_level:
+                        try:
+                            today_time_map[sid] = int(word_or_level.split("|")[1])
+                        except ValueError:
+                            pass
             
         leaderboard = []
         for s in students:
@@ -1294,7 +1336,8 @@ def get_class_game_leaderboard(branch, year, current_student_id):
                 "id": sid,
                 "full_name": s["full_name"],
                 "game_xp": game_xp_map.get(sid, 0),
-                "overall_xp": s.get("xp", 0)
+                "overall_xp": s.get("xp", 0),
+                "time_taken": today_time_map.get(sid, None)
             })
             
         # Sort by game_xp descending, then overall_xp descending
@@ -1307,6 +1350,7 @@ def get_class_game_leaderboard(branch, year, current_student_id):
                 "rank": rank,
                 "full_name": item["full_name"],
                 "game_xp": item["game_xp"],
+                "time_taken": item["time_taken"],
                 "is_current": (item["id"] == int(current_student_id))
             })
             

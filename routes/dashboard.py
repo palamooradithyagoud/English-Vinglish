@@ -16,7 +16,8 @@ from database import (
     get_student_speaking_stats,
     get_student_game_stats,
     has_played_game_today,
-    get_class_game_leaderboard
+    get_class_game_leaderboard,
+    get_student_today_time_taken
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
@@ -297,10 +298,16 @@ def game_status():
     year = student.get('year')
     
     completed_today = has_played_game_today(student_id)
+    
+    time_taken = None
+    if completed_today:
+        time_taken = get_student_today_time_taken(student_id)
+        
     leaderboard = get_class_game_leaderboard(branch, year, student_id)
     
     return jsonify({
         'completed_today': completed_today,
+        'time_taken': time_taken,
         'class_name': f"{branch} Year {year}",
         'leaderboard': leaderboard
     })
