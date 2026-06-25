@@ -257,77 +257,31 @@ def transcribe_speech():
     if len(audio_bytes) == 0:
         return jsonify({'error': 'Audio file is empty'}), 400
         
-    wit_token = os.environ.get("WIT_AI_SERVER_TOKEN")
     groq_key = os.environ.get("GROQ_API_KEY")
-    
-    if not wit_token and not groq_key:
-        return jsonify({'error': 'No STT API key configured. Add WIT_AI_SERVER_TOKEN or GROQ_API_KEY to your .env file.'}), 400
+    if not groq_key:
+        return jsonify({'error': 'No STT API key configured. Add GROQ_API_KEY to your .env file.'}), 400
 
-    # Try Wit.ai first if configured
-    if wit_token:
-        try:
-            import datetime as dt
-            version_date = dt.date.today().strftime("%Y%m%d")
-            content_type = audio_file.content_type or "audio/wav"
+    try:
+        url = "https://api.groq.com/openai/v1/audio/transcriptions"
+        headers = {
+            "Authorization": f"Bearer {groq_key}"
+        }
+        filename = audio_file.filename or "audio.wav"
+        if not filename.endswith('.wav') and not filename.endswith('.webm') and not filename.endswith('.mp3') and not filename.endswith('.m4a'):
+            filename = "audio.wav"
             
-            headers = {
-                "Authorization": f"Bearer {wit_token}",
-                "Content-Type": content_type
-            }
-            url = f"https://api.wit.ai/speech?v={version_date}"
-            
-            response = requests.post(url, headers=headers, data=audio_bytes)
-            
-            if response.status_code == 200:
-                text = ""
-                lines = response.text.strip().split('\n')
-                for line in reversed(lines):
-                    if not line.strip():
-                        continue
-                    try:
-                        import json
-                        json_data = json.loads(line)
-                        if "text" in json_data:
-                            text = json_data["text"]
-                            break
-                    except Exception:
-                        continue
-                return jsonify({'text': text.strip()})
-            else:
-                if groq_key:
-                    print(f"Wit.ai failed with status {response.status_code}. Falling back to Groq...")
-                else:
-                    return jsonify({'error': f'Wit.ai API error: {response.text}'}), response.status_code
-        except Exception as e:
-            if not groq_key:
-                return jsonify({'error': f'Wit.ai call failed: {str(e)}'}), 500
-            print(f"Wit.ai failed with exception: {e}. Falling back to Groq...")
-
-    # Fallback to Groq Whisper if available
-    if groq_key:
-        try:
-            url = "https://api.groq.com/openai/v1/audio/transcriptions"
-            headers = {
-                "Authorization": f"Bearer {groq_key}"
-            }
-            filename = audio_file.filename or "audio.wav"
-            if not filename.endswith('.wav') and not filename.endswith('.webm') and not filename.endswith('.mp3') and not filename.endswith('.m4a'):
-                filename = "audio.wav"
-                
-            files = {
-                "file": (filename, audio_bytes, audio_file.content_type or "audio/wav"),
-                "model": (None, "whisper-large-v3-turbo")
-            }
-            response = requests.post(url, headers=headers, files=files)
-            if response.status_code == 200:
-                text = response.json().get("text", "")
-                return jsonify({'text': text.strip()})
-            else:
-                return jsonify({'error': f'Groq Whisper API error: {response.text}'}), response.status_code
-        except Exception as e:
-            return jsonify({'error': f'Groq Whisper call failed: {str(e)}'}), 500
-
-    return jsonify({'error': 'No transcription API was successful.'}), 500
+        files = {
+            "file": (filename, audio_bytes, audio_file.content_type or "audio/wav"),
+            "model": (None, "whisper-large-v3-turbo")
+        }
+        response = requests.post(url, headers=headers, files=files)
+        if response.status_code == 200:
+            text = response.json().get("text", "")
+            return jsonify({'text': text.strip()})
+        else:
+            return jsonify({'error': f'Groq Whisper API error: {response.text}'}), response.status_code
+    except Exception as e:
+        return jsonify({'error': f'Groq Whisper call failed: {str(e)}'}), 500
 
 @dashboard_bp.route('/api/game/log', methods=['POST'])
 @login_required
