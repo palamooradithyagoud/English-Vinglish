@@ -428,6 +428,153 @@ def get_students_list(branch=None, year=None, level=None, search_query=None):
         print(f"Error getting students list: {e}")
         return []
 
+def get_all_students_progress():
+    """
+    Retrieve all students with detailed progress info:
+    - levels_completed
+    - progress_percentage
+    - last_active
+    - streak
+    - speaking_stats
+    - game_stats
+    """
+    try:
+        students = get_students_list()
+        
+        # 1. Fetch all progress records
+        prog_resp = supabase.table("progress").select("student_id,level,status,completed_at").execute()
+        progress_records = prog_resp.data or []
+        
+        from collections import defaultdict
+        student_prog = defaultdict(list)
+        for r in progress_records:
+            student_prog[r["student_id"]].append(r)
+            
+        # 2. Fetch all activity logs to calculate streak and last active
+        logs_resp = supabase.table("activity_logs") \
+            .select("student_id,created_at") \
+            .order("created_at", desc=True) \
+            .execute()
+        logs_records = logs_resp.data or []
+        
+        student_logs = defaultdict(list)
+        for r in logs_records:
+            student_logs[r["student_id"]].append(r)
+            
+        # 3. Fetch all speaking attempts
+        speaking_resp = supabase.table("speaking_attempts").select("*").execute()
+        speaking_records = speaking_resp.data or []
+        
+        student_speaking = defaultdict(list)
+        for r in speaking_records:
+            student_speaking[r["student_id"]].append(r)
+            
+        # 4. Fetch all game attempts
+        game_resp = supabase.table("game_attempts").select("*").execute()
+        game_records = game_resp.data or []
+        
+        student_games = defaultdict(list)
+        for r in game_records:
+            student_games[r["student_id"]].append(r)
+            
+        # Enrich student data
+        from datetime import datetime, timedelta
+        today = datetime.utcnow().date()
+        yesterday = today - timedelta(days=1)
+        
+        for s in students:
+            s_id = s["id"]
+            
+            # Progress levels
+            records = student_prog.get(s_id, [])
+            passed = {r["level"] for r in records if r["status"] == "passed"}
+            s["levels_completed"] = len(passed)
+            s["progress_percentage"] = min(100, len(passed) * 20)
+            
+            # Streak calculation
+            logs = student_logs.get(s_id, [])
+            last_act = None
+            streak = 0
+            if logs:
+                last_act = parse_date(logs[0]["created_at"])
+                
+                # Extract unique dates, sorted descending
+                unique_dates = sorted(list({parse_date(l['created_at']).date() for l in logs}), reverse=True)
+                if unique_dates:
+                    # Check if streak is active
+                    if unique_dates[0] in (today, yesterday):
+                        streak = 1
+                        current_date = unique_dates[0]
+                        for next_date in unique_dates[1:]:
+                            if (current_date - next_date).days == 1:
+                                streak += 1
+                                current_date = next_date
+                            elif (current_date - next_date).days == 0:
+                                continue
+                            else:
+                                break
+            s["streak"] = streak
+            
+            # Determine last active date
+            if not last_act and records:
+                sorted_r = sorted(records, key=lambda x: x.get("completed_at", ""), reverse=True)
+                last_act = parse_date(sorted_r[0]["completed_at"])
+                
+            if last_act:
+                s["last_active"] = last_act.strftime("%Y-%m-%d %H:%M")
+            else:
+                s["last_active"] = "No activity"
+                
+            # Speaking stats
+            speaking_list = student_speaking.get(s_id, [])
+            if speaking_list:
+                total_xp = sum(a.get("earned_xp", 0) for a in speaking_list)
+                total_sessions = len(speaking_list)
+                average_accuracy = int(sum(a.get("accuracy", 0) for a in speaking_list) / total_sessions)
+                average_pron = int(sum(a.get("pronunciation", 0) for a in speaking_list) / total_sessions)
+                average_fluency = int(sum(a.get("fluency", 0) for a in speaking_list) / total_sessions)
+                s["speaking_stats"] = {
+                    "total_xp": total_xp,
+                    "total_sessions": total_sessions,
+                    "average_accuracy": average_accuracy,
+                    "average_pron": average_pron,
+                    "average_fluency": average_fluency
+                }
+            else:
+                s["speaking_stats"] = {
+                    "total_xp": 0,
+                    "total_sessions": 0,
+                    "average_accuracy": 0,
+                    "average_pron": 0,
+                    "average_fluency": 0
+                }
+                
+            # Game stats
+            games_list = student_games.get(s_id, [])
+            if games_list:
+                total_xp = sum(a.get("earned_xp", 0) for a in games_list)
+                total_plays = len(games_list)
+                high_score = max(a.get("score", 0) for a in games_list)
+                max_streak = max(a.get("streak", 0) for a in games_list)
+                s["game_stats"] = {
+                    "total_xp": total_xp,
+                    "total_plays": total_plays,
+                    "high_score": high_score,
+                    "max_streak": max_streak
+                }
+            else:
+                s["game_stats"] = {
+                    "total_xp": 0,
+                    "total_plays": 0,
+                    "high_score": 0,
+                    "max_streak": 0
+                }
+                
+        return students
+    except Exception as e:
+        print(f"Error getting all students progress: {e}")
+        return []
+
 def get_student_quiz_accuracy_trend(student_id):
     """
     Gets quiz percentages in chronological order for Chart.js.

@@ -17,6 +17,7 @@ def create_app():
     app.register_blueprint(faculty_auth_bp)
     app.register_blueprint(faculty_dashboard_bp)
     app.register_blueprint(questions_bp)
+    app.register_blueprint(reports_bp)
     @app.context_processor
     def inject_student_global():
         from flask import session

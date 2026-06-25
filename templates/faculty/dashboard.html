@@ -151,5 +151,297 @@
             </div>
         </div>
     </div>
+
+    <!-- Student Progress Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <span class="p-2 bg-success-subtle rounded-3 me-3 text-success">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                        </span>
+                        <h3 class="h5 fw-bold mb-0">Every Student's Progress Roster</h3>
+                    </div>
+                    <!-- Quick Search/Filters -->
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <input type="text" id="progressSearchInput" class="form-control form-control-sm" placeholder="Search student by name or roll..." style="max-width: 230px;">
+                        <select id="branchFilterInput" class="form-select form-select-sm" style="max-width: 150px;">
+                            <option value="">All Branches</option>
+                            <option value="CSE">CSE</option>
+                            <option value="CSE AIML">CSE AIML</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="IT">IT</option>
+                            <option value="Chemical">Chemical</option>
+                        </select>
+                        <select id="levelFilterInput" class="form-select form-select-sm" style="max-width: 130px;">
+                            <option value="">All Levels</option>
+                            <option value="1">Level 1</option>
+                            <option value="2">Level 2</option>
+                            <option value="3">Level 3</option>
+                            <option value="4">Level 4</option>
+                            <option value="5">Level 5</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if students_progress %}
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover" id="progressTable">
+                                <thead>
+                                    <tr class="text-secondary small fw-bold">
+                                        <th style="width: 50px;"></th>
+                                        <th>Student Details</th>
+                                        <th>Branch & Year</th>
+                                        <th class="text-center">Current Level</th>
+                                        <th class="text-center">Streak</th>
+                                        <th class="text-center">Levels Completed</th>
+                                        <th>Overall Completion</th>
+                                        <th class="text-center">Total XP</th>
+                                        <th>Last Active</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sp in students_progress %}
+                                        <tr class="student-row align-middle" data-name="{{ sp.full_name|lower }}" data-roll="{{ sp.roll_number|lower }}" data-branch="{{ sp.branch }}" data-level="{{ sp.current_level }}">
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-link p-0 toggle-stats-btn" data-target="#stats-{{ sp.id }}" style="color: #10B981; text-decoration: none;">
+                                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="chevron-icon" style="transition: transform 0.2s ease;">
+                                                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                                                    </svg>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark">{{ sp.full_name }}</div>
+                                                <div class="text-muted small" style="font-size: 0.75rem;">Roll: {{ sp.roll_number }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary-subtle text-secondary">{{ sp.branch }}</span>
+                                                <span class="text-muted small d-block">Year {{ sp.year }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-success-subtle text-success">Lvl {{ sp.current_level }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold rounded-pill px-3">
+                                                    🔥 {{ sp.streak }} Days
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="fw-bold">{{ sp.levels_completed }}</span> <span class="text-muted">/ 5</span>
+                                            </td>
+                                            <td style="min-width: 180px;">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="progress w-100" style="height: 8px; border-radius: 4px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ sp.progress_percentage }}%; border-radius: 4px;" aria-valuenow="{{ sp.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <span class="small fw-semibold text-secondary" style="font-size: 0.75rem;">{{ sp.progress_percentage }}%</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="fw-bold text-success">{{ sp.xp }} XP</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="d-inline-block rounded-circle {% if sp.last_active == 'No activity' %}bg-secondary{% else %}bg-success{% endif %}" style="width: 8px; height: 8px;"></span>
+                                                    <span class="small text-muted" style="font-size: 0.8rem;">{{ sp.last_active }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{{ url_for('faculty_dashboard.student_detail', student_id=sp.id) }}" class="btn btn-sm btn-outline-success rounded-3 px-3">
+                                                    View Profile
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <!-- Collapsible stats row -->
+                                        <tr id="stats-{{ sp.id }}" class="stats-detail-row d-none" style="background-color: #f9fafb;">
+                                            <td></td>
+                                            <td colspan="9" class="p-4">
+                                                <div class="row g-4">
+                                                    <!-- Speaking Stats -->
+                                                    <div class="col-md-6">
+                                                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                                                            <div class="card-body p-4">
+                                                                <h4 class="h6 fw-bold text-success mb-3 d-flex align-items-center">
+                                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="me-2 text-success">
+                                                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                                                                    </svg>
+                                                                    Speaking Practice Stats
+                                                                </h4>
+                                                                <div class="row text-center mb-3">
+                                                                    <div class="col-4">
+                                                                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Sessions</span>
+                                                                        <span class="h5 fw-bold text-dark mb-0">{{ sp.speaking_stats.total_sessions }}</span>
+                                                                    </div>
+                                                                    <div class="col-4">
+                                                                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Total XP</span>
+                                                                        <span class="h5 fw-bold text-success mb-0">{{ sp.speaking_stats.total_xp }} XP</span>
+                                                                    </div>
+                                                                    <div class="col-4">
+                                                                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Avg Accuracy</span>
+                                                                        <span class="h5 fw-bold text-dark mb-0">{{ sp.speaking_stats.average_accuracy }}%</span>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- Accuracy details progress bars -->
+                                                                <div class="space-y-3">
+                                                                    <div class="mb-2">
+                                                                        <div class="d-flex justify-content-between small text-secondary mb-1" style="font-size: 0.75rem;">
+                                                                            <span>Accuracy</span>
+                                                                            <span>{{ sp.speaking_stats.average_accuracy }}%</span>
+                                                                        </div>
+                                                                        <div class="progress" style="height: 6px; border-radius: 3px;">
+                                                                            <div class="progress-bar bg-success" style="width: {{ sp.speaking_stats.average_accuracy }}%; border-radius: 3px;"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="mb-2">
+                                                                        <div class="d-flex justify-content-between small text-secondary mb-1" style="font-size: 0.75rem;">
+                                                                            <span>Pronunciation</span>
+                                                                            <span>{{ sp.speaking_stats.average_pron }}%</span>
+                                                                        </div>
+                                                                        <div class="progress" style="height: 6px; border-radius: 3px;">
+                                                                            <div class="progress-bar bg-info" style="width: {{ sp.speaking_stats.average_pron }}%; border-radius: 3px;"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div class="d-flex justify-content-between small text-secondary mb-1" style="font-size: 0.75rem;">
+                                                                            <span>Fluency</span>
+                                                                            <span>{{ sp.speaking_stats.average_fluency }}%</span>
+                                                                        </div>
+                                                                        <div class="progress" style="height: 6px; border-radius: 3px;">
+                                                                            <div class="progress-bar bg-warning" style="width: {{ sp.speaking_stats.average_fluency }}%; border-radius: 3px;"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Gameplay Stats -->
+                                                    <div class="col-md-6">
+                                                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                                                            <div class="card-body p-4">
+                                                                <h4 class="h6 fw-bold text-primary mb-3 d-flex align-items-center">
+                                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="me-2 text-primary">
+                                                                        <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 10 19.5 10s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                                                                    </svg>
+                                                                    Gameplay Stats
+                                                                </h4>
+                                                                <div class="row g-3">
+                                                                    <div class="col-6">
+                                                                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                                                                            <span class="d-block text-muted small mb-1" style="font-size: 0.75rem;">Total Games Played</span>
+                                                                            <span class="h5 fw-extrabold text-dark mb-0">{{ sp.game_stats.total_plays }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                                                                            <span class="d-block text-muted small mb-1" style="font-size: 0.75rem;">Highest Score</span>
+                                                                            <span class="h5 fw-extrabold text-primary mb-0">{{ sp.game_stats.high_score }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                                                                            <span class="d-block text-muted small mb-1" style="font-size: 0.75rem;">Max Streak</span>
+                                                                            <span class="h5 fw-extrabold text-warning mb-0">{{ sp.game_stats.max_streak }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                                                                            <span class="d-block text-muted small mb-1" style="font-size: 0.75rem;">XP Earned</span>
+                                                                            <span class="h5 fw-extrabold text-success mb-0">{{ sp.game_stats.total_xp }} XP</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0">No student progress data available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("progressSearchInput");
+        const branchFilter = document.getElementById("branchFilterInput");
+        const levelFilter = document.getElementById("levelFilterInput");
+        const rows = document.querySelectorAll("#progressTable tbody .student-row");
+
+        // Expand/Collapse logic
+        const toggleButtons = document.querySelectorAll(".toggle-stats-btn");
+        toggleButtons.forEach(btn => {
+            btn.addEventListener("click", function() {
+                const targetSelector = btn.getAttribute("data-target");
+                const targetRow = document.querySelector(targetSelector);
+                const chevron = btn.querySelector(".chevron-icon");
+
+                if (targetRow.classList.contains("d-none")) {
+                    targetRow.classList.remove("d-none");
+                    chevron.style.transform = "rotate(90deg)";
+                } else {
+                    targetRow.classList.add("d-none");
+                    chevron.style.transform = "rotate(0deg)";
+                }
+            });
+        });
+
+        function filterTable() {
+            const query = searchInput.value.toLowerCase().trim();
+            const branch = branchFilter.value;
+            const level = levelFilter.value;
+
+            rows.forEach(row => {
+                const name = row.getAttribute("data-name") || "";
+                const roll = row.getAttribute("data-roll") || "";
+                const rowBranch = row.getAttribute("data-branch") || "";
+                const rowLevel = row.getAttribute("data-level") || "";
+
+                const matchesSearch = !query || name.includes(query) || roll.includes(query);
+                const matchesBranch = !branch || rowBranch === branch;
+                const matchesLevel = !level || rowLevel === level;
+
+                const targetSelector = row.querySelector(".toggle-stats-btn").getAttribute("data-target");
+                const targetRow = document.querySelector(targetSelector);
+                const chevron = row.querySelector(".chevron-icon");
+
+                if (matchesSearch && matchesBranch && matchesLevel) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                    if (targetRow) {
+                        targetRow.classList.add("d-none");
+                        if (chevron) {
+                            chevron.style.transform = "rotate(0deg)";
+                        }
+                    }
+                }
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener("input", filterTable);
+        if (branchFilter) branchFilter.addEventListener("change", filterTable);
+        if (levelFilter) levelFilter.addEventListener("change", filterTable);
+    });
+</script>
 {% endblock %}

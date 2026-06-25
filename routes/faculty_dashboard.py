@@ -16,7 +16,8 @@ from database import (
     get_levels_completed_count,
     get_recent_progress,
     get_student_speaking_stats,
-    get_student_game_stats
+    get_student_game_stats,
+    get_all_students_progress
 )
 from routes.faculty_auth import faculty_login_required
 from routes.dashboard import calculate_streak
@@ -37,12 +38,14 @@ def dashboard():
     
     weak_students = detect_weak_students()
     announcements = get_notifications(limit=5)
+    students_progress = get_all_students_progress()
     
     return render_template(
         'faculty/dashboard.html', 
         stats=stats, 
         weak_students=weak_students, 
-        announcements=announcements
+        announcements=announcements,
+        students_progress=students_progress
     )
 
 @faculty_dashboard_bp.route('/faculty/students')
