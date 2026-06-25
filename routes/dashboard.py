@@ -327,6 +327,7 @@ def log_game():
     score = data.get('score', 0)
     streak = data.get('streak', 0)
     earned_xp = data.get('earned_xp', 0)
+    time_taken = data.get('time_taken')
     
     if not game_type or not word_or_level:
         return jsonify({'error': 'game_type and word_or_level are required'}), 400
@@ -337,7 +338,8 @@ def log_game():
         word_or_level=word_or_level,
         score=score,
         streak=streak,
-        earned_xp=earned_xp
+        earned_xp=earned_xp,
+        time_taken=time_taken
     )
     
     if res:

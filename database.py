@@ -1142,7 +1142,7 @@ def log_speaking_attempt(student_id, activity_id, accuracy, pronunciation, fluen
         print(f"Error logging speaking attempt: {e}")
         return None
 
-def log_game_attempt(student_id, game_type, word_or_level, score, streak, earned_xp):
+def log_game_attempt(student_id, game_type, word_or_level, score, streak, earned_xp, time_taken=None):
     """
     Inserts a record of a game attempt into game_attempts.
     Automatically logs student activity and updates XP.
@@ -1156,6 +1156,8 @@ def log_game_attempt(student_id, game_type, word_or_level, score, streak, earned
             "streak": int(streak),
             "earned_xp": int(earned_xp)
         }
+        if time_taken is not None:
+            data["time_taken"] = int(time_taken)
         response = supabase.table("game_attempts").insert(data).execute()
         if earned_xp > 0:
             update_student_xp_and_level(student_id, earned_xp)
@@ -1277,6 +1279,9 @@ def get_student_today_time_taken(student_id):
                 gtype = a.get("game_type")
                 score = a.get("score", 0)
                 if gtype == 'WORD_CONNECT' and score == 20:
+                    tt = a.get("time_taken")
+                    if tt is not None:
+                        return int(tt)
                     word_or_level = a.get("word_or_level", "")
                     if "|" in word_or_level:
                         try:
@@ -1304,7 +1309,7 @@ def get_class_game_leaderboard(branch, year, current_student_id):
         students = students_res.data or []
         
         # 2. Fetch all game attempts
-        attempts_res = supabase.table("game_attempts").select("student_id, earned_xp, word_or_level, game_type, score, completed_at").execute()
+        attempts_res = supabase.table("game_attempts").select("student_id, earned_xp, word_or_level, game_type, score, completed_at, time_taken").execute()
         attempts = attempts_res.data or []
         
         today = datetime.now().date()
@@ -1322,12 +1327,16 @@ def get_class_game_leaderboard(branch, year, current_student_id):
                 gtype = a.get("game_type")
                 score = a.get("score", 0)
                 if gtype == 'WORD_CONNECT' and score == 20:
-                    word_or_level = a.get("word_or_level", "")
-                    if "|" in word_or_level:
-                        try:
-                            today_time_map[sid] = int(word_or_level.split("|")[1])
-                        except ValueError:
-                            pass
+                    tt = a.get("time_taken")
+                    if tt is not None:
+                        today_time_map[sid] = int(tt)
+                    else:
+                        word_or_level = a.get("word_or_level", "")
+                        if "|" in word_or_level:
+                            try:
+                                today_time_map[sid] = int(word_or_level.split("|")[1])
+                            except ValueError:
+                                pass
             
         leaderboard = []
         for s in students:

@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS game_attempts (
     score INTEGER NOT NULL,
     streak INTEGER NOT NULL,
     earned_xp INTEGER NOT NULL,
+    time_taken INTEGER, -- in seconds
     completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

@@ -2093,10 +2093,11 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 game_type: 'WORD_CONNECT',
-                                word_or_level: activeLevelData.letters.join('') + "|" + timeTaken,
+                                word_or_level: activeLevelData.letters.join(''),
                                 score: 20,
                                 streak: gameStreak,
-                                earned_xp: 20
+                                earned_xp: 20,
+                                time_taken: timeTaken
                             })
                         });
                         const data = await response.json();
