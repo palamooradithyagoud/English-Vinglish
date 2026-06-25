@@ -257,31 +257,29 @@ def transcribe_speech():
     if len(audio_bytes) == 0:
         return jsonify({'error': 'Audio file is empty'}), 400
         
-    groq_key = os.environ.get("GROQ_API_KEY")
-    if not groq_key:
-        return jsonify({'error': 'No STT API key configured. Add GROQ_API_KEY to your .env file.'}), 400
+    deepgram_key = os.environ.get("DEEPGRAM_API_KEY")
+    if not deepgram_key:
+        return jsonify({'error': 'No STT API key configured. Add DEEPGRAM_API_KEY to your .env file.'}), 400
 
     try:
-        url = "https://api.groq.com/openai/v1/audio/transcriptions"
+        url = "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true"
         headers = {
-            "Authorization": f"Bearer {groq_key}"
+            "Authorization": f"Token {deepgram_key}",
+            "Content-Type": audio_file.content_type or "audio/wav"
         }
-        filename = audio_file.filename or "audio.wav"
-        if not filename.endswith('.wav') and not filename.endswith('.webm') and not filename.endswith('.mp3') and not filename.endswith('.m4a'):
-            filename = "audio.wav"
-            
-        files = {
-            "file": (filename, audio_bytes, audio_file.content_type or "audio/wav"),
-            "model": (None, "whisper-large-v3-turbo")
-        }
-        response = requests.post(url, headers=headers, files=files)
+        
+        response = requests.post(url, headers=headers, data=audio_bytes)
         if response.status_code == 200:
-            text = response.json().get("text", "")
+            res_data = response.json()
+            try:
+                text = res_data['results']['channels'][0]['alternatives'][0]['transcript']
+            except (KeyError, IndexError):
+                text = ""
             return jsonify({'text': text.strip()})
         else:
-            return jsonify({'error': f'Groq Whisper API error: {response.text}'}), response.status_code
+            return jsonify({'error': f'Deepgram API error: {response.text}'}), response.status_code
     except Exception as e:
-        return jsonify({'error': f'Groq Whisper call failed: {str(e)}'}), 500
+        return jsonify({'error': f'Deepgram call failed: {str(e)}'}), 500
 
 @dashboard_bp.route('/api/game/log', methods=['POST'])
 @login_required
