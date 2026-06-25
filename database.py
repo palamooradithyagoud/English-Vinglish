@@ -1239,5 +1239,82 @@ def get_student_game_stats(student_id):
             "max_streak": 0
         }
 
+def has_played_game_today(student_id):
+    """
+    Checks if a student has completed a daily game today.
+    A game is completed if they unscrambled a word (WORD_SCRAMBLE)
+    or completed a level in Word Connect (WORD_CONNECT with score 20).
+    """
+    try:
+        response = supabase.table("game_attempts").select("*").eq("student_id", int(student_id)).execute()
+        attempts = response.data or []
+        
+        today = datetime.now().date()
+        for a in attempts:
+            comp_at = parse_date(a.get("completed_at"))
+            # Check if this completion date matches today (in server local time)
+            if comp_at.date() == today:
+                gtype = a.get("game_type")
+                score = a.get("score", 0)
+                if gtype == 'WORD_SCRAMBLE' or (gtype == 'WORD_CONNECT' and score == 20):
+                    return True
+        return False
+    except Exception as e:
+        print(f"Error checking daily game status: {e}")
+        return False
+
+def get_class_game_leaderboard(branch, year, current_student_id):
+    """
+    Ranks students of the same branch and year by their total game XP (earned_xp in game_attempts).
+    Returns a list of dicts: [{'rank': 1, 'full_name': '...', 'game_xp': 100, 'is_current': True}]
+    """
+    try:
+        # 1. Fetch all students in this class
+        students_res = supabase.table("students") \
+            .select("id, full_name, xp") \
+            .eq("branch", branch) \
+            .eq("year", int(year)) \
+            .execute()
+        students = students_res.data or []
+        
+        # 2. Fetch all game attempts
+        attempts_res = supabase.table("game_attempts").select("student_id, earned_xp").execute()
+        attempts = attempts_res.data or []
+        
+        # Map student_id to total game XP
+        game_xp_map = {}
+        for a in attempts:
+            sid = a.get("student_id")
+            game_xp_map[sid] = game_xp_map.get(sid, 0) + a.get("earned_xp", 0)
+            
+        leaderboard = []
+        for s in students:
+            sid = s["id"]
+            leaderboard.append({
+                "id": sid,
+                "full_name": s["full_name"],
+                "game_xp": game_xp_map.get(sid, 0),
+                "overall_xp": s.get("xp", 0)
+            })
+            
+        # Sort by game_xp descending, then overall_xp descending
+        leaderboard.sort(key=lambda x: (x["game_xp"], x["overall_xp"]), reverse=True)
+        
+        # Add rank and format output
+        formatted_leaderboard = []
+        for rank, item in enumerate(leaderboard, start=1):
+            formatted_leaderboard.append({
+                "rank": rank,
+                "full_name": item["full_name"],
+                "game_xp": item["game_xp"],
+                "is_current": (item["id"] == int(current_student_id))
+            })
+            
+        return formatted_leaderboard
+    except Exception as e:
+        print(f"Error building class leaderboard: {e}")
+        return []
+
+
 
 

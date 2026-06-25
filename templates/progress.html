@@ -1281,6 +1281,40 @@
             <div class="overlay-body" style="display: flex; align-items: center; justify-content: center; padding: 24px;">
                 <div class="game-workspace" style="display: flex; flex-direction: column; width: 100%; max-width: 500px; gap: 16px;">
                     
+                    <!-- Daily Game Completed Screen -->
+                    <div class="game-completed-screen" id="game-completed-screen" style="display: none; flex-direction: column; align-items: center; text-align: center; width: 100%; gap: 20px;">
+                        <div style="font-size: 64px; margin-bottom: 8px;">🏆</div>
+                        <h3 style="margin: 0; font-size: 22px; color: #0F172A; font-weight: 800;">Daily Game Completed!</h3>
+                        <p style="margin: 0; font-size: 14px; color: #64748B; line-height: 1.5; max-width: 380px;">
+                            Great job! You have completed your daily vocabulary practice. Keep up your streak by returning tomorrow!
+                        </p>
+                        
+                        <!-- Reset Timer -->
+                        <div class="daily-reset-timer" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px 24px; display: inline-flex; flex-direction: column; align-items: center; min-width: 200px;">
+                            <span style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Next Game In</span>
+                            <span id="daily-game-timer" style="font-size: 24px; font-weight: 800; color: #0F172A; font-family: monospace; margin-top: 4px;">--:--:--</span>
+                        </div>
+
+                        <!-- Class Leaderboard Card -->
+                        <div class="speaking-leaderboard-card" style="width: 100%; text-align: left; margin-top: 10px;">
+                            <h3 style="font-size: 0.95rem; font-weight: 800; color: #0F172A; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
+                                📊 <span id="game-leaderboard-title">Class Leaderboard</span>
+                            </h3>
+                            <table class="speaking-leaderboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Student</th>
+                                        <th style="text-align: right;">Game XP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="game-leaderboard-body">
+                                    <!-- Populated dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
                     <!-- Game Selection Menu -->
                     <div class="game-selection-menu" id="game-selection-menu" style="display: flex; gap: 20px; justify-content: center; width: 100%; box-sizing: border-box;">
                         <!-- Scramble Card -->
@@ -1676,22 +1710,113 @@
     let selectedLetters = []; // elements: { letter: string, index: number }
     let foundWords = [];
 
-    function initGamesOverlay() {
+    let dailyTimerInterval = null;
+
+    function startDailyResetTimer() {
+        if (dailyTimerInterval) clearInterval(dailyTimerInterval);
+        
+        function updateTimer() {
+            const now = new Date();
+            const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+            const msDiff = midnight.getTime() - now.getTime();
+            
+            if (msDiff <= 0) {
+                clearInterval(dailyTimerInterval);
+                document.getElementById('daily-game-timer').textContent = "00:00:00";
+                checkDailyGameStatus();
+                return;
+            }
+            
+            const hours = Math.floor(msDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((msDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((msDiff % (1000 * 60)) / 1000);
+            
+            const hStr = String(hours).padStart(2, '0');
+            const mStr = String(minutes).padStart(2, '0');
+            const sStr = String(seconds).padStart(2, '0');
+            
+            document.getElementById('daily-game-timer').textContent = `${hStr}:${mStr}:${sStr}`;
+        }
+        
+        updateTimer();
+        dailyTimerInterval = setInterval(updateTimer, 1000);
+    }
+
+    async function checkDailyGameStatus() {
+        try {
+            const response = await fetch('/api/game/status');
+            const data = await response.json();
+            
+            if (data.completed_today) {
+                document.getElementById('game-selection-menu').style.display = 'none';
+                document.getElementById('scramble-game-board').style.display = 'none';
+                document.getElementById('connect-game-board').style.display = 'none';
+                document.getElementById('game-hud').style.display = 'none';
+                document.getElementById('btn-game-back').style.display = 'none';
+                
+                document.getElementById('game-completed-screen').style.display = 'flex';
+                document.getElementById('game-overlay-title').textContent = 'Daily Challenge';
+                
+                document.getElementById('game-leaderboard-title').textContent = `Class Leaderboard (${data.class_name})`;
+                const tbody = document.getElementById('game-leaderboard-body');
+                tbody.innerHTML = '';
+                
+                if (data.leaderboard && data.leaderboard.length > 0) {
+                    data.leaderboard.forEach(student => {
+                        const tr = document.createElement('tr');
+                        if (student.is_current) {
+                            tr.className = 'speaking-rank-highlight';
+                        }
+                        
+                        let rankIcon = student.rank;
+                        if (student.rank === 1) rankIcon = '🥇';
+                        else if (student.rank === 2) rankIcon = '🥈';
+                        else if (student.rank === 3) rankIcon = '🥉';
+                        
+                        tr.innerHTML = `
+                            <td class="speaking-leaderboard-rank">${rankIcon}</td>
+                            <td style="${student.is_current ? 'font-weight: 700; color: #3B82F6;' : ''}">
+                                ${student.full_name} ${student.is_current ? '(You)' : ''}
+                            </td>
+                            <td style="font-weight: 700; text-align: right; ${student.is_current ? 'color: #3B82F6;' : ''}">
+                                ${student.game_xp} XP
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748B; padding:12px 0;">No class records.</td></tr>';
+                }
+                
+                startDailyResetTimer();
+                return true;
+            } else {
+                document.getElementById('game-completed-screen').style.display = 'none';
+                return false;
+            }
+        } catch (e) {
+            console.error("Error checking game status:", e);
+            return false;
+        }
+    }
+
+    async function initGamesOverlay() {
         gameScore = 0;
         gameStreak = 0;
         document.getElementById('game-xp-score').textContent = gameScore;
         document.getElementById('game-streak-counter').textContent = gameStreak;
         
-        // Show selection menu initially
-        showGameSelectionMenu();
-        
-        // Bind Enter key press to submit scramble guess
         const input = document.getElementById('input-scramble-guess');
         input.onkeydown = (e) => {
             if (e.key === 'Enter') {
                 submitScrambleGuess();
             }
         };
+
+        const completed = await checkDailyGameStatus();
+        if (!completed) {
+            showGameSelectionMenu();
+        }
     }
 
     function showGameSelectionMenu() {
@@ -1800,7 +1925,7 @@
             
             setTimeout(() => {
                 feedback.classList.remove('show');
-                loadScrambleWord();
+                checkDailyGameStatus();
             }, 2000);
         } else {
             gameStreak = 0;
@@ -2118,7 +2243,7 @@
                     
                     setTimeout(() => {
                         feedback.classList.remove('show');
-                        loadConnectLevel();
+                        checkDailyGameStatus();
                     }, 2500);
                 } else {
                     gameScore += 5;

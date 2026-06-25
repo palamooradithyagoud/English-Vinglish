@@ -14,7 +14,9 @@ from database import (
     log_speaking_attempt,
     log_game_attempt,
     get_student_speaking_stats,
-    get_student_game_stats
+    get_student_game_stats,
+    has_played_game_today,
+    get_class_game_leaderboard
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
@@ -283,10 +285,34 @@ def transcribe_speech():
         print(f"Deepgram call failed with exception: {e}")
         return jsonify({'error': f'Deepgram call failed: {str(e)}'}), 500
 
+@dashboard_bp.route('/api/game/status', methods=['GET'])
+@login_required
+def game_status():
+    student_id = session['student_id']
+    student = get_student_by_id(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+        
+    branch = student.get('branch')
+    year = student.get('year')
+    
+    completed_today = has_played_game_today(student_id)
+    leaderboard = get_class_game_leaderboard(branch, year, student_id)
+    
+    return jsonify({
+        'completed_today': completed_today,
+        'class_name': f"{branch} Year {year}",
+        'leaderboard': leaderboard
+    })
+
 @dashboard_bp.route('/api/game/log', methods=['POST'])
 @login_required
 def log_game():
     student_id = session['student_id']
+    
+    if has_played_game_today(student_id):
+        return jsonify({'error': 'You have already completed today\'s daily game. Come back tomorrow!'}), 400
+        
     data = request.get_json() or {}
     
     game_type = data.get('game_type')
@@ -309,9 +335,11 @@ def log_game():
     
     if res:
         updated_student = get_student_by_id(student_id)
+        is_completed = has_played_game_today(student_id)
         return jsonify({
             'success': True,
-            'new_xp': updated_student['xp']
+            'new_xp': updated_student['xp'],
+            'completed_today': is_completed
         })
     return jsonify({'error': 'Failed to log game attempt'}), 500
 
