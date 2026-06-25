@@ -277,8 +277,10 @@ def transcribe_speech():
                 text = ""
             return jsonify({'text': text.strip()})
         else:
+            print(f"Deepgram API error (Status {response.status_code}): {response.text}")
             return jsonify({'error': f'Deepgram API error: {response.text}'}), response.status_code
     except Exception as e:
+        print(f"Deepgram call failed with exception: {e}")
         return jsonify({'error': f'Deepgram call failed: {str(e)}'}), 500
 
 @dashboard_bp.route('/api/game/log', methods=['POST'])
