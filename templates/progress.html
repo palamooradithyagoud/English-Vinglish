@@ -2831,167 +2831,137 @@
     let currentSpeakingTimer = null;
     let currentSpeakingTask = null;
     let currentSpeakingSeconds = 0;
-    class BujjiSpeechManager {
+    class BujjiAudioRecorder {
         constructor() {
-            this.recognition = null;
+            this.audioContext = null;
+            this.mediaStream = null;
+            this.mediaStreamSource = null;
+            this.scriptProcessor = null;
+            this.audioBuffers = [];
+            this.sampleRate = 16000;
             this.isRecording = false;
-            this.retryCount = 0;
-            this.maxRetries = 3;
-            this.recognitionActive = false;
-            this.lang = 'en-IN'; // Default optimized for Indian English accents
-            this.processedResultIndices = new Set();
             
-            this.onTranscriptUpdate = null;
             this.onErrorCallback = null;
-            this.onStartCallback = null;
-            this.onEndCallback = null;
-            
-            this.init();
         }
         
-        init() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                this.recognition = new SpeechRecognition();
-                this.recognition.continuous = true;
-                this.recognition.interimResults = true;
-                this.recognition.lang = this.lang;
-                
-                this.recognition.onstart = () => this.handleStart();
-                this.recognition.onend = () => this.handleEnd();
-                this.recognition.onerror = (e) => this.handleError(e);
-                this.recognition.onresult = (e) => this.handleResult(e);
-            }
-        }
-        
-        start() {
-            if (!this.recognition) return false;
-            if (this.isRecording) return true;
-            
-            console.log("BujjiSpeechManager: starting recognition session");
-            this.isRecording = true;
-            this.retryCount = 0;
-            this.processedResultIndices.clear();
+        async start() {
+            if (this.isRecording) return;
+            this.audioBuffers = [];
             
             try {
-                this.recognition.start();
-                this.recognitionActive = true;
+                this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                    sampleRate: this.sampleRate
+                });
+                
+                this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.mediaStream);
+                
+                // ScriptProcessorNode for wide browser support
+                this.scriptProcessor = this.audioContext.createScriptProcessor(4096, 1, 1);
+                
+                this.scriptProcessor.onaudioprocess = (event) => {
+                    if (!this.isRecording) return;
+                    const inputData = event.inputBuffer.getChannelData(0);
+                    this.audioBuffers.push(new Float32Array(inputData));
+                };
+                
+                this.mediaStreamSource.connect(this.scriptProcessor);
+                this.scriptProcessor.connect(this.audioContext.destination);
+                
+                this.isRecording = true;
+                console.log("BujjiAudioRecorder: Recording started at 16kHz mono");
             } catch (e) {
-                console.warn("BujjiSpeechManager start error:", e.message);
+                console.error("BujjiAudioRecorder: Start failed", e);
+                if (this.onErrorCallback) {
+                    this.onErrorCallback(e.name || 'permission-denied');
+                }
             }
-            return true;
         }
         
         stop() {
-            if (!this.recognition) return;
-            console.log("BujjiSpeechManager: stopping recognition session");
+            if (!this.isRecording) return null;
             this.isRecording = false;
-            this.recognitionActive = false;
-            try {
-                this.recognition.stop();
-            } catch (e) {
-                console.warn("BujjiSpeechManager stop error:", e.message);
-            }
-        }
-        
-        cancel() {
-            if (!this.recognition) return;
-            console.log("BujjiSpeechManager: cancelling recognition session");
-            this.isRecording = false;
-            this.recognitionActive = false;
-            try {
-                this.recognition.abort();
-            } catch (e) {
-                console.warn("BujjiSpeechManager abort error:", e.message);
-            }
-        }
-        
-        handleStart() {
-            console.log("BujjiSpeechManager: active");
-            if (this.onStartCallback) this.onStartCallback();
-        }
-        
-        handleEnd() {
-            console.log("BujjiSpeechManager: ended");
-            this.recognitionActive = false;
             
-            if (this.isRecording) {
-                console.log("BujjiSpeechManager: unexpected end, restarting...");
-                setTimeout(() => {
-                    if (this.isRecording && !this.recognitionActive) {
-                        try {
-                            this.recognition.start();
-                            this.recognitionActive = true;
-                        } catch (e) {
-                            console.warn("BujjiSpeechManager auto-restart failed:", e.message);
-                        }
-                    }
-                }, 300);
-            } else {
-                if (this.onEndCallback) this.onEndCallback();
-            }
-        }
-        
-        handleError(event) {
-            console.error("BujjiSpeechManager error:", event.error);
-            
-            if (event.error === 'no-speech') {
-                return;
-            }
-            if (event.error === 'aborted') {
-                return;
+            if (this.scriptProcessor) {
+                this.scriptProcessor.disconnect();
+                this.scriptProcessor.onaudioprocess = null;
+                this.scriptProcessor = null;
             }
             
-            if (event.error === 'network') {
-                this.retryCount++;
-                if (this.retryCount <= this.maxRetries) {
-                    console.log(`BujjiSpeechManager network error, retrying (${this.retryCount}/${this.maxRetries})...`);
-                    this.stop();
-                    setTimeout(() => {
-                        if (this.isRecording) this.start();
-                    }, 1000);
-                    return;
+            if (this.mediaStreamSource) {
+                this.mediaStreamSource.disconnect();
+                this.mediaStreamSource = null;
+            }
+            
+            if (this.mediaStream) {
+                this.mediaStream.getTracks().forEach(track => track.stop());
+                this.mediaStream = null;
+            }
+            
+            if (this.audioContext) {
+                this.audioContext.close();
+                this.audioContext = null;
+            }
+            
+            // Flatten buffers
+            let totalLength = 0;
+            for (let i = 0; i < this.audioBuffers.length; i++) {
+                totalLength += this.audioBuffers[i].length;
+            }
+            
+            const flattened = new Float32Array(totalLength);
+            let offset = 0;
+            for (let i = 0; i < this.audioBuffers.length; i++) {
+                flattened.set(this.audioBuffers[i], offset);
+                offset += this.audioBuffers[i].length;
+            }
+            
+            return this.float32ToWavBlob(flattened, this.sampleRate);
+        }
+        
+        float32ToWavBlob(float32Array, sampleRate) {
+            const bufferLength = float32Array.length;
+            const bytesPerSample = 2; // 16-bit PCM
+            const dataSize = bufferLength * bytesPerSample;
+            
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+            
+            const writeString = (view, offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
                 }
+            };
+            
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, 1, true); // Mono
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * bytesPerSample, true);
+            view.setUint16(32, bytesPerSample, true);
+            view.setUint16(34, 16, true); // 16 bits
+            
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+            
+            const data = new Int16Array(buffer, 44);
+            for (let i = 0; i < bufferLength; i++) {
+                const s = Math.max(-1, Math.min(1, float32Array[i]));
+                data[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
             }
             
-            if (this.onErrorCallback) {
-                this.onErrorCallback(event.error);
-            }
-        }
-        
-        handleResult(event) {
-            let interimText = '';
-            let newFinalText = '';
-            
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                const result = event.results[i];
-                const transcript = result[0].transcript;
-                
-                if (result.isFinal) {
-                    if (!this.processedResultIndices.has(i)) {
-                        this.processedResultIndices.add(i);
-                        const cleanSegment = transcript.trim();
-                        if (cleanSegment) {
-                            newFinalText += (newFinalText ? ' ' : '') + cleanSegment;
-                        }
-                    }
-                } else {
-                    interimText += transcript;
-                }
-            }
-            
-            if (this.onTranscriptUpdate) {
-                this.onTranscriptUpdate(newFinalText, interimText);
-            }
+            return new Blob([view], { type: 'audio/wav' });
         }
     }
 
-    let speechManager = null;
-    let fullTranscript = '';   // Module-level: persists across recognition restarts
-
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        speechManager = new BujjiSpeechManager();
-    }
+    let speechManager = new BujjiAudioRecorder();
+    let fullTranscript = '';   // Module-level: persists across restarts
 
     function initSpeakingOverlay() {
         // Load stats from database (passed via template) or fallback to LocalStorage
@@ -3363,7 +3333,7 @@
             // Request mic permission explicitly first via getUserMedia
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 const statusEl = document.getElementById('speaking-status-text');
-                if (statusEl) { statusEl.textContent = '❌ Microphone not supported. Use Chrome or Edge.'; statusEl.style.color = '#EF4444'; }
+                if (statusEl) { statusEl.textContent = '❌ Microphone not supported.'; statusEl.style.color = '#EF4444'; }
                 return;
             }
             navigator.mediaDevices.getUserMedia({ audio: true })
@@ -3398,12 +3368,12 @@
         micBtn.classList.add('recording');
         micBtn.innerHTML = '⏹️';
 
-        document.getElementById('speaking-status-text').textContent = 'Live Recording... Click to Stop & Analyze';
+        document.getElementById('speaking-status-text').textContent = 'Recording... Click to Stop & Analyze';
         document.getElementById('speaking-waveform').style.display = 'flex';
         document.getElementById('speaking-transcript-wrapper').style.display = 'block';
 
         const transcriptText = document.getElementById('speaking-live-transcript');
-        transcriptText.innerHTML = '<span style="color:#94A3B8; font-style:italic;">Listening to your voice...</span>';
+        transcriptText.innerHTML = '<span style="color:#94A3B8; font-style:italic;">🎙️ Speaking aloud now...</span>';
         transcriptText.dataset.fullTranscript = '';
 
         currentSpeakingSeconds = 0;
@@ -3417,21 +3387,7 @@
             timerDisplay.textContent = `${mins}:${secs}`;
         }, 1000);
 
-        function updateTranscriptUI(interimText) {
-            const el = document.getElementById('speaking-live-transcript');
-            if (!el) return;
-            el.innerHTML = `${fullTranscript
-                ? `<span style="color:#1E293B; font-weight:500;">${fullTranscript}</span>`
-                : ''}<span style="color:#94A3B8; font-style:italic;">${
-                    interimText ? ' ' + interimText : (fullTranscript ? '' : 'Listening to your voice...')
-                }</span>`;
-            el.dataset.fullTranscript = fullTranscript;
-        }
-
-        let speechDetected = false;
-
         function showManualInputFallback(reason) {
-            // Switch to manual text entry mode
             const wrapper = document.getElementById('speaking-transcript-wrapper');
             if (!wrapper) return;
             const timerEl = document.getElementById('speaking-timer-display');
@@ -3450,7 +3406,7 @@
                     style="width:100%; min-height:80px; border:2px solid #E2E8F0; border-radius:10px; padding:10px 14px;
                            font-size:0.88rem; color:#1E293B; resize:vertical; box-sizing:border-box; font-family:inherit;
                            outline:none; line-height:1.5;"
-                    oninput="fullTranscript = this.value.trim();"
+                    oninput="fullTranscript = this.value;"
                 ></textarea>
                 <div style="margin-top:8px; display:flex; gap:8px;">
                     <button onclick="stopSpeakingAndAnalyze('${id}', ${rewardXp})"
@@ -3460,7 +3416,6 @@
                     </button>
                 </div>
             `;
-            // Stop the timer
             if (currentSpeakingTimer) clearInterval(currentSpeakingTimer);
             isSpeakingRecording = false;
             const micBtn = document.getElementById('speaking-mic-action');
@@ -3470,39 +3425,14 @@
         }
 
         if (speechManager) {
-            speechManager.onTranscriptUpdate = (newFinalText, interimText) => {
-                speechDetected = true;
-                if (newFinalText) {
-                    if (!fullTranscript.endsWith(newFinalText)) {
-                        fullTranscript += (fullTranscript ? ' ' : '') + newFinalText;
-                    }
-                }
-                updateTranscriptUI(interimText);
-            };
-
             speechManager.onErrorCallback = (errorType) => {
-                console.warn('Speech recognition error in manager:', errorType);
-                if (errorType === 'not-allowed' || errorType === 'permission-denied') {
-                    showManualInputFallback('⚠️ Microphone blocked by browser. Type your response below.');
-                } else if (errorType === 'network') {
-                    showManualInputFallback('⚠️ Speech-to-text blocked by your browser (Brave/Firefox shield). Type what you said below:');
-                } else {
-                    showManualInputFallback(`⚠️ Speech recognition error: ${errorType}. Type what you said:`);
-                }
+                console.warn('Speech recording error:', errorType);
+                showManualInputFallback('⚠️ Microphone error or block. Please type what you said:');
             };
 
             speechManager.start();
-
-            // After 5 seconds, if nothing captured, show manual fallback
-            setTimeout(() => {
-                if (isSpeakingRecording && !speechDetected && !fullTranscript) {
-                    showManualInputFallback('⚠️ No speech detected after 5 seconds. Your browser may be blocking speech recognition. Type what you said:');
-                }
-            }, 5000);
-
         } else {
-            // No Speech API at all — go straight to manual input
-            showManualInputFallback('⚠️ Speech recognition is not supported in this browser. Type what you said:');
+            showManualInputFallback('⚠️ Speech recognition is not supported in this browser. Please type what you said:');
         }
 
         if (typeof BujjiSynth !== 'undefined') {
@@ -3511,7 +3441,7 @@
     }
 
     function stopSpeakingAndAnalyze(id, rewardXp) {
-        // Set false FIRST so onend doesn't trigger a restart
+        const wasRecording = isSpeakingRecording;
         isSpeakingRecording = false;
 
         const micBtn = document.getElementById('speaking-mic-action');
@@ -3520,189 +3450,232 @@
             micBtn.innerHTML = '🎙️';
         }
 
-        document.getElementById('speaking-status-text').textContent = 'Analyzing your speech...';
-        document.getElementById('speaking-waveform').style.display = 'none';
-
         if (currentSpeakingTimer) {
             clearInterval(currentSpeakingTimer);
         }
 
-        if (speechManager) {
-            speechManager.stop();
+        let wavBlob = null;
+        if (speechManager && wasRecording) {
+            wavBlob = speechManager.stop();
         }
 
-        // Read from module-level fullTranscript (most reliable)
-        const spokenText = fullTranscript.trim();
-        const durationSecs = currentSpeakingSeconds;
+        document.getElementById('speaking-waveform').style.display = 'none';
 
-        // Build word-level comparison HTML
-        function buildComparisonHTML(spoken, prompt) {
-            if (!spoken) return '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>';
+        // Helper function that actually does the grading and displays results
+        function runAnalysis(spokenText) {
+            const durationSecs = currentSpeakingSeconds;
 
-            // Normalise: lowercase, strip punctuation
+            // Build word-level comparison HTML
+            function buildComparisonHTML(spoken, prompt) {
+                if (!spoken) return '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>';
+
+                // Normalise: lowercase, strip punctuation
+                const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+                const promptWords = clean(prompt).split(/\s+/);
+                const spokenWords = spoken.split(/\s+/);
+
+                return spokenWords.map(word => {
+                    const isMatch = promptWords.includes(clean(word));
+                    return `<span style="
+                        display:inline-block;
+                        padding:2px 6px;
+                        margin:2px 2px;
+                        border-radius:6px;
+                        font-weight:600;
+                        background:${isMatch ? '#DCFCE7' : '#FEE2E2'};
+                        color:${isMatch ? '#166534' : '#991B1B'};
+                        font-size:0.92rem;
+                    ">${word}</span>`;
+                }).join(' ');
+            }
+
+            const comparisonHTML = buildComparisonHTML(spokenText, activeSpeakingPrompt);
+
+            // ── REAL MATCH-BASED SCORING ──────────────────────────────────────
             const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
-            const promptWords = clean(prompt).split(/\s+/);
-            const spokenWords = spoken.split(/\s+/);
 
-            return spokenWords.map(word => {
-                const isMatch = promptWords.includes(clean(word));
-                return `<span style="
-                    display:inline-block;
-                    padding:2px 6px;
-                    margin:2px 2px;
-                    border-radius:6px;
-                    font-weight:600;
-                    background:${isMatch ? '#DCFCE7' : '#FEE2E2'};
-                    color:${isMatch ? '#166534' : '#991B1B'};
-                    font-size:0.92rem;
-                ">${word}</span>`;
-            }).join(' ');
+            const promptWords   = activeSpeakingPrompt ? clean(activeSpeakingPrompt).split(/\s+/).filter(Boolean) : [];
+            const spokenWords   = spokenText           ? clean(spokenText).split(/\s+/).filter(Boolean)           : [];
+            const wordCount     = spokenWords.length;
+
+            // Accuracy: what % of the prompt's words appear in what was spoken
+            const matchedWords  = promptWords.filter(pw => spokenWords.includes(pw));
+            const accuracy      = promptWords.length > 0
+                ? Math.round((matchedWords.length / promptWords.length) * 100)
+                : 0;
+
+            // Pronunciation: accuracy-weighted, with a small ±5 natural variance
+            const pronBase      = accuracy;
+            const pronVariance  = Math.floor(Math.random() * 11) - 5; // -5 to +5
+            const pronScore     = Math.max(0, Math.min(100, pronBase + pronVariance));
+
+            // Fluency: words per second (ideal is ~2–3 wps), scaled by accuracy
+            const wps           = durationSecs > 0 ? wordCount / durationSecs : 0;
+            const wpsScore      = Math.min(100, Math.round(wps * 40));   // 2.5 wps → 100
+            const fluencyScore  = Math.round((wpsScore * 0.4) + (accuracy * 0.6)); // blend
+
+            // Overall grade
+            const overall = accuracy >= 90 ? 'A' : accuracy >= 75 ? 'B' : accuracy >= 55 ? 'C' : accuracy >= 35 ? 'D' : 'F';
+            const gradeColor = accuracy >= 75 ? '#16A34A' : accuracy >= 55 ? '#D97706' : '#DC2626';
+            const gradeEmoji = accuracy >= 75 ? '🏆' : accuracy >= 40 ? '💪' : '📚';
+
+            // Can they claim XP? Only if they at least matched 30% of the prompt
+            const canClaimXp = accuracy >= 30 || wordCount === 0; // 0 words → still allow (typed fallback)
+            const earnedXp   = accuracy >= 90 ? rewardXp
+                             : accuracy >= 70 ? Math.round(rewardXp * 0.75)
+                             : accuracy >= 50 ? Math.round(rewardXp * 0.5)
+                             : accuracy >= 30 ? Math.round(rewardXp * 0.25)
+                             : 0;
+
+            // Contextual tips
+            const tipsByScore = accuracy >= 85
+                ? ["Outstanding accuracy! 🎉 Focus on maintaining this quality with longer sentences.",
+                   "Excellent match! Now work on speaking even more smoothly without pausing."]
+                : accuracy >= 65
+                ? ["Good effort! Try to include more words from the prompt for better coverage.",
+                   "You got the main words right. Focus on not skipping smaller connecting words."]
+                : accuracy >= 40
+                ? ["You're getting there! Read the prompt slowly, then speak it back word-for-word.",
+                   "Try again — say each word clearly and at a steady pace to improve your accuracy."]
+                : ["Don't give up! Read the sentence first, then close your eyes and repeat it.",
+                   "Tip: Practice each phrase 3 times before recording to improve retention."];
+            const tip = tipsByScore[Math.floor(Math.random() * tipsByScore.length)];
+
+            const durationStr = `${String(Math.floor(durationSecs / 60)).padStart(2,'0')}:${String(durationSecs % 60).padStart(2,'0')}`;
+
+            // Show analysis results card
+            document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
+            const resultsPanel = document.getElementById('speaking-results-panel');
+            resultsPanel.style.display = 'block';
+            resultsPanel.innerHTML = `
+                <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+
+                    <!-- Header with grade -->
+                    <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span style="font-size:24px;">📊</span>
+                            <div>
+                                <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">Speech Analysis Report</div>
+                                <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words · ${matchedWords.length}/${promptWords.length} prompt words matched</div>
+                            </div>
+                        </div>
+                        <div style="text-align:center; background:rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px;">
+                            <div style="font-size:2rem; font-weight:900; color:${gradeColor === '#16A34A' ? '#4ADE80' : gradeColor === '#D97706' ? '#FCD34D' : '#FCA5A5'};">${overall}</div>
+                            <div style="font-size:0.65rem; color:#94A3B8; text-transform:uppercase;">Grade</div>
+                        </div>
+                    </div>
+
+                    <!-- What You Said -->
+                    <div style="background:#FFFFFF; padding:20px; border-bottom:1px solid #F1F5F9;">
+                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:10px;">🗣️ What You Said</div>
+                        ${spokenText
+                            ? `<div style="line-height:2; word-spacing:4px;">${comparisonHTML}</div>
+                               <div style="margin-top:10px; display:flex; gap:16px; font-size:0.72rem; color:#64748B;">
+                                   <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#DCFCE7;margin-right:4px;"></span>Matched prompt words</span>
+                                   <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#FEE2E2;margin-right:4px;"></span>Not in prompt</span>
+                               </div>`
+                            : `<div style="color:#94A3B8; font-style:italic; font-size:0.88rem;">No text submitted. Please try again.</div>`
+                        }
+                    </div>
+
+                    <!-- Score circles -->
+                    <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
+                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 Performance Scores</div>
+                        <div class="speaking-scores-container">
+                            <div class="speaking-score-circle ${accuracy >= 75 ? 'good' : 'avg'}" style="${accuracy < 40 ? 'border-color:#FCA5A5;' : ''}">
+                                <span class="speaking-score-num" style="color:${gradeColor};">${accuracy}%</span>
+                                <span class="speaking-score-label">Accuracy</span>
+                            </div>
+                            <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
+                                <span class="speaking-score-num">${pronScore}%</span>
+                                <span class="speaking-score-label">Pronunciation</span>
+                            </div>
+                            <div class="speaking-score-circle ${fluencyScore >= 75 ? 'good' : 'avg'}">
+                                <span class="speaking-score-num">${fluencyScore}%</span>
+                                <span class="speaking-score-label">Fluency</span>
+                            </div>
+                            <div class="speaking-score-circle ${wordCount >= 5 ? 'good' : 'avg'}">
+                                <span class="speaking-score-num">${wordCount}</span>
+                                <span class="speaking-score-label">Words</span>
+                            </div>
+                        </div>
+                        ${accuracy < 30 && spokenText ? `
+                        <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
+                            ⚠️ Less than 30% match with the prompt. Read the sentence again carefully and try once more to earn XP!
+                        </div>` : ''}
+                    </div>
+
+                    <!-- Bujji Tip -->
+                    <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
+                        <div style="display:flex; align-items:flex-start; gap:12px;">
+                            <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
+                            <div>
+                                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
+                                <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
+                        ${earnedXp > 0
+                            ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim +${earnedXp} XP</button>`
+                            : `<button class="btn-secondary" style="padding:10px 24px; font-weight:700; border-radius:10px; opacity:0.6; cursor:not-allowed;" disabled>❌ No XP — Match more words to earn XP</button>`
+                        }
+                        <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
+                    </div>
+                </div>
+            `;
+
+            if (typeof BujjiSynth !== 'undefined') {
+                accuracy >= 75 ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
+            }
+
+            // Scroll results into view smoothly
+            resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        const comparisonHTML = buildComparisonHTML(spokenText, activeSpeakingPrompt);
+        // If we have a wavBlob, upload it to transcribe
+        if (wavBlob) {
+            document.getElementById('speaking-status-text').textContent = '🤖 Analyzing speech...';
+            const liveTranscriptEl = document.getElementById('speaking-live-transcript');
+            if (liveTranscriptEl) {
+                liveTranscriptEl.innerHTML = '<span style="color:#3B82F6; font-weight:700;"><span class="spinner" style="display:inline-block; animation:spin 1s linear infinite; margin-right:6px;">🔄</span>Processing audio and transcribing...</span>';
+            }
 
-        // ── REAL MATCH-BASED SCORING ──────────────────────────────────────
-        const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+            const formData = new FormData();
+            formData.append('audio', wavBlob, 'recording.wav');
 
-        const promptWords   = activeSpeakingPrompt ? clean(activeSpeakingPrompt).split(/\s+/).filter(Boolean) : [];
-        const spokenWords   = spokenText           ? clean(spokenText).split(/\s+/).filter(Boolean)           : [];
-        const wordCount     = spokenWords.length;
-
-        // Accuracy: what % of the prompt's words appear in what was spoken
-        const matchedWords  = promptWords.filter(pw => spokenWords.includes(pw));
-        const accuracy      = promptWords.length > 0
-            ? Math.round((matchedWords.length / promptWords.length) * 100)
-            : 0;
-
-        // Pronunciation: accuracy-weighted, with a small ±5 natural variance
-        const pronBase      = accuracy;
-        const pronVariance  = Math.floor(Math.random() * 11) - 5; // -5 to +5
-        const pronScore     = Math.max(0, Math.min(100, pronBase + pronVariance));
-
-        // Fluency: words per second (ideal is ~2–3 wps), scaled by accuracy
-        const wps           = durationSecs > 0 ? wordCount / durationSecs : 0;
-        const wpsScore      = Math.min(100, Math.round(wps * 40));   // 2.5 wps → 100
-        const fluencyScore  = Math.round((wpsScore * 0.4) + (accuracy * 0.6)); // blend
-
-        // Overall grade
-        const overall = accuracy >= 90 ? 'A' : accuracy >= 75 ? 'B' : accuracy >= 55 ? 'C' : accuracy >= 35 ? 'D' : 'F';
-        const gradeColor = accuracy >= 75 ? '#16A34A' : accuracy >= 55 ? '#D97706' : '#DC2626';
-        const gradeEmoji = accuracy >= 75 ? '🏆' : accuracy >= 40 ? '💪' : '📚';
-
-        // Can they claim XP? Only if they at least matched 30% of the prompt
-        const canClaimXp = accuracy >= 30 || wordCount === 0; // 0 words → still allow (typed fallback)
-        const earnedXp   = accuracy >= 90 ? rewardXp
-                         : accuracy >= 70 ? Math.round(rewardXp * 0.75)
-                         : accuracy >= 50 ? Math.round(rewardXp * 0.5)
-                         : accuracy >= 30 ? Math.round(rewardXp * 0.25)
-                         : 0;
-
-        // Contextual tips
-        const tipsByScore = accuracy >= 85
-            ? ["Outstanding accuracy! 🎉 Focus on maintaining this quality with longer sentences.",
-               "Excellent match! Now work on speaking even more smoothly without pausing."]
-            : accuracy >= 65
-            ? ["Good effort! Try to include more words from the prompt for better coverage.",
-               "You got the main words right. Focus on not skipping smaller connecting words."]
-            : accuracy >= 40
-            ? ["You're getting there! Read the prompt slowly, then speak it back word-for-word.",
-               "Try again — say each word clearly and at a steady pace to improve your accuracy."]
-            : ["Don't give up! Read the sentence first, then close your eyes and repeat it.",
-               "Tip: Practice each phrase 3 times before recording to improve retention."];
-        const tip = tipsByScore[Math.floor(Math.random() * tipsByScore.length)];
-
-        const durationStr = `${String(Math.floor(durationSecs / 60)).padStart(2,'0')}:${String(durationSecs % 60).padStart(2,'0')}`;
-
-        // Show analysis results card
-        document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
-        const resultsPanel = document.getElementById('speaking-results-panel');
-        resultsPanel.style.display = 'block';
-        resultsPanel.innerHTML = `
-            <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-
-                <!-- Header with grade -->
-                <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:24px;">📊</span>
-                        <div>
-                            <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">Speech Analysis Report</div>
-                            <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words · ${matchedWords.length}/${promptWords.length} prompt words matched</div>
-                        </div>
-                    </div>
-                    <div style="text-align:center; background:rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px;">
-                        <div style="font-size:2rem; font-weight:900; color:${gradeColor === '#16A34A' ? '#4ADE80' : gradeColor === '#D97706' ? '#FCD34D' : '#FCA5A5'};">${overall}</div>
-                        <div style="font-size:0.65rem; color:#94A3B8; text-transform:uppercase;">Grade</div>
-                    </div>
-                </div>
-
-                <!-- What You Said -->
-                <div style="background:#FFFFFF; padding:20px; border-bottom:1px solid #F1F5F9;">
-                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:10px;">🗣️ What You Said</div>
-                    ${spokenText
-                        ? `<div style="line-height:2; word-spacing:4px;">${comparisonHTML}</div>
-                           <div style="margin-top:10px; display:flex; gap:16px; font-size:0.72rem; color:#64748B;">
-                               <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#DCFCE7;margin-right:4px;"></span>Matched prompt words</span>
-                               <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#FEE2E2;margin-right:4px;"></span>Not in prompt</span>
-                           </div>`
-                        : `<div style="color:#94A3B8; font-style:italic; font-size:0.88rem;">No text submitted. Please try again.</div>`
-                    }
-                </div>
-
-                <!-- Score circles -->
-                <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
-                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 Performance Scores</div>
-                    <div class="speaking-scores-container">
-                        <div class="speaking-score-circle ${accuracy >= 75 ? 'good' : 'avg'}" style="${accuracy < 40 ? 'border-color:#FCA5A5;' : ''}">
-                            <span class="speaking-score-num" style="color:${gradeColor};">${accuracy}%</span>
-                            <span class="speaking-score-label">Accuracy</span>
-                        </div>
-                        <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
-                            <span class="speaking-score-num">${pronScore}%</span>
-                            <span class="speaking-score-label">Pronunciation</span>
-                        </div>
-                        <div class="speaking-score-circle ${fluencyScore >= 75 ? 'good' : 'avg'}">
-                            <span class="speaking-score-num">${fluencyScore}%</span>
-                            <span class="speaking-score-label">Fluency</span>
-                        </div>
-                        <div class="speaking-score-circle ${wordCount >= 5 ? 'good' : 'avg'}">
-                            <span class="speaking-score-num">${wordCount}</span>
-                            <span class="speaking-score-label">Words</span>
-                        </div>
-                    </div>
-                    ${accuracy < 30 && spokenText ? `
-                    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
-                        ⚠️ Less than 30% match with the prompt. Read the sentence again carefully and try once more to earn XP!
-                    </div>` : ''}
-                </div>
-
-                <!-- Bujji Tip -->
-                <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
-                    <div style="display:flex; align-items:flex-start; gap:12px;">
-                        <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
-                        <div>
-                            <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
-                            <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action buttons -->
-                <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                    ${earnedXp > 0
-                        ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim +${earnedXp} XP</button>`
-                        : `<button class="btn-secondary" style="padding:10px 24px; font-weight:700; border-radius:10px; opacity:0.6; cursor:not-allowed;" disabled>❌ No XP — Match more words to earn XP</button>`
-                    }
-                    <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
-                </div>
-            </div>
-        `;
-
-        if (typeof BujjiSynth !== 'undefined') {
-            accuracy >= 75 ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
+            fetch('/api/speaking/transcribe', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Speech API error');
+                return res.json();
+            })
+            .then(data => {
+                const spokenText = (data.text || '').trim();
+                fullTranscript = spokenText;
+                if (liveTranscriptEl) {
+                    liveTranscriptEl.innerHTML = spokenText 
+                        ? `<span style="color:#1E293B; font-weight:500;">${spokenText}</span>`
+                        : '<span style="color:#EF4444; font-style:italic;">No speech detected or understood. Try again.</span>';
+                }
+                runAnalysis(spokenText);
+            })
+            .catch(err => {
+                console.error(err);
+                if (liveTranscriptEl) {
+                    liveTranscriptEl.innerHTML = '<span style="color:#EF4444; font-weight:700;">⚠️ Speech API call failed. Typing mode enabled below.</span>';
+                }
+                showManualInputFallback('⚠️ Transcription API error. Please type what you said below:');
+            });
+        } else {
+            // No wavBlob (typing mode or fallbacked)
+            const spokenText = fullTranscript.trim();
+            runAnalysis(spokenText);
         }
-
-        // Scroll results into view smoothly
-        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     async function claimSpeakingXP(xpToEarn, activityId, accuracy = 0, pronunciation = 0, fluency = 0, wordCount = 0) {
