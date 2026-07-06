@@ -18,7 +18,8 @@ from database import (
     has_played_game_today,
     get_class_game_leaderboard,
     get_student_today_time_taken,
-    get_student_speaking_progress
+    get_student_speaking_progress,
+    get_speaking_activities
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
@@ -134,6 +135,7 @@ def progress():
     speaking_stats = get_student_speaking_stats(student_id)
     game_stats = get_student_game_stats(student_id)
     speaking_progress = get_student_speaking_progress(student_id)
+    speaking_activities = get_speaking_activities()
         
     return render_template(
         'progress.html', 
@@ -145,7 +147,8 @@ def progress():
         student=student,
         speaking_stats=speaking_stats,
         game_stats=game_stats,
-        speaking_progress=speaking_progress
+        speaking_progress=speaking_progress,
+        speaking_activities=speaking_activities
     )
 
 @dashboard_bp.route('/api/practice/questions')

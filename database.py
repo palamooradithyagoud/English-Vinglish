@@ -1396,6 +1396,275 @@ def get_student_speaking_progress(student_id):
         print(f"Error getting student speaking progress: {e}")
         return {}
 
+FALLBACK_SPEAKING_ACTIVITIES = [
+    {
+        "id": "read_aloud",
+        "name": "Read Aloud",
+        "icon": "📖",
+        "difficulty": "easy",
+        "rewardXp": 10,
+        "description": "Read the displayed sentence or paragraph aloud and improve your pronunciation.",
+        "prompts": [
+            "The weather is pleasant today.",
+            "Practice makes a person perfect.",
+            "Success comes to those who work hard and never give up.",
+            "Technology is transforming how we communicate with each other.",
+            "Engineering students should focus on developing excellent presentation skills.",
+            "Reading books daily helps you build a rich vocabulary and improves your creative thinking.",
+            "Effective communication is not just about speaking clearly, but also about active listening and understanding others.",
+            "Public speaking is an essential skill for professionals. By practicing regularly, you can build self-confidence, structure your arguments logically, and inspire your audience.",
+            "A healthy lifestyle combines a balanced diet with regular exercise and sufficient sleep. When you take care of your body, your mental clarity and overall energy levels improve significantly.",
+            "Learning a new language opens up doors to different cultures, broadens your career prospects, and changes how you see the world. It requires patience and consistency, but the rewards are lifelong."
+        ]
+    },
+    {
+        "id": "tongue_twister",
+        "name": "Tongue Twister",
+        "icon": "🌀",
+        "difficulty": "medium",
+        "rewardXp": 10,
+        "description": "Master difficult sounds and articulation.",
+        "prompts": [
+            "She sells seashells by the seashore.",
+            "Peter Piper picked a peck of pickled peppers.",
+            "How can a clam cram in a clean cream can?",
+            "Six slippery snails slid slowly seaward."
+        ]
+    },
+    {
+        "id": "picture_desc",
+        "name": "Picture Description",
+        "icon": "🖼️",
+        "difficulty": "medium",
+        "rewardXp": 15,
+        "description": "Describe the displayed image within 30 seconds.",
+        "prompts": [
+            { "text": "A busy campus library with students studying, reading books, and using laptops.", "img": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80" },
+            { "text": "A team of young software engineers having an active standup meeting in a modern tech office.", "img": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80" }
+        ]
+    },
+    {
+        "id": "one_minute",
+        "name": "One Minute Speaking",
+        "icon": "🎙️",
+        "difficulty": "hard",
+        "rewardXp": 20,
+        "description": "Speak continuously for one minute on a random topic.",
+        "prompts": [
+            "My Dream Job",
+            "My College Life",
+            "Social Media: Boon or Bane?",
+            "AI in modern Engineering Education"
+        ]
+    },
+    {
+        "id": "daily_question",
+        "name": "Daily Question",
+        "icon": "❓",
+        "difficulty": "easy",
+        "rewardXp": 10,
+        "description": "Answer a fresh, thought-provoking question verbally.",
+        "prompts": [
+            "What motivates you to learn English?",
+            "What did you learn or improve this week?",
+            "If you had ₹1 crore, what would be the first thing you do?"
+        ]
+    },
+    {
+        "id": "story_complete",
+        "name": "Story Completion",
+        "icon": "📚",
+        "difficulty": "medium",
+        "rewardXp": 15,
+        "description": "Continue a story started by our AI coach.",
+        "prompts": [
+            "Yesterday I found a mysterious locked wooden box in my attic...",
+            "As the airplane took off, I realized I had left my main folder behind...",
+            "Walking into the empty classroom, I saw a glowing screen with my name on it..."
+        ]
+    },
+    {
+        "id": "interview_practice",
+        "name": "Interview Practice",
+        "icon": "💼",
+        "difficulty": "hard",
+        "rewardXp": 25,
+        "description": "Prepare for real-world campus placements and job interviews.",
+        "prompts": [
+            "Tell me about yourself and your background.",
+            "Why should we hire you for this placement role?",
+            "What are your greatest professional strengths and weaknesses?",
+            "Describe a challenging engineering project you solved successfully."
+        ]
+    },
+    {
+        "id": "debate_arena",
+        "name": "Debate Arena",
+        "icon": "⚔️",
+        "difficulty": "hard",
+        "rewardXp": 20,
+        "description": "Choose a side and defend your opinion.",
+        "prompts": [
+            "Topic: Will Artificial Intelligence replace human programmers?",
+            "Topic: Online learning is better than classroom learning.",
+            "Topic: Mobile phones should be banned in university classrooms."
+        ]
+    },
+    {
+        "id": "situation_practice",
+        "name": "Situation Practice",
+        "icon": "🎭",
+        "difficulty": "medium",
+        "rewardXp": 20,
+        "description": "Practice real-world conversational English.",
+        "prompts": [
+            "Roleplay: Ordering Food in a premium restaurant.",
+            "Roleplay: Airport Check-In and handling baggage issues.",
+            "Roleplay: Delivering a business presentation to college faculties.",
+            "Roleplay: Explaining symptoms to a doctor during a clinic visit."
+        ]
+    },
+    {
+        "id": "word_challenge",
+        "name": "Word Challenge",
+        "icon": "🧠",
+        "difficulty": "medium",
+        "rewardXp": 10,
+        "description": "Use the given advanced word in three meaningful sentences.",
+        "prompts": [
+            "Word: Resilient (Meaning: Able to withstand or recover quickly from difficult conditions)",
+            "Word: Eloquent (Meaning: Fluent or persuasive in speaking or writing)",
+            "Word: Meticulous (Meaning: Showing great attention to detail; very careful)"
+        ]
+    },
+    {
+        "id": "speaking_race",
+        "name": "Speaking Race",
+        "icon": "🏃",
+        "difficulty": "hard",
+        "rewardXp": 15,
+        "description": "Speak as many correct English sentences as possible within 30 seconds.",
+        "prompts": [
+            "Topic: Tell us about your daily engineering routine.",
+            "Topic: Describe everything you see in your room right now."
+        ]
+    },
+    {
+        "id": "pron_battle",
+        "name": "Pronunciation Battle",
+        "icon": "🎯",
+        "difficulty": "medium",
+        "rewardXp": 15,
+        "description": "Master extremely difficult English words.",
+        "prompts": [
+            "Pronounce: Entrepreneur",
+            "Pronounce: Algorithm",
+            "Pronounce: Communication",
+            "Pronounce: Opportunity"
+        ]
+    },
+    {
+        "id": "shadowing",
+        "name": "Shadowing Practice",
+        "icon": "🔊",
+        "difficulty": "medium",
+        "rewardXp": 20,
+        "description": "Listen to a sentence and immediately repeat it.",
+        "prompts": [
+            "Consistent practice is the absolute key to speaking fluent English.",
+            "We must adapt to technological disruptions quickly to excel."
+        ]
+    },
+    {
+        "id": "explain_topic",
+        "name": "Explain a Topic",
+        "icon": "🎓",
+        "difficulty": "medium",
+        "rewardXp": 15,
+        "description": "Explain a popular topic in your own words.",
+        "prompts": [
+            "Explain how Instagram or social networks work.",
+            "Explain the rules of Cricket to a beginner.",
+            "Explain the concept of Artificial Intelligence in simple words."
+        ]
+    },
+    {
+        "id": "news_speaking",
+        "name": "News Speaking",
+        "icon": "📰",
+        "difficulty": "medium",
+        "rewardXp": 20,
+        "description": "Read the short news snippet aloud and summarize it verbally.",
+        "prompts": [
+            "Global tech firms are investing billions in eco-friendly data centers to achieve carbon neutrality by 2030.",
+            "Researchers discover that regular exercise combined with language studies accelerates cognitive function."
+        ]
+    }
+]
+
+def get_speaking_activities():
+    """
+    Retrieves all speaking activities and prompts dynamically from the Supabase database.
+    If the database query fails or returns no data, falls back to the local hardcoded configuration.
+    """
+    try:
+        response = supabase.table("speaking_prompts").select("*").order("prompt_index", desc=False).execute()
+        records = response.data or []
+        
+        if not records:
+            return FALLBACK_SPEAKING_ACTIVITIES
+            
+        # Group records by activity_id
+        activities_map = {}
+        for r in records:
+            act_id = r.get("activity_id")
+            if act_id not in activities_map:
+                activities_map[act_id] = {
+                    "id": act_id,
+                    "name": r.get("activity_name"),
+                    "icon": r.get("activity_icon"),
+                    "difficulty": r.get("difficulty"),
+                    "rewardXp": r.get("reward_xp"),
+                    "description": r.get("activity_description"),
+                    "prompts": []
+                }
+            
+            p_text = r.get("prompt_text")
+            img_url = r.get("image_url")
+            
+            if img_url:
+                activities_map[act_id]["prompts"].append({
+                    "text": p_text,
+                    "img": img_url
+                })
+            else:
+                activities_map[act_id]["prompts"].append(p_text)
+                
+        # Return in the standard sequence order
+        original_order = [
+            "read_aloud", "tongue_twister", "picture_desc", "one_minute", 
+            "daily_question", "story_complete", "interview_practice", 
+            "debate_arena", "situation_practice", "word_challenge", 
+            "speaking_race", "pron_battle", "shadowing", "explain_topic", 
+            "news_speaking"
+        ]
+        
+        ordered_activities = []
+        for o_id in original_order:
+            if o_id in activities_map:
+                ordered_activities.append(activities_map[o_id])
+                
+        # Append any other database activities not in original_order
+        for act_id, act in activities_map.items():
+            if act_id not in original_order:
+                ordered_activities.append(act)
+                
+        return ordered_activities
+    except Exception as e:
+        print(f"Error getting speaking activities from db, falling back: {e}")
+        return FALLBACK_SPEAKING_ACTIVITIES
+
+
 
 
 

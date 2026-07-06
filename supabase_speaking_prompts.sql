@@ -1,0 +1,122 @@
+-- 1. Create speaking_prompts table
+CREATE TABLE IF NOT EXISTS public.speaking_prompts (
+    id SERIAL PRIMARY KEY,
+    activity_id TEXT NOT NULL,
+    activity_name TEXT NOT NULL,
+    activity_icon TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    reward_xp INTEGER NOT NULL,
+    activity_description TEXT NOT NULL,
+    prompt_index INTEGER NOT NULL,
+    prompt_text TEXT NOT NULL,
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2. Enable Row Level Security (RLS)
+ALTER TABLE public.speaking_prompts ENABLE ROW LEVEL SECURITY;
+
+-- 3. Revoke public/anonymous access (Flask uses service_role, bypassing RLS)
+REVOKE ALL ON public.speaking_prompts FROM anon, public;
+
+-- 4. Clean up any existing records to avoid duplicates
+TRUNCATE TABLE public.speaking_prompts;
+
+-- 5. Insert all speaking activities and prompts
+-- Read Aloud (10 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 0, 'The weather is pleasant today.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 1, 'Practice makes a person perfect.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 2, 'Success comes to those who work hard and never give up.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 3, 'Technology is transforming how we communicate with each other.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 4, 'Engineering students should focus on developing excellent presentation skills.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 5, 'Reading books daily helps you build a rich vocabulary and improves your creative thinking.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 6, 'Effective communication is not just about speaking clearly, but also about active listening and understanding others.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 7, 'Public speaking is an essential skill for professionals. By practicing regularly, you can build self-confidence, structure your arguments logically, and inspire your audience.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 8, 'A healthy lifestyle combines a balanced diet with regular exercise and sufficient sleep. When you take care of your body, your mental clarity and overall energy levels improve significantly.'),
+('read_aloud', 'Read Aloud', '📖', 'easy', 10, 'Read the displayed sentence or paragraph aloud and improve your pronunciation.', 9, 'Learning a new language opens up doors to different cultures, broadens your career prospects, and changes how you see the world. It requires patience and consistency, but the rewards are lifelong.');
+
+-- Tongue Twister (4 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('tongue_twister', 'Tongue Twister', '🌀', 'medium', 10, 'Master difficult sounds and articulation.', 0, 'She sells seashells by the seashore.'),
+('tongue_twister', 'Tongue Twister', '🌀', 'medium', 10, 'Master difficult sounds and articulation.', 1, 'Peter Piper picked a peck of pickled peppers.'),
+('tongue_twister', 'Tongue Twister', '🌀', 'medium', 10, 'Master difficult sounds and articulation.', 2, 'How can a clam cram in a clean cream can?'),
+('tongue_twister', 'Tongue Twister', '🌀', 'medium', 10, 'Master difficult sounds and articulation.', 3, 'Six slippery snails slid slowly seaward.');
+
+-- Picture Description (2 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text, image_url) VALUES
+('picture_desc', 'Picture Description', '🖼️', 'medium', 15, 'Describe the displayed image within 30 seconds.', 0, 'A busy campus library with students studying, reading books, and using laptops.', 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80'),
+('picture_desc', 'Picture Description', '🖼️', 'medium', 15, 'Describe the displayed image within 30 seconds.', 1, 'A team of young software engineers having an active standup meeting in a modern tech office.', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80');
+
+-- One Minute Speaking (4 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('one_minute', 'One Minute Speaking', '🎙️', 'hard', 20, 'Speak continuously for one minute on a random topic.', 0, 'My Dream Job'),
+('one_minute', 'One Minute Speaking', '🎙️', 'hard', 20, 'Speak continuously for one minute on a random topic.', 1, 'My College Life'),
+('one_minute', 'One Minute Speaking', '🎙️', 'hard', 20, 'Speak continuously for one minute on a random topic.', 2, 'Social Media: Boon or Bane?'),
+('one_minute', 'One Minute Speaking', '🎙️', 'hard', 20, 'Speak continuously for one minute on a random topic.', 3, 'AI in modern Engineering Education');
+
+-- Daily Question (3 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('daily_question', 'Daily Question', '❓', 'easy', 10, 'Answer a fresh, thought-provoking question verbally.', 0, 'What motivates you to learn English?'),
+('daily_question', 'Daily Question', '❓', 'easy', 10, 'Answer a fresh, thought-provoking question verbally.', 1, 'What did you learn or improve this week?'),
+('daily_question', 'Daily Question', '❓', 'easy', 10, 'Answer a fresh, thought-provoking question verbally.', 2, 'If you had ₹1 crore, what would be the first thing you do?');
+
+-- Story Completion (3 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('story_complete', 'Story Completion', '📚', 'medium', 15, 'Continue a story started by our AI coach.', 0, 'Yesterday I found a mysterious locked wooden box in my attic...'),
+('story_complete', 'Story Completion', '📚', 'medium', 15, 'Continue a story started by our AI coach.', 1, 'As the airplane took off, I realized I had left my main folder behind...'),
+('story_complete', 'Story Completion', '📚', 'medium', 15, 'Continue a story started by our AI coach.', 2, 'Walking into the empty classroom, I saw a glowing screen with my name on it...');
+
+-- Interview Practice (4 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('interview_practice', 'Interview Practice', '💼', 'hard', 25, 'Prepare for real-world campus placements and job interviews.', 0, 'Tell me about yourself and your background.'),
+('interview_practice', 'Interview Practice', '💼', 'hard', 25, 'Prepare for real-world campus placements and job interviews.', 1, 'Why should we hire you for this placement role?'),
+('interview_practice', 'Interview Practice', '💼', 'hard', 25, 'Prepare for real-world campus placements and job interviews.', 2, 'What are your greatest professional strengths and weaknesses?'),
+('interview_practice', 'Interview Practice', '💼', 'hard', 25, 'Prepare for real-world campus placements and job interviews.', 3, 'Describe a challenging engineering project you solved successfully.');
+
+-- Debate Arena (3 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('debate_arena', 'Debate Arena', '⚔️', 'hard', 20, 'Choose a side and defend your opinion.', 0, 'Topic: Will Artificial Intelligence replace human programmers?'),
+('debate_arena', 'Debate Arena', '⚔️', 'hard', 20, 'Choose a side and defend your opinion.', 1, 'Topic: Online learning is better than classroom learning.'),
+('debate_arena', 'Debate Arena', '⚔️', 'hard', 20, 'Choose a side and defend your opinion.', 2, 'Topic: Mobile phones should be banned in university classrooms.');
+
+-- Situation Practice (4 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('situation_practice', 'Situation Practice', '🎭', 'medium', 20, 'Practice real-world conversational English.', 0, 'Roleplay: Ordering Food in a premium restaurant.'),
+('situation_practice', 'Situation Practice', '🎭', 'medium', 20, 'Practice real-world conversational English.', 1, 'Roleplay: Airport Check-In and handling baggage issues.'),
+('situation_practice', 'Situation Practice', '🎭', 'medium', 20, 'Practice real-world conversational English.', 2, 'Roleplay: Delivering a business presentation to college faculties.'),
+('situation_practice', 'Situation Practice', '🎭', 'medium', 20, 'Practice real-world conversational English.', 3, 'Roleplay: Explaining symptoms to a doctor during a clinic visit.');
+
+-- Word Challenge (3 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('word_challenge', 'Word Challenge', '🧠', 'medium', 10, 'Use the given advanced word in three meaningful sentences.', 0, 'Word: Resilient (Meaning: Able to withstand or recover quickly from difficult conditions)'),
+('word_challenge', 'Word Challenge', '🧠', 'medium', 10, 'Use the given advanced word in three meaningful sentences.', 1, 'Word: Eloquent (Meaning: Fluent or persuasive in speaking or writing)'),
+('word_challenge', 'Word Challenge', '🧠', 'medium', 10, 'Use the given advanced word in three meaningful sentences.', 2, 'Word: Meticulous (Meaning: Showing great attention to detail; very careful)');
+
+-- Speaking Race (2 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('speaking_race', 'Speaking Race', '🏃', 'hard', 15, 'Speak as many correct English sentences as possible within 30 seconds.', 0, 'Topic: Tell us about your daily engineering routine.'),
+('speaking_race', 'Speaking Race', '🏃', 'hard', 15, 'Speak as many correct English sentences as possible within 30 seconds.', 1, 'Topic: Describe everything you see in your room right now.');
+
+-- Pronunciation Battle (4 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('pron_battle', 'Pronunciation Battle', '🎯', 'medium', 15, 'Master extremely difficult English words.', 0, 'Pronounce: Entrepreneur'),
+('pron_battle', 'Pronunciation Battle', '🎯', 'medium', 15, 'Master extremely difficult English words.', 1, 'Pronounce: Algorithm'),
+('pron_battle', 'Pronunciation Battle', '🎯', 'medium', 15, 'Master extremely difficult English words.', 2, 'Pronounce: Communication'),
+('pron_battle', 'Pronunciation Battle', '🎯', 'medium', 15, 'Master extremely difficult English words.', 3, 'Pronounce: Opportunity');
+
+-- Shadowing Practice (2 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('shadowing', 'Shadowing Practice', '🔊', 'medium', 20, 'Listen to a sentence and immediately repeat it.', 0, 'Consistent practice is the absolute key to speaking fluent English.'),
+('shadowing', 'Shadowing Practice', '🔊', 'medium', 20, 'Listen to a sentence and immediately repeat it.', 1, 'We must adapt to technological disruptions quickly to excel.');
+
+-- Explain a Topic (3 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('explain_topic', 'Explain a Topic', '🎓', 'medium', 15, 'Explain a popular topic in your own words.', 0, 'Explain how Instagram or social networks work.'),
+('explain_topic', 'Explain a Topic', '🎓', 'medium', 15, 'Explain a popular topic in your own words.', 1, 'Explain the rules of Cricket to a beginner.'),
+('explain_topic', 'Explain a Topic', '🎓', 'medium', 15, 'Explain a popular topic in your own words.', 2, 'Explain the concept of Artificial Intelligence in simple words.');
+
+-- News Speaking (2 prompts)
+INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
+('news_speaking', 'News Speaking', '📰', 'medium', 20, 'Read the short news snippet aloud and summarize it verbally.', 0, 'Global tech firms are investing billions in eco-friendly data centers to achieve carbon neutrality by 2030.'),
+('news_speaking', 'News Speaking', '📰', 'medium', 20, 'Read the short news snippet aloud and summarize it verbally.', 1, 'Researchers discover that regular exercise combined with language studies accelerates cognitive function.');
