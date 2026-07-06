@@ -2622,13 +2622,19 @@
             name: 'Read Aloud',
             icon: '📖',
             difficulty: 'easy',
-            rewardXp: 5,
-            description: 'Read the displayed sentence aloud and improve your pronunciation.',
+            rewardXp: 10,
+            description: 'Read the displayed sentence or paragraph aloud and improve your pronunciation.',
             prompts: [
                 'The weather is pleasant today.',
                 'Practice makes a person perfect.',
+                'Success comes to those who work hard and never give up.',
                 'Technology is transforming how we communicate with each other.',
-                'Engineering students should focus on presentation skills.'
+                'Engineering students should focus on developing excellent presentation skills.',
+                'Reading books daily helps you build a rich vocabulary and improves your creative thinking.',
+                'Effective communication is not just about speaking clearly, but also about active listening and understanding others.',
+                'Public speaking is an essential skill for professionals. By practicing regularly, you can build self-confidence, structure your arguments logically, and inspire your audience.',
+                'A healthy lifestyle combines a balanced diet with regular exercise and sufficient sleep. When you take care of your body, your mental clarity and overall energy levels improve significantly.',
+                'Learning a new language opens up doors to different cultures, broadens your career prospects, and changes how you see the world. It requires patience and consistency, but the rewards are lifelong.'
             ]
         },
         {
@@ -2826,6 +2832,7 @@
     let currentSpeakingTimer = null;
     let currentSpeakingTask = null;
     let currentSpeakingSeconds = 0;
+    let currentSpeakingPromptIndex = 0;
     class BujjiAudioRecorder {
         constructor() {
             this.audioContext = null;
@@ -3193,24 +3200,33 @@
         renderSpeakingDashboard();
     }
 
-    function selectSpeakingActivity(id) {
+    function selectSpeakingActivity(id, promptIndex = null) {
         const act = speakingActivities.find(a => a.id === id);
         if (!act) return;
 
         currentSpeakingTask = act;
 
-        // Get a random prompt for this activity
+        if (promptIndex !== null) {
+            currentSpeakingPromptIndex = promptIndex;
+        } else {
+            currentSpeakingPromptIndex = 0;
+        }
+
+        if (currentSpeakingPromptIndex >= act.prompts.length) {
+            currentSpeakingPromptIndex = 0;
+        }
+
+        const currentPrompt = act.prompts[currentSpeakingPromptIndex];
         let promptText = '';
         let isImage = false;
         let imageSrc = '';
 
-        if (id === 'picture_desc') {
-            const randomPrompt = act.prompts[Math.floor(Math.random() * act.prompts.length)];
-            promptText = randomPrompt.text;
-            imageSrc = randomPrompt.img;
+        if (typeof currentPrompt === 'object' && currentPrompt !== null) {
+            promptText = currentPrompt.text;
+            imageSrc = currentPrompt.img;
             isImage = true;
         } else {
-            promptText = act.prompts[Math.floor(Math.random() * act.prompts.length)];
+            promptText = currentPrompt;
         }
 
         activeSpeakingPrompt = promptText;
@@ -3234,11 +3250,16 @@
             <button onclick="showSpeakingHome()" style="background:none; border:none; color:#64748B; font-weight:700; cursor:pointer; font-size:0.85rem; padding:0; display:flex; align-items:center; gap:4px; margin-bottom:16px;">⬅ Back to Speaking Dashboard</button>
 
             <div class="speaking-workspace-card">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:32px;">${act.icon}</span>
-                    <div style="text-align:left;">
-                        <h2 style="margin:0 0 2px 0; font-size:1.3rem; font-weight:800; color:#0F172A;">${act.name}</h2>
-                        <span class="difficulty-badge ${act.difficulty}">${act.difficulty}</span>
+                <div style="display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:12px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:32px;">${act.icon}</span>
+                        <div style="text-align:left;">
+                            <h2 style="margin:0 0 2px 0; font-size:1.3rem; font-weight:800; color:#0F172A;">${act.name}</h2>
+                            <span class="difficulty-badge ${act.difficulty}">${act.difficulty}</span>
+                        </div>
+                    </div>
+                    <div style="font-size:0.85rem; font-weight:800; color:#4F46E5; background:#EEF2FF; padding:4px 10px; border-radius:20px;">
+                        Prompt ${currentSpeakingPromptIndex + 1} of ${act.prompts.length}
                     </div>
                 </div>
                 
@@ -3514,12 +3535,9 @@
             const gradeColor = accuracy >= 75 ? '#16A34A' : accuracy >= 55 ? '#D97706' : '#DC2626';
             const gradeEmoji = accuracy >= 75 ? '🏆' : accuracy >= 40 ? '💪' : '📚';
 
-            // Can they claim XP? Only if they at least matched 30% of the prompt
-            const canClaimXp = accuracy >= 30 || wordCount === 0; // 0 words → still allow (typed fallback)
+            // Can they claim XP? Only if accuracy >= 70%
             const earnedXp   = accuracy >= 90 ? rewardXp
                              : accuracy >= 70 ? Math.round(rewardXp * 0.75)
-                             : accuracy >= 50 ? Math.round(rewardXp * 0.5)
-                             : accuracy >= 30 ? Math.round(rewardXp * 0.25)
                              : 0;
 
             // Contextual tips
@@ -3594,9 +3612,9 @@
                                 <span class="speaking-score-label">Words</span>
                             </div>
                         </div>
-                        ${accuracy < 30 && spokenText ? `
+                        ${accuracy < 70 && spokenText ? `
                         <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
-                            ⚠️ Less than 30% match with the prompt. Read the sentence again carefully and try once more to earn XP!
+                            ⚠️ Accuracy is ${accuracy}%. You need at least 70% accuracy to pass and go to the next sentence. Read the sentence again carefully and click Try Again!
                         </div>` : ''}
                     </div>
 
@@ -3613,11 +3631,11 @@
 
                     <!-- Action buttons -->
                     <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                        ${earnedXp > 0
-                            ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim +${earnedXp} XP</button>`
-                            : `<button class="btn-secondary" style="padding:10px 24px; font-weight:700; border-radius:10px; opacity:0.6; cursor:not-allowed;" disabled>❌ No XP — Match more words to earn XP</button>`
+                        ${accuracy >= 70
+                            ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
+                               <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
+                            : `<button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
                         }
-                        <button class="btn-secondary" style="padding:10px 20px; font-weight:800;" onclick="selectSpeakingActivity('${id}')">🔄 Try Again</button>
                     </div>
                 </div>
             `;
@@ -3730,8 +3748,14 @@
                     studentXpEl.textContent = `${data.new_xp} XP`;
                 }
 
-                alert(`🎉 Congratulations! You earned +${xpToEarn} XP and logged a speaking practice session successfully.`);
-                showSpeakingHome();
+                currentSpeakingPromptIndex++;
+                if (currentSpeakingTask && currentSpeakingPromptIndex < currentSpeakingTask.prompts.length) {
+                    alert(`🎉 Congratulations! You earned +${xpToEarn} XP. Let's try the next sentence!`);
+                    selectSpeakingActivity(activityId, currentSpeakingPromptIndex);
+                } else {
+                    alert(`🎉 Congratulations! You earned +${xpToEarn} XP and completed all speaking prompts for this activity!`);
+                    showSpeakingHome();
+                }
             } else {
                 throw new Error("API return error");
             }
