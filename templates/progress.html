@@ -2833,6 +2833,7 @@
     let currentSpeakingTask = null;
     let currentSpeakingSeconds = 0;
     let currentSpeakingPromptIndex = 0;
+    let speakingProgress = {{ speaking_progress | tojson | safe }} || {};
     class BujjiAudioRecorder {
         constructor() {
             this.audioContext = null;
@@ -3209,7 +3210,7 @@
         if (promptIndex !== null) {
             currentSpeakingPromptIndex = promptIndex;
         } else {
-            currentSpeakingPromptIndex = 0;
+            currentSpeakingPromptIndex = speakingProgress[id] !== undefined ? speakingProgress[id] : 0;
         }
 
         if (currentSpeakingPromptIndex >= act.prompts.length) {
@@ -3699,7 +3700,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     earned_xp: xpToEarn,
-                    activity_id: activityId,
+                    activity_id: `${activityId}_${currentSpeakingPromptIndex}`,
                     accuracy: accuracy,
                     pronunciation: pronunciation,
                     fluency: fluency,
@@ -3750,9 +3751,11 @@
 
                 currentSpeakingPromptIndex++;
                 if (currentSpeakingTask && currentSpeakingPromptIndex < currentSpeakingTask.prompts.length) {
+                    speakingProgress[activityId] = currentSpeakingPromptIndex;
                     alert(`🎉 Congratulations! You earned +${xpToEarn} XP. Let's try the next sentence!`);
                     selectSpeakingActivity(activityId, currentSpeakingPromptIndex);
                 } else {
+                    speakingProgress[activityId] = 0;
                     alert(`🎉 Congratulations! You earned +${xpToEarn} XP and completed all speaking prompts for this activity!`);
                     showSpeakingHome();
                 }

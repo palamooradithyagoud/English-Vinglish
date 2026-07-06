@@ -1368,6 +1368,35 @@ def get_class_game_leaderboard(branch, year, current_student_id):
         print(f"Error building class leaderboard: {e}")
         return []
 
+def get_student_speaking_progress(student_id):
+    """
+    Determines the next prompt index (level progress) for each speaking activity.
+    Uses the highest successfully completed level (based on formatted activity_id)
+    to decide where they should resume.
+    """
+    try:
+        response = supabase.table("speaking_attempts").select("activity_id").eq("student_id", int(student_id)).execute()
+        attempts = response.data or []
+        
+        progress = {}
+        for a in attempts:
+            act_id = a.get('activity_id', '')
+            if '_' in act_id:
+                parts = act_id.rsplit('_', 1)
+                base_id = parts[0]
+                try:
+                    prompt_idx = int(parts[1])
+                    next_idx = prompt_idx + 1
+                    if base_id not in progress or next_idx > progress[base_id]:
+                        progress[base_id] = next_idx
+                except ValueError:
+                    pass
+        return progress
+    except Exception as e:
+        print(f"Error getting student speaking progress: {e}")
+        return {}
+
+
 
 
 
