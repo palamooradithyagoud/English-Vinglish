@@ -3338,11 +3338,11 @@
                     const overall = aiResult.grade || 'C';
                     const wordCount = spokenText ? spokenText.split(/\s+/).filter(Boolean).length : 0;
 
-                    // Always allow full XP claim for picture description
-                    const earnedXp = rewardXp;
+                    const isPassed = accuracy >= 50 && overall !== 'F';
+                    const earnedXp = isPassed ? rewardXp : 0;
 
-                    const gradeColorLight = '#4ADE80';
-                    const gradeEmoji = '🏆';
+                    const gradeColorLight = isPassed ? '#4ADE80' : '#FCA5A5';
+                    const gradeEmoji = isPassed ? '🏆' : '📚';
 
                     document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
                     
@@ -3388,6 +3388,10 @@
                                         <span class="speaking-score-label">Words</span>
                                     </div>
                                 </div>
+                                ${!isPassed && spokenText ? `
+                                <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
+                                    ⚠️ Your description does not match the image. Please describe the photo correctly to pass and get XP!
+                                </div>` : ''}
                             </div>
 
                             <!-- Bujji Tip -->
@@ -3403,14 +3407,17 @@
 
                             <!-- Action buttons -->
                             <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                                <button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
-                                <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>
+                                ${isPassed
+                                    ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
+                                       <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
+                                    : `<button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
+                                }
                             </div>
                         </div>
                     `;
 
                     if (typeof BujjiSynth !== 'undefined') {
-                        BujjiSynth.playSuccess();
+                        isPassed ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
                     }
                     resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 })
