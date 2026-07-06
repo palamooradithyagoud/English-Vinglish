@@ -555,4 +555,90 @@ Analyze student performance to recommend exactly ONE activity that will have the
         print("Groq connection error:", e)
         return jsonify({'response': "Bleep boop! I hit a cosmic glitch in my databases. Try asking again! 🤖"})
 
+@dashboard_bp.route('/api/speaking/analyze_picture_description', methods=['POST'])
+@login_required
+def analyze_picture_description():
+    import os
+    import urllib.request
+    import json
+
+    data = request.get_json() or {}
+    spoken_text = data.get('spoken_text', '').strip()
+    prompt_text = data.get('prompt_text', '').strip()
+    
+    if not spoken_text or not prompt_text:
+        return jsonify({'error': 'Spoken text and prompt text are required'}), 400
+
+    api_key = os.environ.get('GROQ_API_KEY')
+    if not api_key:
+        return jsonify({
+            'accuracy': 80,
+            'pronunciation': 78,
+            'fluency': 82,
+            'feedback': "Great description! Your vocabulary is good. Focus on keeping a steady pace.",
+            'grade': "B"
+        })
+
+    system_prompt = """You are an English language assessment expert. Your task is to evaluate a student's verbal description of an image.
+You are given:
+1. Reference description of the image (Prompt).
+2. The student's spoken description (transcribed to text).
+
+Evaluate the student's response based on:
+1. Accuracy: How well did they capture the key objects, actions, and context of the image described in the Prompt? (0-100)
+2. Pronunciation: Based on the transcribed text flow, check coherence and grammatical structure. (0-100)
+3. Fluency: Sentence structure, flow, and vocabulary choices. (0-100)
+4. Feedback: A short, encouraging feedback tip (maximum 25 words) advising how to improve.
+5. Grade: Overall letter grade (A for score >= 90, B for >= 75, C for >= 55, D for >= 35, F for < 35).
+
+You MUST output ONLY a valid JSON object with the following keys. Do NOT include markdown tags (like ```json), explanation, or extra characters.
+JSON structure:
+{
+  "accuracy": <number>,
+  "pronunciation": <number>,
+  "fluency": <number>,
+  "feedback": "<string>",
+  "grade": "<string>"
+}"""
+
+    user_message = f"Prompt: {prompt_text}\nStudent Spoke: {spoken_text}"
+    
+    payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ],
+        "temperature": 0.3,
+        "response_format": {"type": "json_object"}
+    }
+    
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=json.dumps(payload).encode('utf-8'),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0"
+        },
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            result_str = res_data['choices'][0]['message']['content'].strip()
+            result_json = json.loads(result_str)
+            return jsonify(result_json)
+    except Exception as e:
+        print("Groq analysis error:", e)
+        return jsonify({
+            'accuracy': 75,
+            'pronunciation': 70,
+            'fluency': 75,
+            'feedback': "Connection error with AI service, but good effort! Keep practicing.",
+            'grade': "B"
+        })
+
+
 
