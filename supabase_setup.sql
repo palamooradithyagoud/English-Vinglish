@@ -206,7 +206,7 @@ INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, 
 
 -- Picture Description (2 prompts)
 INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text, image_url) VALUES
-('picture_desc', 'Picture Description', '🖼️', 'medium', 15, 'Describe the displayed image within 30 seconds.', 0, 'A busy campus library with students studying, reading books, and using laptops.', 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80'),
+('picture_desc', 'Picture Description', '🖼️', 'medium', 15, 'Describe the displayed image within 30 seconds.', 0, 'A group of graduating students in black gowns celebrating and throwing their caps in the air.', 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80'),
 ('picture_desc', 'Picture Description', '🖼️', 'medium', 15, 'Describe the displayed image within 30 seconds.', 1, 'A team of young software engineers having an active standup meeting in a modern tech office.', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80');
 
 -- One Minute Speaking (4 prompts)

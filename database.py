@@ -1439,7 +1439,7 @@ FALLBACK_SPEAKING_ACTIVITIES = [
         "rewardXp": 15,
         "description": "Describe the displayed image within 30 seconds.",
         "prompts": [
-            { "text": "A busy campus library with students studying, reading books, and using laptops.", "img": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80" },
+            { "text": "A group of graduating students in black gowns celebrating and throwing their caps in the air.", "img": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80" },
             { "text": "A team of young software engineers having an active standup meeting in a modern tech office.", "img": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80" }
         ]
     },
