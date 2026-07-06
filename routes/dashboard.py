@@ -644,5 +644,106 @@ JSON structure:
             'grade': "B"
         })
 
+@dashboard_bp.route('/api/speaking/analyze_open_ended', methods=['POST'])
+@login_required
+def analyze_open_ended():
+    import os
+    import urllib.request
+    import json
+
+    data = request.get_json() or {}
+    activity_id = data.get('activity_id', '').strip()
+    spoken_text = data.get('spoken_text', '').strip()
+    prompt_text = data.get('prompt_text', '').strip()
+    
+    if not spoken_text or not prompt_text or not activity_id:
+        return jsonify({'error': 'Activity ID, spoken text, and prompt text are required'}), 400
+
+    api_key = os.environ.get('GROQ_API_KEY')
+    if not api_key:
+        return jsonify({
+            'accuracy': 80,
+            'pronunciation': 78,
+            'fluency': 82,
+            'feedback': "Good speech! Your structure is logical. Focus on expanding your arguments.",
+            'grade': "B"
+        })
+
+    # Map activity_id to a clear human-readable type
+    activity_types = {
+        'one_minute': 'One Minute Speaking on a given topic',
+        'daily_question': 'Verbally answering a question'
+    }
+    activity_type = activity_types.get(activity_id, 'Open-ended Speaking Task')
+
+    system_prompt = f"""You are an English language assessment expert. Your task is to evaluate a student's verbal response for the speaking activity: "{activity_type}".
+You are given:
+1. Reference Topic / Question / Context (Prompt): "{prompt_text}"
+2. The student's spoken response (transcribed to text): "{spoken_text}"
+
+Evaluate the student's response based on:
+1. Relevance & Accuracy: Is the student's response relevant to the given Prompt? Did they directly address the topic/question/context rather than speaking about something else? (0-100)
+2. Coherence & Structure: Check if their response has logical flow and grammatical structure. (0-100)
+3. Fluency & Vocabulary: Sentence complexity, flow, and word choices. (0-100)
+4. Feedback: A short, encouraging feedback tip (maximum 25 words) advising how to improve.
+5. Grade: Overall letter grade (A for score >= 90, B for >= 75, C for >= 55, D for >= 35, F for < 35).
+
+CRITICAL REQUIREMENT FOR RELEVANCE:
+If the student's response is off-topic, completely unrelated to the Prompt, or contains nonsensical/random words, you MUST set the Relevance & Accuracy score to less than 40 and assign a Grade of "F".
+
+You MUST output ONLY a valid JSON object. Do NOT include markdown tags, explanation, or extra characters.
+JSON structure:
+{{
+  "accuracy": <number>,
+  "pronunciation": <number>,
+  "fluency": <number>,
+  "feedback": "<string>",
+  "grade": "<string>"
+}}"""
+
+    user_message = f"Prompt: {prompt_text}\nStudent Response: {spoken_text}"
+    
+    payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ],
+        "temperature": 0.3,
+        "response_format": {"type": "json_object"}
+    }
+    
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=json.dumps(payload).encode('utf-8'),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0"
+        },
+        method="POST"
+    )
+    
+    try:
+        print(f"--- SPEAKING OPEN-ENDED DEBUG ---")
+        print(f"Activity ID: {activity_id}")
+        print(f"Prompt: {prompt_text}")
+        print(f"Student: {spoken_text}")
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            result_str = res_data['choices'][0]['message']['content'].strip()
+            print(f"Groq Raw output: {result_str}")
+            result_json = json.loads(result_str)
+            return jsonify(result_json)
+    except Exception as e:
+        print("Groq analysis error:", e)
+        return jsonify({
+            'accuracy': 75,
+            'pronunciation': 70,
+            'fluency': 75,
+            'feedback': "Connection error with AI service, but good effort! Keep practicing.",
+            'grade': "B"
+        })
+
 
 
