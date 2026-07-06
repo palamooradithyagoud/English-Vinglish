@@ -3338,13 +3338,11 @@
                     const overall = aiResult.grade || 'C';
                     const wordCount = spokenText ? spokenText.split(/\s+/).filter(Boolean).length : 0;
 
-                    const gradeColor = accuracy >= 75 ? '#16A34A' : accuracy >= 55 ? '#D97706' : '#DC2626';
-                    const gradeColorLight = accuracy >= 75 ? '#4ADE80' : accuracy >= 55 ? '#FCD34D' : '#FCA5A5';
-                    const gradeEmoji = accuracy >= 75 ? '🏆' : accuracy >= 40 ? '💪' : '📚';
+                    // Always allow full XP claim for picture description
+                    const earnedXp = rewardXp;
 
-                    const earnedXp = accuracy >= 90 ? rewardXp
-                                   : accuracy >= 70 ? Math.round(rewardXp * 0.75)
-                                   : 0;
+                    const gradeColorLight = '#4ADE80';
+                    const gradeEmoji = '🏆';
 
                     document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
                     
@@ -3377,10 +3375,6 @@
                             <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
                                 <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 AI Performance Scores</div>
                                 <div class="speaking-scores-container">
-                                    <div class="speaking-score-circle ${accuracy >= 75 ? 'good' : 'avg'}" style="${accuracy < 40 ? 'border-color:#FCA5A5;' : ''}">
-                                        <span class="speaking-score-num" style="color:${gradeColor};">${accuracy}%</span>
-                                        <span class="speaking-score-label">Accuracy</span>
-                                    </div>
                                     <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
                                         <span class="speaking-score-num">${pronScore}%</span>
                                         <span class="speaking-score-label">Pronunciation</span>
@@ -3394,10 +3388,6 @@
                                         <span class="speaking-score-label">Words</span>
                                     </div>
                                 </div>
-                                ${accuracy < 70 && spokenText ? `
-                                <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
-                                    ⚠️ Accuracy is ${accuracy}%. You need at least 70% accuracy to pass and go to the next sentence. Try describing the picture again with more details!
-                                </div>` : ''}
                             </div>
 
                             <!-- Bujji Tip -->
@@ -3413,17 +3403,14 @@
 
                             <!-- Action buttons -->
                             <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                                ${accuracy >= 70
-                                    ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
-                                       <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                    : `<button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                }
+                                <button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
+                                <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>
                             </div>
                         </div>
                     `;
 
                     if (typeof BujjiSynth !== 'undefined') {
-                        accuracy >= 75 ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
+                        BujjiSynth.playSuccess();
                     }
                     resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 })

@@ -625,9 +625,13 @@ JSON structure:
     )
     
     try:
+        print(f"--- SPEAKING AI GRADER DEBUG ---")
+        print(f"Prompt: {prompt_text}")
+        print(f"Student: {spoken_text}")
         with urllib.request.urlopen(req, timeout=10) as response:
             res_data = json.loads(response.read().decode('utf-8'))
             result_str = res_data['choices'][0]['message']['content'].strip()
+            print(f"Groq Raw output: {result_str}")
             result_json = json.loads(result_str)
             return jsonify(result_json)
     except Exception as e:
