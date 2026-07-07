@@ -14,6 +14,47 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# ==========================================================================
+# THREAD-SAFE LOCAL TTL CACHES & INVALIDATION HELPERS
+# ==========================================================================
+from threading import Lock
+import time
+
+_student_cache = {}
+_student_cache_lock = Lock()
+
+_activity_logs_cache = {}
+_activity_logs_cache_lock = Lock()
+
+_passed_levels_cache = {}
+_passed_levels_cache_lock = Lock()
+
+CACHE_TTL = 15  # Cache TTL in seconds
+
+def invalidate_student_cache(student_id):
+    student_id_str = str(student_id)
+    with _student_cache_lock:
+        if student_id_str in _student_cache:
+            del _student_cache[student_id_str]
+
+def invalidate_student_activity_logs_cache(student_id):
+    student_id_str = str(student_id)
+    with _activity_logs_cache_lock:
+        keys_to_remove = [k for k in _activity_logs_cache.keys() if k.startswith(student_id_str + "_")]
+        for k in keys_to_remove:
+            del _activity_logs_cache[k]
+
+def invalidate_passed_levels_cache(student_id):
+    student_id_str = str(student_id)
+    with _passed_levels_cache_lock:
+        if student_id_str in _passed_levels_cache:
+            del _passed_levels_cache[student_id_str]
+
+def invalidate_all_student_caches(student_id):
+    invalidate_student_cache(student_id)
+    invalidate_student_activity_logs_cache(student_id)
+    invalidate_passed_levels_cache(student_id)
+
 # Helper function to parse database datetime strings safely
 def parse_date(date_val):
     if not date_val:
@@ -57,17 +98,32 @@ def get_student_by_email_or_roll(email_or_roll):
         print(f"Supabase get student error: {e}")
         return None
 
-def get_student_by_id(student_id):
+def get_student_by_id(student_id, force_fresh=False):
     """
-    Retrieve student details using student ID from Supabase.
+    Retrieve student details using student ID from Supabase with caching.
     """
+    now = time.time()
+    student_id_str = str(student_id)
+    
+    if not force_fresh:
+        with _student_cache_lock:
+            if student_id_str in _student_cache:
+                timestamp, student = _student_cache[student_id_str]
+                if now - timestamp < CACHE_TTL:
+                    return student.copy() if student else None
+                    
     try:
         response = supabase.table("students").select("*").eq("id", student_id).execute()
         if response.data:
             student = response.data[0]
             student['created_at'] = parse_date(student.get('created_at'))
-            return student
-        return None
+        else:
+            student = None
+            
+        with _student_cache_lock:
+            _student_cache[student_id_str] = (now, student)
+            
+        return student.copy() if student else None
     except Exception as e:
         print(f"Supabase get student by id error: {e}")
         return None
@@ -103,7 +159,7 @@ def update_student_xp_and_level(student_id, xp_earned, new_level=None):
     """
     try:
         # Fetch current record first to increment XP
-        student = get_student_by_id(student_id)
+        student = get_student_by_id(student_id, force_fresh=True)
         if not student:
             return None
             
@@ -131,6 +187,7 @@ def update_student_xp_and_level(student_id, xp_earned, new_level=None):
         if response.data:
             student = response.data[0]
             student['created_at'] = parse_date(student.get('created_at'))
+            invalidate_student_cache(student_id)
             return student
         return None
     except Exception as e:
@@ -180,6 +237,8 @@ def add_progress_record(student_id, level, score, percentage, status):
         if response.data:
             res_record = response.data[0]
             res_record['completed_at'] = parse_date(res_record.get('completed_at'))
+            invalidate_passed_levels_cache(student_id)
+            invalidate_student_activity_logs_cache(student_id)
             return res_record
         raise Exception("Insert progress failed.")
     except Exception as e:
@@ -204,8 +263,17 @@ def get_questions_for_level(level):
 
 def get_all_passed_levels(student_id):
     """
-    Returns a set of level numbers that the student completed with 'passed' status in Supabase.
+    Returns a set of level numbers that the student completed with 'passed' status in Supabase with caching.
     """
+    now = time.time()
+    student_id_str = str(student_id)
+    
+    with _passed_levels_cache_lock:
+        if student_id_str in _passed_levels_cache:
+            timestamp, passed_set = _passed_levels_cache[student_id_str]
+            if now - timestamp < CACHE_TTL:
+                return passed_set.copy()
+                
     try:
         response = supabase.table("progress") \
             .select("level") \
@@ -214,8 +282,14 @@ def get_all_passed_levels(student_id):
             .execute()
             
         if response.data:
-            return {r['level'] for r in response.data}
-        return set()
+            passed_set = {r['level'] for r in response.data}
+        else:
+            passed_set = set()
+            
+        with _passed_levels_cache_lock:
+            _passed_levels_cache[student_id_str] = (now, passed_set)
+            
+        return passed_set.copy()
     except Exception as e:
         print(f"Supabase get passed levels error: {e}")
         return set()
@@ -790,8 +864,37 @@ def detect_weak_students():
     """
     try:
         students = get_students_list()
-        weak_students = []
+        if not students:
+            return []
+            
+        # 1. Fetch all progress records in a single query
+        progress_resp = supabase.table("progress") \
+            .select("student_id,percentage,status,level,completed_at") \
+            .execute()
+        progress_data = progress_resp.data or []
         
+        # Group progress records by student_id
+        from collections import defaultdict
+        student_progress = defaultdict(list)
+        for r in progress_data:
+            student_progress[r["student_id"]].append(r)
+            
+        # 2. Fetch all activity logs in a single query
+        logs_resp = supabase.table("activity_logs") \
+            .select("student_id,created_at") \
+            .order("created_at", desc=True) \
+            .execute()
+        logs_data = logs_resp.data or []
+        
+        # Group activity logs by student_id to find the latest activity
+        student_latest_log = {}
+        for log in logs_data:
+            sid = log["student_id"]
+            if sid not in student_latest_log:
+                student_latest_log[sid] = parse_date(log["created_at"])
+                
+        # Now process each student
+        weak_students = []
         from datetime import datetime, timedelta
         seven_days_ago = datetime.utcnow() - timedelta(days=7)
         
@@ -799,12 +902,7 @@ def detect_weak_students():
             student_id = student["id"]
             reasons = []
             
-            # Fetch all attempts
-            attempts_resp = supabase.table("progress") \
-                .select("percentage,status,level") \
-                .eq("student_id", student_id) \
-                .execute()
-            attempts = attempts_resp.data or []
+            attempts = student_progress.get(student_id, [])
             
             # 1. Average accuracy < 50%
             if attempts:
@@ -814,26 +912,13 @@ def detect_weak_students():
                     reasons.append(f"Low average accuracy ({round(avg_pct, 1)}%)")
             
             # 2. Inactive for last 7 days
-            logs_resp = supabase.table("activity_logs") \
-                .select("created_at") \
-                .eq("student_id", student_id) \
-                .order("created_at", desc=True) \
-                .limit(1) \
-                .execute()
+            last_activity = student_latest_log.get(student_id)
+            if not last_activity:
+                # Fallback to latest progress completion time if no activity logs
+                if attempts:
+                    sorted_attempts = sorted(attempts, key=lambda x: x.get("completed_at", ""), reverse=True)
+                    last_activity = parse_date(sorted_attempts[0]["completed_at"])
             
-            last_activity = None
-            if logs_resp.data:
-                last_activity = parse_date(logs_resp.data[0]["created_at"])
-            else:
-                prog_resp = supabase.table("progress") \
-                    .select("completed_at") \
-                    .eq("student_id", student_id) \
-                    .order("completed_at", desc=True) \
-                    .limit(1) \
-                    .execute()
-                if prog_resp.data:
-                    last_activity = parse_date(prog_resp.data[0]["completed_at"])
-                    
             if last_activity:
                 if last_activity.replace(tzinfo=None) < seven_days_ago:
                     days_inactive = (datetime.utcnow() - last_activity.replace(tzinfo=None)).days
@@ -851,7 +936,7 @@ def detect_weak_students():
                 for lvl, cnt in fail_counts.items():
                     if cnt >= 3:
                         reasons.append(f"Failed Level {lvl} quiz {cnt} times")
-            
+                        
             if reasons:
                 weak_students.append({
                     "id": student["id"],
@@ -877,6 +962,7 @@ def log_student_activity(student_id, activity_type, description):
             "description": description
         }
         supabase.table("activity_logs").insert(data).execute()
+        invalidate_student_activity_logs_cache(student_id)
         return True
     except Exception as e:
         print(f"Error logging student activity: {e}")
@@ -1074,6 +1160,7 @@ def submit_class_quiz_attempt(class_quiz_id, student_id, score, total_questions,
         if response.data:
             res_record = response.data[0]
             res_record['completed_at'] = parse_date(res_record.get('completed_at'))
+            invalidate_all_student_caches(student_id)
             return res_record
         return None
     except Exception as e:
@@ -1100,8 +1187,17 @@ def get_class_quiz_results_for_faculty():
 
 def get_student_activity_logs(student_id, limit=100):
     """
-    Retrieves activity logs for a specific student from Supabase.
+    Retrieves activity logs for a specific student from Supabase with caching.
     """
+    now = time.time()
+    cache_key = f"{student_id}_{limit}"
+    
+    with _activity_logs_cache_lock:
+        if cache_key in _activity_logs_cache:
+            timestamp, records = _activity_logs_cache[cache_key]
+            if now - timestamp < CACHE_TTL:
+                return [r.copy() for r in records]
+                
     try:
         response = supabase.table("activity_logs") \
             .select("*") \
@@ -1113,7 +1209,11 @@ def get_student_activity_logs(student_id, limit=100):
         records = response.data or []
         for r in records:
             r['created_at'] = parse_date(r.get('created_at'))
-        return records
+            
+        with _activity_logs_cache_lock:
+            _activity_logs_cache[cache_key] = (now, records)
+            
+        return [r.copy() for r in records]
     except Exception as e:
         print(f"Error getting student activity logs: {e}")
         return []
