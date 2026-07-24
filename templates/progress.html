@@ -3,6 +3,7 @@
 {% block title %}Progress Map - English Winglish{% endblock %}
 
 {% block head %}
+<script src="{{ url_for('static', filename='js/speaking_evaluation_engine.js') }}"></script>
 <style>
     @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -3544,6 +3545,113 @@
 
         document.getElementById('speaking-waveform').style.display = 'none';
 
+        function renderAISaaSReport(aiResult, spokenText, durationStr, activityTitle, id, rewardXp) {
+            const accuracy = aiResult.accuracy || 0;
+            const pronScore = aiResult.pronunciation || 0;
+            const fluencyScore = aiResult.fluency || 0;
+            const overall = aiResult.grade || 'C';
+            const wordCount = spokenText ? spokenText.split(/\s+/).filter(Boolean).length : 0;
+            const isPassed = accuracy >= 50 && overall !== 'F';
+            const earnedXp = isPassed ? rewardXp : 0;
+
+            const overallScore = Math.round((accuracy * 0.4) + (pronScore * 0.3) + (fluencyScore * 0.3));
+
+            let cefr = 'B1 Intermediate';
+            let ielts = 'Band 5.5';
+            if (overallScore >= 90) { cefr = 'C1 Advanced'; ielts = 'Band 7.5'; }
+            else if (overallScore >= 80) { cefr = 'B2 Upper-Intermediate'; ielts = 'Band 6.5'; }
+            else if (overallScore >= 70) { cefr = 'B1+ Intermediate'; ielts = 'Band 6.0'; }
+            else if (overallScore >= 60) { cefr = 'A2 Elementary'; ielts = 'Band 4.5'; }
+
+            let gradeColor = '#2563EB';
+            if (overallScore >= 90) gradeColor = '#059669';
+            else if (overallScore >= 80) gradeColor = '#2563EB';
+            else if (overallScore >= 70) gradeColor = '#D97706';
+            else gradeColor = '#DC2626';
+
+            const strokeDashOffset = 283 - (283 * overallScore) / 100;
+
+            return `
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.06); overflow:hidden; text-align:left; max-width:680px; margin:24px auto 0 auto;">
+                    
+                    <!-- Dark Header Card with Grade & Standards -->
+                    <div style="background:linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding:28px 32px; color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#60A5FA; background:rgba(59,130,246,0.15); padding:3px 10px; border-radius:12px;">
+                                    AI Speech Evaluation
+                                </span>
+                                <span style="font-size:11px; font-weight:700; color:#94A3B8;">
+                                    ${activityTitle} • ${wordCount} words
+                                </span>
+                            </div>
+                            <h2 style="font-size:22px; font-weight:800; color:#FFFFFF; margin:0 0 4px 0;">Speaking Assessment</h2>
+                            <div style="display:flex; gap:12px; font-size:12.5px; font-weight:700; color:#CBD5E1; margin-top:8px;">
+                                <span style="background:rgba(255,255,255,0.08); padding:3px 10px; border-radius:8px;">CEFR: ${cefr}</span>
+                                <span style="background:rgba(255,255,255,0.08); padding:3px 10px; border-radius:8px;">IELTS: ${ielts}</span>
+                            </div>
+                        </div>
+
+                        <!-- Animated Overall Score Ring -->
+                        <div style="position:relative; width:90px; height:90px; display:flex; align-items:center; justify-content:center;">
+                            <svg width="90" height="90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="${gradeColor}" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="${strokeDashOffset}" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease-in-out;"/>
+                            </svg>
+                            <div style="position:absolute; text-align:center;">
+                                <div style="font-size:22px; font-weight:900; color:#FFFFFF; line-height:1;">${overall}</div>
+                                <div style="font-size:11px; font-weight:700; color:#94A3B8;">${overallScore}%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What You Said -->
+                    <div style="padding:24px 32px; border-bottom:1px solid #F1F5F9;">
+                        <h4 style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#64748B; margin:0 0 10px 0;">
+                            Your Response
+                        </h4>
+                        <div style="line-height:1.6; color:#0F172A; font-weight:600; font-size:14.5px;">
+                            ${spokenText || '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>'}
+                        </div>
+                    </div>
+
+                    <!-- AI Metrics Grid -->
+                    <div style="padding:24px 32px; background:#F8FAFC; border-bottom:1px solid #F1F5F9;">
+                        <h4 style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#64748B; margin:0 0 16px 0;">
+                            AI Evaluation Metrics
+                        </h4>
+                        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#2563EB;">${accuracy}%</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Relevance</div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#059669;">${pronScore}%</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Structure</div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#D97706;">${fluencyScore}%</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Fluency</div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#7C3AED;">${wordCount}</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Words</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div style="background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px;">
+                        ${isPassed
+                            ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">Claim XP & Next Level</button>
+                               <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="openCategoryModules('${id}')">Back to Path</button>`
+                            : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', 0, ${currentSpeakingPromptIndex})">Try Again</button>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
         // Helper function that actually does the grading and displays results
         function runAnalysis(spokenText) {
             const durationSecs = (id === 'picture_desc') ? elapsedSpeakingSeconds : currentSpeakingSeconds;
@@ -3576,90 +3684,14 @@
                     return res.json();
                 })
                 .then(aiResult => {
+                    document.getElementById('speaking-status-text').textContent = 'Analysis Complete!';
+                    const resultsPanel = document.getElementById('speaking-results-panel');
+                    resultsPanel.style.display = 'block';
+                    resultsPanel.innerHTML = renderAISaaSReport(aiResult, spokenText, durationStr, 'Picture Description', id, rewardXp);
+
                     const accuracy = aiResult.accuracy || 0;
-                    const pronScore = aiResult.pronunciation || 0;
-                    const fluencyScore = aiResult.fluency || 0;
-                    const tip = aiResult.feedback || 'Good job!';
                     const overall = aiResult.grade || 'C';
-                    const wordCount = spokenText ? spokenText.split(/\s+/).filter(Boolean).length : 0;
-
                     const isPassed = accuracy >= 50 && overall !== 'F';
-                    const earnedXp = isPassed ? rewardXp : 0;
-
-                    const gradeColorLight = isPassed ? '#4ADE80' : '#FCA5A5';
-                    const gradeEmoji = isPassed ? '🏆' : '📚';
-
-                    document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
-                    
-                    resultsPanel.innerHTML = `
-                        <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-                            <!-- Header with grade -->
-                            <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <span style="font-size:24px;">📊</span>
-                                    <div>
-                                        <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">AI Speech Analysis Report (Picture Description)</div>
-                                        <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words · AI Evaluated</div>
-                                    </div>
-                                </div>
-                                <div style="text-align:center; background:rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px;">
-                                    <div style="font-size:2rem; font-weight:900; color:${gradeColorLight};">${overall}</div>
-                                    <div style="font-size:0.65rem; color:#94A3B8; text-transform:uppercase;">Grade</div>
-                                </div>
-                            </div>
-
-                            <!-- What You Said -->
-                            <div style="background:#FFFFFF; padding:20px; border-bottom:1px solid #F1F5F9;">
-                                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:10px;">🗣️ Your Description</div>
-                                <div style="line-height:1.6; color:#0F172A; font-weight:500;">
-                                    ${spokenText || '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>'}
-                                </div>
-                            </div>
-
-                            <!-- Score circles -->
-                            <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
-                                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 AI Performance Scores</div>
-                                <div class="speaking-scores-container">
-                                    <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
-                                        <span class="speaking-score-num">${pronScore}%</span>
-                                        <span class="speaking-score-label">Pronunciation</span>
-                                    </div>
-                                    <div class="speaking-score-circle ${fluencyScore >= 75 ? 'good' : 'avg'}">
-                                        <span class="speaking-score-num">${fluencyScore}%</span>
-                                        <span class="speaking-score-label">Fluency</span>
-                                    </div>
-                                    <div class="speaking-score-circle ${wordCount >= 5 ? 'good' : 'avg'}">
-                                        <span class="speaking-score-num">${wordCount}</span>
-                                        <span class="speaking-score-label">Words</span>
-                                    </div>
-                                </div>
-                                ${!isPassed && spokenText ? `
-                                <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
-                                    ⚠️ Your description does not match the image. Please describe the photo correctly to pass and get XP!
-                                </div>` : ''}
-                            </div>
-
-                            <!-- Bujji Tip -->
-                            <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
-                                <div style="display:flex; align-items:flex-start; gap:12px;">
-                                    <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
-                                    <div>
-                                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">AI Coach Tip</div>
-                                        <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Action buttons -->
-                            <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                                ${isPassed
-                                    ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
-                                       <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                    : `<button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                }
-                            </div>
-                        </div>
-                    `;
 
                     if (typeof BujjiSynth !== 'undefined') {
                         isPassed ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
@@ -3674,7 +3706,7 @@
                         </div>
                     `;
                 });
-            } else if (id === 'one_minute' || id === 'daily_question') {
+            } else if (id === 'one_minute' || id === 'daily_question' || id === 'one_question') {
                 // Show grading spinner
                 document.getElementById('speaking-status-text').textContent = '🤖 Evaluating response using AI...';
                 const resultsPanel = document.getElementById('speaking-results-panel');
@@ -3702,94 +3734,14 @@
                     return res.json();
                 })
                 .then(aiResult => {
+                    document.getElementById('speaking-status-text').textContent = 'Analysis Complete!';
+                    const resultsPanel = document.getElementById('speaking-results-panel');
+                    resultsPanel.style.display = 'block';
+                    resultsPanel.innerHTML = renderAISaaSReport(aiResult, spokenText, durationStr, 'One Question Response', id, rewardXp);
+
                     const accuracy = aiResult.accuracy || 0;
-                    const pronScore = aiResult.pronunciation || 0;
-                    const fluencyScore = aiResult.fluency || 0;
-                    const tip = aiResult.feedback || 'Good job!';
                     const overall = aiResult.grade || 'C';
-                    const wordCount = spokenText ? spokenText.split(/\s+/).filter(Boolean).length : 0;
-
                     const isPassed = accuracy >= 50 && overall !== 'F';
-                    const earnedXp = isPassed ? rewardXp : 0;
-
-                    const gradeColorLight = isPassed ? '#4ADE80' : '#FCA5A5';
-                    const gradeEmoji = isPassed ? '🏆' : '📚';
-
-                    document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
-                    
-                    resultsPanel.innerHTML = `
-                        <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-                            <!-- Header with grade -->
-                            <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <span style="font-size:24px;">📊</span>
-                                    <div>
-                                        <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">AI Speech Analysis Report (${id === 'one_minute' ? 'One Minute Speaking' : 'Daily Question'})</div>
-                                        <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words · AI Evaluated</div>
-                                    </div>
-                                </div>
-                                <div style="text-align:center; background:rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px;">
-                                    <div style="font-size:2rem; font-weight:900; color:${gradeColorLight};">${overall}</div>
-                                    <div style="font-size:0.65rem; color:#94A3B8; text-transform:uppercase;">Grade</div>
-                                </div>
-                            </div>
-
-                            <!-- What You Said -->
-                            <div style="background:#FFFFFF; padding:20px; border-bottom:1px solid #F1F5F9;">
-                                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:10px;">🗣️ Your Speech</div>
-                                <div style="line-height:1.6; color:#0F172A; font-weight:500;">
-                                    ${spokenText || '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>'}
-                                </div>
-                            </div>
-
-                            <!-- Score circles -->
-                            <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
-                                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 AI Performance Scores</div>
-                                <div class="speaking-scores-container">
-                                    <div class="speaking-score-circle ${accuracy >= 75 ? 'good' : 'avg'}" style="${accuracy < 50 ? 'border-color:#FCA5A5;' : ''}">
-                                        <span class="speaking-score-num" style="color:${accuracy >= 75 ? '#16A34A' : accuracy >= 50 ? '#D97706' : '#DC2626'};">${accuracy}%</span>
-                                        <span class="speaking-score-label">Relevance</span>
-                                    </div>
-                                    <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
-                                        <span class="speaking-score-num">${pronScore}%</span>
-                                        <span class="speaking-score-label">Structure</span>
-                                    </div>
-                                    <div class="speaking-score-circle ${fluencyScore >= 75 ? 'good' : 'avg'}">
-                                        <span class="speaking-score-num">${fluencyScore}%</span>
-                                        <span class="speaking-score-label">Fluency</span>
-                                    </div>
-                                    <div class="speaking-score-circle ${wordCount >= 10 ? 'good' : 'avg'}">
-                                        <span class="speaking-score-num">${wordCount}</span>
-                                        <span class="speaking-score-label">Words</span>
-                                    </div>
-                                </div>
-                                ${!isPassed && spokenText ? `
-                                <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
-                                    ⚠️ Your speech is not relevant to the topic/question. Please answer correctly to pass and get XP!
-                                </div>` : ''}
-                            </div>
-
-                            <!-- Bujji Tip -->
-                            <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
-                                <div style="display:flex; align-items:flex-start; gap:12px;">
-                                    <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
-                                    <div>
-                                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">AI Coach Tip</div>
-                                        <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Action buttons -->
-                            <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                                ${isPassed
-                                    ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
-                                       <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                    : `<button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                }
-                            </div>
-                        </div>
-                    `;
 
                     if (typeof BujjiSynth !== 'undefined') {
                         isPassed ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
@@ -3805,166 +3757,33 @@
                     `;
                 });
             } else {
-                // Default path A logic (exact matching)
-                // Build word-level comparison HTML
-                function buildComparisonHTML(spoken, prompt) {
-                    if (!spoken) return '<span style="color:#94A3B8; font-style:italic;">No speech detected — please try again.</span>';
+                // ==========================================================================
+                // PRODUCTION-GRADE AI EVALUATION PIPELINE (SpeakingEvaluationEngine)
+                // ==========================================================================
+                const evalResult = SpeakingEvaluationEngine.evaluateSpeech(activeSpeakingPrompt, spokenText, durationSecs);
+                
+                // Render SaaS Report Container (without AI Feedback Box)
+                SpeakingEvaluationEngine.renderSaaSReport(evalResult, 'speaking-results-panel');
 
-                    // Normalise: lowercase, strip punctuation
-                    const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
-                    const promptWords = clean(prompt).split(/\s+/);
-                    const spokenWords = spoken.split(/\s+/);
+                // Append Action Footer Buttons to the Report Card
+                const resultsPanel = document.getElementById('speaking-results-panel');
+                const isPassed = evalResult.metrics.accuracy >= 60;
+                const earnedXp = isPassed ? rewardXp : 0;
 
-                    return spokenWords.map(word => {
-                        const isMatch = promptWords.includes(clean(word));
-                        return `<span style="
-                            display:inline-block;
-                            padding:2px 6px;
-                            margin:2px 2px;
-                            border-radius:6px;
-                            font-weight:600;
-                            background:${isMatch ? '#DCFCE7' : '#FEE2E2'};
-                            color:${isMatch ? '#166534' : '#991B1B'};
-                            font-size:0.92rem;
-                        ">${word}</span>`;
-                    }).join(' ');
+                const reportCard = resultsPanel.querySelector('div > div');
+                if (reportCard) {
+                    const actionFooter = document.createElement('div');
+                    actionFooter.style.cssText = 'background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px; border-top:1px solid #F1F5F9;';
+                    actionFooter.innerHTML = isPassed
+                        ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${evalResult.metrics.accuracy}, ${evalResult.metrics.speechClarity}, ${evalResult.metrics.fluency}, ${evalResult.metrics.totalSpokenWords})">Claim XP & Next Level</button>
+                           <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="openCategoryModules('${id}')">Back to Path</button>`
+                        : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', 0, ${currentSpeakingPromptIndex})">Try Again</button>`;
+                    reportCard.appendChild(actionFooter);
                 }
 
-                const comparisonHTML = buildComparisonHTML(spokenText, activeSpeakingPrompt);
-
-                // ── REAL MATCH-BASED SCORING ──────────────────────────────────────
-                const clean = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
-
-                const promptWords   = activeSpeakingPrompt ? clean(activeSpeakingPrompt).split(/\s+/).filter(Boolean) : [];
-                const spokenWords   = spokenText           ? clean(spokenText).split(/\s+/).filter(Boolean)           : [];
-                const wordCount     = spokenWords.length;
-
-                // Accuracy: what % of the prompt's words appear in what was spoken
-                const matchedWords  = promptWords.filter(pw => spokenWords.includes(pw));
-                const accuracy      = promptWords.length > 0
-                    ? Math.round((matchedWords.length / promptWords.length) * 100)
-                    : 0;
-
-                // Pronunciation: accuracy-weighted, with a small ±5 natural variance
-                const pronBase      = accuracy;
-                const pronVariance  = Math.floor(Math.random() * 11) - 5; // -5 to +5
-                const pronScore     = Math.max(0, Math.min(100, pronBase + pronVariance));
-
-                // Fluency: words per second (ideal is ~2–3 wps), scaled by accuracy
-                const wps           = durationSecs > 0 ? wordCount / durationSecs : 0;
-                const wpsScore      = Math.min(100, Math.round(wps * 40));   // 2.5 wps → 100
-                const fluencyScore  = Math.round((wpsScore * 0.4) + (accuracy * 0.6)); // blend
-
-                // Overall grade
-                const overall = accuracy >= 90 ? 'A' : accuracy >= 75 ? 'B' : accuracy >= 55 ? 'C' : accuracy >= 35 ? 'D' : 'F';
-                const gradeColor = accuracy >= 75 ? '#16A34A' : accuracy >= 55 ? '#D97706' : '#DC2626';
-                const gradeEmoji = accuracy >= 75 ? '🏆' : accuracy >= 40 ? '💪' : '📚';
-
-                // Can they claim XP? Only if accuracy >= 70%
-                const earnedXp   = accuracy >= 90 ? rewardXp
-                                 : accuracy >= 70 ? Math.round(rewardXp * 0.75)
-                                 : 0;
-
-                // Contextual tips
-                const tipsByScore = accuracy >= 85
-                    ? ["Outstanding accuracy! 🎉 Focus on maintaining this quality with longer sentences.",
-                       "Excellent match! Now work on speaking even more smoothly without pausing."]
-                    : accuracy >= 65
-                    ? ["Good effort! Try to include more words from the prompt for better coverage.",
-                       "You got the main words right. Focus on not skipping smaller connecting words."]
-                    : accuracy >= 40
-                    ? ["You're getting there! Read the prompt slowly, then speak it back word-for-word.",
-                       "Try again — say each word clearly and at a steady pace to improve your accuracy."]
-                    : ["Don't give up! Read the sentence first, then close your eyes and repeat it.",
-                       "Tip: Practice each phrase 3 times before recording to improve retention."];
-                const tip = tipsByScore[Math.floor(Math.random() * tipsByScore.length)];
-
-                // Show analysis results card
-                document.getElementById('speaking-status-text').textContent = 'Analysis Complete! 🎉';
-                const resultsPanel = document.getElementById('speaking-results-panel');
-                resultsPanel.style.display = 'block';
-                resultsPanel.innerHTML = `
-                    <div style="border-radius:16px; overflow:hidden; margin-top:20px; border:1px solid #E2E8F0; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-
-                        <!-- Header with grade -->
-                        <div style="background:linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%); padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <span style="font-size:24px;">📊</span>
-                                <div>
-                                    <div style="color:#FFFFFF; font-weight:800; font-size:1rem;">Speech Analysis Report</div>
-                                    <div style="color:#94A3B8; font-size:0.75rem;">Duration: ${durationStr} · ${wordCount} words · ${matchedWords.length}/${promptWords.length} prompt words matched</div>
-                                </div>
-                            </div>
-                            <div style="text-align:center; background:rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px;">
-                                <div style="font-size:2rem; font-weight:900; color:${accuracy >= 75 ? '#4ADE80' : accuracy >= 55 ? '#FCD34D' : '#FCA5A5'};">${overall}</div>
-                                <div style="font-size:0.65rem; color:#94A3B8; text-transform:uppercase;">Grade</div>
-                            </div>
-                        </div>
-
-                        <!-- What You Said -->
-                        <div style="background:#FFFFFF; padding:20px; border-bottom:1px solid #F1F5F9;">
-                            <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:10px;">🗣️ What You Said</div>
-                            ${spokenText
-                                ? `<div style="line-height:2; word-spacing:4px;">${comparisonHTML}</div>
-                                   <div style="margin-top:10px; display:flex; gap:16px; font-size:0.72rem; color:#64748B;">
-                                       <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#DCFCE7;margin-right:4px;"></span>Matched prompt words</span>
-                                       <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#FEE2E2;margin-right:4px;"></span>Not in prompt</span>
-                                   </div>`
-                                : `<div style="color:#94A3B8; font-style:italic; font-size:0.88rem;">No text submitted. Please try again.</div>`
-                            }
-                        </div>
-
-                        <!-- Score circles -->
-                        <div style="background:#F8FAFC; padding:20px; border-bottom:1px solid #F1F5F9;">
-                            <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#64748B; margin-bottom:14px;">📈 Performance Scores</div>
-                            <div class="speaking-scores-container">
-                                <div class="speaking-score-circle ${accuracy >= 75 ? 'good' : 'avg'}" style="${accuracy < 40 ? 'border-color:#FCA5A5;' : ''}">
-                                    <span class="speaking-score-num" style="color:${gradeColor};">${accuracy}%</span>
-                                    <span class="speaking-score-label">Accuracy</span>
-                                </div>
-                                <div class="speaking-score-circle ${pronScore >= 75 ? 'good' : 'avg'}">
-                                    <span class="speaking-score-num">${pronScore}%</span>
-                                    <span class="speaking-score-label">Pronunciation</span>
-                                </div>
-                                <div class="speaking-score-circle ${fluencyScore >= 75 ? 'good' : 'avg'}">
-                                    <span class="speaking-score-num">${fluencyScore}%</span>
-                                    <span class="speaking-score-label">Fluency</span>
-                                </div>
-                                <div class="speaking-score-circle ${wordCount >= 5 ? 'good' : 'avg'}">
-                                    <span class="speaking-score-num">${wordCount}</span>
-                                    <span class="speaking-score-label">Words</span>
-                                </div>
-                            </div>
-                            ${accuracy < 70 && spokenText ? `
-                            <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; margin-top:12px; font-size:0.78rem; color:#DC2626; font-weight:600;">
-                                ⚠️ Accuracy is ${accuracy}%. You need at least 70% accuracy to pass and go to the next sentence. Read the sentence again carefully and click Try Again!
-                            </div>` : ''}
-                        </div>
-
-                        <!-- Bujji Tip -->
-                        <div style="background:#EFF6FF; padding:16px 20px; border-bottom:1px solid #DBEAFE;">
-                            <div style="display:flex; align-items:flex-start; gap:12px;">
-                                <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
-                                <div>
-                                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">AI Coach Tip</div>
-                                    <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action buttons -->
-                        <div style="background:#FFFFFF; padding:16px 20px; display:flex; justify-content:center; gap:12px;">
-                            ${accuracy >= 70
-                                ? `<button class="btn-primary" style="padding:10px 24px; font-weight:800; border-radius:10px;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">🎁 Claim & Next</button>
-                                   <button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                                : `<button class="btn-secondary" style="padding:10px 20px; font-weight:800; border-radius:10px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="selectSpeakingActivity('${id}', ${currentSpeakingPromptIndex})">🔄 Try Again</button>`
-                            }
-                        </div>
-                    </div>
-                `;
-
+                document.getElementById('speaking-status-text').textContent = 'Analysis Complete!';
                 if (typeof BujjiSynth !== 'undefined') {
-                    accuracy >= 75 ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
+                    isPassed ? BujjiSynth.playSuccess() : BujjiSynth.playPop();
                 }
                 resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
