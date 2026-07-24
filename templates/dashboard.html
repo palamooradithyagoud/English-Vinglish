@@ -567,9 +567,19 @@
         </div>
     </div>
 
-    <!-- Quick 8-Feature Grid -->
+    <!-- Quick 8-Feature Grid (Daily Challenge First) -->
     <div class="ew-quick-grid">
         
+        <!-- 1. Daily Challenge (Position #1) -->
+        <a href="{{ url_for('dashboard.progress') }}?activity=picture_desc" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #FFF1F2; color: #E11D48;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <h4 class="ew-card-title">Daily Challenge</h4>
+            <p class="ew-card-subtitle">New challenge every day</p>
+        </a>
+
+        <!-- 2. Mock Tests -->
         <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #F0FDF4; color: #16A34A;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><polyline points="9 14 11 16 15 11"/></svg>
@@ -578,6 +588,7 @@
             <p class="ew-card-subtitle">Test your English skills</p>
         </a>
 
+        <!-- 3. Assessments -->
         <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #EFF6FF; color: #2563EB;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -586,6 +597,7 @@
             <p class="ew-card-subtitle">AI-powered assessments</p>
         </a>
 
+        <!-- 4. Practice -->
         <a href="{{ url_for('dashboard.progress') }}?activity=speaking" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #EEF2FF; color: #4F46E5;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
@@ -594,6 +606,7 @@
             <p class="ew-card-subtitle">Daily speaking practice</p>
         </a>
 
+        <!-- 5. Listening -->
         <a href="{{ url_for('dashboard.progress') }}?activity=read_aloud" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #FAF5FF; color: #9333EA;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
@@ -602,6 +615,7 @@
             <p class="ew-card-subtitle">Improve listening skills</p>
         </a>
 
+        <!-- 6. Competition -->
         <a href="{{ url_for('dashboard.progress') }}?activity=games" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #FFFBEB; color: #D97706;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
@@ -610,6 +624,7 @@
             <p class="ew-card-subtitle">Compete & win rewards</p>
         </a>
 
+        <!-- 7. Interview Prep -->
         <a href="{{ url_for('dashboard.progress') }}?activity=one_question" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #ECFEFF; color: #0891B2;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -618,20 +633,13 @@
             <p class="ew-card-subtitle">Ace your next interview</p>
         </a>
 
+        <!-- 8. Pronunciation -->
         <a href="{{ url_for('dashboard.progress') }}?activity=tongue_twister" class="ew-grid-card">
             <div class="ew-card-icon-wrapper" style="background: #FDF2F8; color: #DB2777;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <h4 class="ew-card-title">Pronunciation</h4>
             <p class="ew-card-subtitle">Speak clear & correct</p>
-        </a>
-
-        <a href="{{ url_for('dashboard.progress') }}?activity=picture_desc" class="ew-grid-card">
-            <div class="ew-card-icon-wrapper" style="background: #FFF1F2; color: #E11D48;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-            </div>
-            <h4 class="ew-card-title">Daily Challenge</h4>
-            <p class="ew-card-subtitle">New challenge every day</p>
         </a>
 
     </div>
