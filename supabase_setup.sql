@@ -143,6 +143,19 @@ CREATE TABLE IF NOT EXISTS public.speaking_prompts (
 );
 
 
+-- 13. Create daily_challenge_attempts table
+CREATE TABLE IF NOT EXISTS public.daily_challenge_attempts (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+    level_id INTEGER NOT NULL,
+    score INTEGER NOT NULL,
+    stars INTEGER NOT NULL,
+    earned_xp INTEGER NOT NULL,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT unique_student_level UNIQUE (student_id, level_id)
+);
+
+
 -- ==========================================
 -- SECURITY HARDENING: ROW LEVEL SECURITY (RLS)
 -- ==========================================
@@ -160,6 +173,7 @@ ALTER TABLE public.class_quiz_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.speaking_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.game_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.speaking_prompts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_challenge_attempts ENABLE ROW LEVEL SECURITY;
 
 -- 2. Revoke all direct public/anonymous API access
 -- Note: The python Flask backend uses the `service_role` key, which automatically
@@ -176,6 +190,7 @@ REVOKE ALL ON public.class_quiz_attempts FROM anon, public;
 REVOKE ALL ON public.speaking_attempts FROM anon, public;
 REVOKE ALL ON public.game_attempts FROM anon, public;
 REVOKE ALL ON public.speaking_prompts FROM anon, public;
+REVOKE ALL ON public.daily_challenge_attempts FROM anon, public;
 
 
 -- ==========================================

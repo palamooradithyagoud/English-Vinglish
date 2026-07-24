@@ -16,7 +16,7 @@ class DailyChallengeProgressManager {
         }
     }
 
-    static saveProgress(levelId, resultData) {
+    static saveProgress(levelId, resultData, xp) {
         const progress = this.getProgress();
         const existing = progress[levelId] || {};
         
@@ -24,7 +24,6 @@ class DailyChallengeProgressManager {
             completed: true,
             bestScore: Math.max(existing.bestScore || 0, resultData.score || 0),
             stars: Math.max(existing.stars || 0, resultData.stars || 1),
-            claimedXP: existing.claimedXP || false,
             attempts: (existing.attempts || 0) + 1,
             lastCompletedAt: new Date().toISOString()
         };
@@ -34,7 +33,36 @@ class DailyChallengeProgressManager {
         } catch (e) {
             console.error('Failed to save daily challenge progress:', e);
         }
+
+        // Sync attempt to Supabase PostgreSQL Database
+        fetch('/api/daily-challenge/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                level_id: levelId,
+                score: resultData.score || 0,
+                stars: resultData.stars || 1,
+                earned_xp: xp || 0
+            })
+        }).catch(err => console.error('Supabase sync error:', err));
+
         return progress[levelId];
+    }
+
+    static async fetchSupabaseProgress() {
+        try {
+            const res = await fetch('/api/daily-challenge/progress');
+            const data = await res.json();
+            if (data.success && data.progress) {
+                const local = this.getProgress();
+                const merged = { ...local, ...data.progress };
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(merged));
+                return merged;
+            }
+        } catch (e) {
+            console.error('Failed fetching progress from Supabase:', e);
+        }
+        return this.getProgress();
     }
 
     static isUnlocked(levelId) {
@@ -393,7 +421,7 @@ window.DailyChallengeEngine = {
 
         if (passed) {
             DailySoundFx.playVictory();
-            DailyChallengeProgressManager.saveProgress(this.activeLevel.id, { score: pct, stars: stars });
+            DailyChallengeProgressManager.saveProgress(this.activeLevel.id, { score: pct, stars: stars }, this.activeLevel.xp);
         }
 
         const container = document.getElementById('dc-exercise-body');

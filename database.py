@@ -1614,6 +1614,52 @@ def get_speaking_activities():
         print(f"Error getting speaking activities from db, falling back: {e}")
         return FALLBACK_SPEAKING_ACTIVITIES
 
+def log_daily_challenge_attempt(student_id, level_id, score, stars, earned_xp):
+    """
+    Logs or updates a student's daily challenge attempt in Supabase.
+    Also updates the student's XP.
+    """
+    try:
+        data = {
+            "student_id": int(student_id),
+            "level_id": int(level_id),
+            "score": int(score),
+            "stars": int(stars),
+            "earned_xp": int(earned_xp)
+        }
+        response = supabase.table("daily_challenge_attempts").upsert(data, on_conflict="student_id,level_id").execute()
+        if earned_xp > 0:
+            student = get_student_by_id(student_id)
+            if student:
+                new_xp = (student.get("xp") or 0) + earned_xp
+                update_student_xp_and_level(student_id, new_xp, student.get("current_level"))
+                log_student_activity(student_id, "DAILY_CHALLENGE", f"Completed Daily Challenge Level {level_id} (+{earned_xp} XP)")
+        return response.data
+    except Exception as e:
+        print(f"Error logging daily challenge attempt: {e}")
+        return None
+
+def get_student_daily_challenge_progress(student_id):
+    """
+    Retrieves all completed daily challenge levels for a student from Supabase.
+    """
+    try:
+        response = supabase.table("daily_challenge_attempts").select("*").eq("student_id", int(student_id)).execute()
+        records = response.data or []
+        res = {}
+        for r in records:
+            res[r["level_id"]] = {
+                "completed": True,
+                "bestScore": r.get("score", 0),
+                "stars": r.get("stars", 1),
+                "earned_xp": r.get("earned_xp", 0)
+            }
+        return res
+    except Exception as e:
+        print(f"Error getting student daily challenge progress: {e}")
+        return {}
+
+
 
 
 

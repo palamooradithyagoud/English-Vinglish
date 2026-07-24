@@ -234,11 +234,14 @@
 <script src="{{ url_for('static', filename='js/daily_challenge_data.js') }}"></script>
 <script src="{{ url_for('static', filename='js/daily_challenge_engine.js') }}"></script>
 <script>
-    function renderRoadmap() {
+    async function renderRoadmap() {
         const container = document.getElementById('dc-roadmap-nodes');
         if (!container) return;
-        container.innerHTML = '';
 
+        // Fetch latest progress from Supabase
+        await DailyChallengeProgressManager.fetchSupabaseProgress();
+
+        container.innerHTML = '';
         let totalEarnedXP = 0;
         const positions = ['dc-node-center', 'dc-node-right', 'dc-node-center', 'dc-node-left'];
 

@@ -19,13 +19,39 @@ from database import (
     get_class_game_leaderboard,
     get_student_today_time_taken,
     get_student_speaking_progress,
-    get_speaking_activities
+    get_speaking_activities,
+    get_questions_for_level,
+    log_daily_challenge_attempt,
+    get_student_daily_challenge_progress
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
 from datetime import datetime, timedelta
 
 dashboard_bp = Blueprint('dashboard', __name__)
+
+@dashboard_bp.route('/api/daily-challenge/log', methods=['POST'])
+@login_required
+def api_log_daily_challenge():
+    student_id = session.get('student_id')
+    data = request.json or {}
+    level_id = data.get('level_id')
+    score = data.get('score', 0)
+    stars = data.get('stars', 1)
+    earned_xp = data.get('earned_xp', 0)
+    
+    if not level_id:
+        return jsonify({'error': 'Missing level_id'}), 400
+        
+    res = log_daily_challenge_attempt(student_id, level_id, score, stars, earned_xp)
+    return jsonify({'success': True, 'data': res})
+
+@dashboard_bp.route('/api/daily-challenge/progress', methods=['GET'])
+@login_required
+def api_get_daily_challenge_progress():
+    student_id = session.get('student_id')
+    progress = get_student_daily_challenge_progress(student_id)
+    return jsonify({'success': True, 'progress': progress})
 
 def calculate_streak(student_id):
     """
