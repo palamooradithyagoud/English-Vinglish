@@ -1527,11 +1527,109 @@
             </div>
         </div>
     </div>
+
+    <!-- 6. Your Analytics Overlay -->
+    <div class="overlay-page" id="overlay-analytics">
+        <div class="overlay-container">
+            <div class="overlay-header">
+                <div class="overlay-title-group" style="display: flex; align-items: center; gap: 8px;">
+                    <span class="overlay-title-icon" style="font-size: 24px;">📊</span>
+                    <h2>Your Learning Analytics</h2>
+                </div>
+                <button class="btn-overlay-close" onclick="closeOverlay('analytics')" title="Close Overlay">&times;</button>
+            </div>
+            <div class="overlay-body" style="padding: 32px; background-color: #FAFAFA;">
+                <div style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+                    <!-- Top Metric Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <div style="font-size: 13px; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">Total XP</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #2563EB;">⚡ {{ student.xp if student else 0 }}</div>
+                            <div style="font-size: 12px; color: #10B981; margin-top: 4px;">Level {{ student.current_level if student else 1 }} Scholar</div>
+                        </div>
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <div style="font-size: 13px; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">Day Streak</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #D97706;">🔥 {{ student_streak or (student.streak if student else 0) }} Days</div>
+                            <div style="font-size: 12px; color: #64748B; margin-top: 4px;">Keep daily practice active!</div>
+                        </div>
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <div style="font-size: 13px; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">Speaking Sessions</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #7C3AED;">🎤 {{ speaking_stats.total_sessions if speaking_stats else 0 }}</div>
+                            <div style="font-size: 12px; color: #64748B; margin-top: 4px;">Pronunciation: {{ speaking_stats.average_pron if speaking_stats else 75 }}% avg</div>
+                        </div>
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <div style="font-size: 13px; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">Fluency Score</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #059669;">🎯 {{ speaking_stats.average_fluency if speaking_stats else 80 }}%</div>
+                            <div style="font-size: 12px; color: #10B981; margin-top: 4px;">Excellent progress</div>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Sections -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0 0 16px 0;">🎯 Skill Proficiency</h3>
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+                                        <span>Speaking & Pronunciation</span>
+                                        <span>{{ speaking_stats.average_pron if speaking_stats else 75 }}%</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                        <div style="width: {{ speaking_stats.average_pron if speaking_stats else 75 }}%; height: 100%; background: #6366F1; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+                                        <span>Speech Fluency & Flow</span>
+                                        <span>{{ speaking_stats.average_fluency if speaking_stats else 80 }}%</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                        <div style="width: {{ speaking_stats.average_fluency if speaking_stats else 80 }}%; height: 100%; background: #10B981; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+                                        <span>Reading Comprehension</span>
+                                        <span>85%</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                        <div style="width: 85%; height: 100%; background: #F59E0B; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0 0 16px 0;">📈 Level Completion</h3>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                {% for lvl in levels %}
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #F8FAFC; border-radius: 10px; border: 1px solid #E2E8F0;">
+                                    <span style="font-weight: 700; font-size: 14px;">Level {{ lvl.number }}</span>
+                                    {% if lvl.status == 'completed' %}
+                                    <span style="color: #059669; font-weight: 800; font-size: 12px; background: #D1FAE5; padding: 4px 10px; border-radius: 20px;">Completed ✅</span>
+                                    {% elif lvl.status == 'unlocked' %}
+                                    <span style="color: #2563EB; font-weight: 800; font-size: 12px; background: #DBEAFE; padding: 4px 10px; border-radius: 20px;">Active Level ⚡</span>
+                                    {% else %}
+                                    <span style="color: #64748B; font-weight: 700; font-size: 12px;">Locked 🔒</span>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    function initAnalyticsOverlay() {
+        // Init Analytics view if needed
+    }
+
     // Expose Jinja structured context parameters into JavaScript variables
     const lessons = {{ lessons | tojson | safe }};
     const stories = {{ stories | tojson | safe }};
@@ -1540,9 +1638,6 @@
     const connectLevels = {{ connect_levels | tojson | safe }};
     const student = {{ student | tojson | safe }};
 
-    // ==========================================================================
-    // OVERLAY MANAGEMENT CONTROLLERS
-    // ==========================================================================
     function updateSidebarActiveLink(activity) {
         const sidebarItems = document.querySelectorAll('.sidebar-menu-item');
         if (!sidebarItems.length) return;
@@ -1597,6 +1692,8 @@
             initPracticeOverlay();
         } else if (activity === 'speaking') {
             initSpeakingOverlay();
+        } else if (activity === 'analytics') {
+            initAnalyticsOverlay();
         }
         
         updateSidebarActiveLink(activity);

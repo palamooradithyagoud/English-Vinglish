@@ -28,38 +28,20 @@
             
             <!-- Menu items -->
             <nav class="sidebar-menu">
-                <a href="{{ url_for('dashboard.home') }}" class="sidebar-menu-item {% if request.endpoint == 'dashboard.home' %}active{% endif %}">
-                    <span class="menu-icon">🏠</span> Dashboard
-                </a>
-                <a href="{{ url_for('dashboard.progress') }}?activity=games" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'games' %}active{% endif %}">
-                    <span class="menu-icon">🎮</span> Games
-                </a>
-                <a href="{{ url_for('dashboard.progress') }}?activity=stories" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'stories' %}active{% endif %}">
-                    <span class="menu-icon">📖</span> Read Stories
-                </a>
-                <a href="#" onclick="alert('Vocabulary practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
-                    <span class="menu-icon">📖</span> Vocabulary
-                </a>
-                <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'grammar' %}active{% endif %}">
-                    <span class="menu-icon">🔠</span> Grammar
-                </a>
-                <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'practice' %}active{% endif %}">
-                    <span class="menu-icon">⚡</span> Practice Arena
+                <a href="{{ url_for('dashboard.home') }}" class="sidebar-menu-item {% if request.endpoint == 'dashboard.home' and not request.args.get('activity') %}active{% endif %}">
+                    <span class="menu-icon">🏠</span> Home
                 </a>
                 <a href="{{ url_for('dashboard.progress') }}?activity=speaking" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'speaking' %}active{% endif %}">
                     <span class="menu-icon">🎤</span> Speaking
                 </a>
-                <a href="#" onclick="alert('Writing practice is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
-                    <span class="menu-icon">✏️</span> Writing
+                <a href="{{ url_for('dashboard.progress') }}?activity=stories" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'stories' %}active{% endif %}">
+                    <span class="menu-icon">📖</span> Reading
                 </a>
-                <a href="#" onclick="alert('Achievements showcase is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
-                    <span class="menu-icon">🏆</span> Achievements
+                <a href="{{ url_for('dashboard.progress') }}?activity=analytics" class="sidebar-menu-item {% if request.endpoint == 'dashboard.progress' and request.args.get('activity') == 'analytics' %}active{% endif %}">
+                    <span class="menu-icon">📊</span> Your Analytics
                 </a>
-                <a href="#" onclick="alert('Leaderboard is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
-                    <span class="menu-icon">📊</span> Leaderboard
-                </a>
-                <a href="#" onclick="alert('Settings panel is coming soon! Keep studying!'); return false;" class="sidebar-menu-item">
-                    <span class="menu-icon">⚙️</span> Settings
+                <a href="#" onclick="openProfileModal(); return false;" class="sidebar-menu-item">
+                    <span class="menu-icon">👤</span> Profile
                 </a>
                 <a href="{{ url_for('auth.logout') }}" class="sidebar-menu-item" style="color: #F87171; margin-top: auto;">
                     <span class="menu-icon">🚪</span> Logout
@@ -84,7 +66,7 @@
                 </div>
                 <div class="header-right">
                     {% if student %}
-                    <div class="header-user-profile" onclick="location.href='{{ url_for('dashboard.home') }}'">
+                    <div class="header-user-profile" onclick="openProfileModal()" style="cursor: pointer;">
                         <div class="profile-avatar-circle">
                             {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
                         </div>
@@ -162,6 +144,59 @@
         {% endif %}
     </div>
     
+    <!-- Global Student Profile Modal -->
+    {% if student %}
+    <div id="global-profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:#FFFFFF; border-radius:20px; width:90%; max-width:440px; padding:32px; box-shadow:0 20px 40px rgba(0,0,0,0.2); position:relative; font-family:'Outfit', sans-serif;">
+            <button onclick="closeProfileModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:24px; color:#64748B; cursor:pointer;">&times;</button>
+            <div style="text-align:center; margin-bottom:24px;">
+                <div style="width:72px; height:72px; background:linear-gradient(135deg, #6366F1, #4F46E5); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; margin:0 auto 12px auto; box-shadow:0 8px 20px rgba(99,102,241,0.3);">
+                    {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
+                </div>
+                <h3 style="font-size:20px; font-weight:800; color:#0F172A; margin:0 0 4px 0;">{{ student.full_name }}</h3>
+                <span style="background:#EEF2FF; color:#4F46E5; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; text-transform:uppercase;">Level {{ student.current_level }} Student</span>
+            </div>
+            
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; margin-bottom:24px; font-size:14px;">
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
+                    <span style="color:#64748B; font-weight:500;">Roll Number</span>
+                    <span style="color:#0F172A; font-weight:700;">{{ student.roll_number or 'N/A' }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
+                    <span style="color:#64748B; font-weight:500;">Branch & Year</span>
+                    <span style="color:#0F172A; font-weight:700;">{{ student.branch or 'General' }} - Year {{ student.year or 1 }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
+                    <span style="color:#64748B; font-weight:500;">Email</span>
+                    <span style="color:#0F172A; font-weight:700;">{{ student.email or 'N/A' }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
+                    <span style="color:#64748B; font-weight:500;">Total XP Earned</span>
+                    <span style="color:#2563EB; font-weight:800;">⚡ {{ student.xp or 0 }} XP</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:#64748B; font-weight:500;">Active Streak</span>
+                    <span style="color:#D97706; font-weight:800;">🔥 {{ student_streak or student.streak or 0 }} Days</span>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:12px;">
+                <button onclick="closeProfileModal()" style="flex:1; padding:12px; background:#F1F5F9; color:#475569; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Close</button>
+                <a href="{{ url_for('auth.logout') }}" style="flex:1; padding:12px; background:#EF4444; color:white; border:none; border-radius:10px; font-weight:700; text-align:center; text-decoration:none;">Logout</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <script>
+        function openProfileModal() {
+            const modal = document.getElementById('global-profile-modal');
+            if (modal) modal.style.display = 'flex';
+        }
+        function closeProfileModal() {
+            const modal = document.getElementById('global-profile-modal');
+            if (modal) modal.style.display = 'none';
+        }
+    </script>
     <!-- Script files -->
     {% block scripts %}{% endblock %}
 </body>
