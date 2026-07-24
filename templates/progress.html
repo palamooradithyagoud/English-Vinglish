@@ -3837,9 +3837,27 @@
         const modIdx = currentModuleIndex || 0;
         const lvlIdx = currentLevelIndex !== undefined ? currentLevelIndex : 0;
 
+        // 1. UNLOCK NEXT LEVEL IN LOCAL STORAGE IMMEDIATELY
+        const progressKey = `speaking_levels_${catId}_mod_${modIdx + 1}`;
+        const currentUnlocked = parseInt(localStorage.getItem(progressKey) || '1');
+        const nextLevelNum = lvlIdx + 2; // e.g. Level 1.1 (idx 0) -> unlocks levelNum = 2 (Level 1.2)
+
+        if (nextLevelNum > currentUnlocked) {
+            localStorage.setItem(progressKey, String(nextLevelNum));
+        }
+
+        // 2. UNLOCK NEXT MODULE IF LEVEL 1.10 FINISHED
+        if (nextLevelNum > 10) {
+            const modProgressKey = `speaking_modules_${catId}`;
+            const unlockedModules = parseInt(localStorage.getItem(modProgressKey) || '1');
+            if (modIdx + 2 > unlockedModules) {
+                localStorage.setItem(modProgressKey, String(modIdx + 2));
+            }
+        }
+
+        // 3. ASYNCHRONOUS XP & STATS LOGGING TO DATABASE
         try {
-            // Post speaking attempt details to user database
-            const response = await fetch('/api/speaking/log', {
+            fetch('/api/speaking/log', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3850,70 +3868,46 @@
                     fluency: fluency,
                     word_count: wordCount
                 })
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.speaking_stats) {
-                    speakingXp = data.speaking_stats.total_xp;
-                    speakingSessions = data.speaking_stats.total_sessions;
-                    averagePron = data.speaking_stats.average_pron;
-                    averageFluency = data.speaking_stats.average_fluency;
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    if (data.speaking_stats) {
+                        speakingXp = data.speaking_stats.total_xp;
+                        speakingSessions = data.speaking_stats.total_sessions;
+                        averagePron = data.speaking_stats.average_pron;
+                        averageFluency = data.speaking_stats.average_fluency;
 
-                    localStorage.setItem('speaking_xp', String(speakingXp));
-                    localStorage.setItem('speaking_sessions', String(speakingSessions));
-                    localStorage.setItem('speaking_pron_score', String(averagePron));
-                    localStorage.setItem('speaking_fluency_score', String(averageFluency));
-                } else {
-                    const currentXp = parseInt(localStorage.getItem('speaking_xp') || '0');
-                    speakingXp = currentXp + xpToEarn;
-                    localStorage.setItem('speaking_xp', String(speakingXp));
-                }
-
-                // Update HUD XP counter
-                const studentXpEl = document.getElementById('student-xp-display');
-                if (studentXpEl) {
-                    studentXpEl.textContent = `${data.new_xp || speakingXp} XP`;
-                }
-
-                // UNLOCK NEXT LEVEL IN LOCAL STORAGE FOR ZIG-ZAG PATH
-                const progressKey = `speaking_levels_${catId}_mod_${modIdx + 1}`;
-                const currentUnlocked = parseInt(localStorage.getItem(progressKey) || '1');
-                const nextLevelNum = lvlIdx + 2; // e.g. Level 1.1 (idx 0) -> unlocks Level 1.2 (levelNum 2)
-
-                if (nextLevelNum > currentUnlocked) {
-                    localStorage.setItem(progressKey, String(nextLevelNum));
-                }
-
-                // UNLOCK NEXT MODULE IF LEVEL 1.10 FINISHED
-                if (nextLevelNum > 10) {
-                    const modProgressKey = `speaking_modules_${catId}`;
-                    const unlockedModules = parseInt(localStorage.getItem(modProgressKey) || '1');
-                    if (modIdx + 2 > unlockedModules) {
-                        localStorage.setItem(modProgressKey, String(modIdx + 2));
+                        localStorage.setItem('speaking_xp', String(speakingXp));
+                        localStorage.setItem('speaking_sessions', String(speakingSessions));
+                        localStorage.setItem('speaking_pron_score', String(averagePron));
+                        localStorage.setItem('speaking_fluency_score', String(averageFluency));
+                    }
+                    const studentXpEl = document.getElementById('student-xp-display');
+                    if (studentXpEl && data.new_xp !== undefined) {
+                        studentXpEl.textContent = `${data.new_xp} XP`;
                     }
                 }
-
-                if (typeof BujjiSynth !== 'undefined') {
-                    BujjiSynth.playWelcomeTune();
-                }
-
-                const catData = SPEAKING_MODULE_DATA[catId];
-                const mod = catData ? catData.modules[modIdx] : null;
-
-                if (mod && lvlIdx + 1 < mod.levels.length) {
-                    // Transition smoothly to next level (e.g. Level 1.2)
-                    startPracticeLevel(catId, modIdx, lvlIdx + 1);
-                } else {
-                    // All levels complete in module, return to path view
-                    openModuleLevels(catId, modIdx);
-                }
-            } else {
-                throw new Error("API return error");
-            }
+            })
+            .catch(err => console.log('XP Log background warning:', err));
         } catch(e) {
-            console.error("Error rewarding speaking XP:", e);
-            openModuleLevels(catId || 'read_aloud', 0);
+            console.log('XP Log sync catch:', e);
+        }
+
+        if (typeof BujjiSynth !== 'undefined') {
+            BujjiSynth.playWelcomeTune();
+        }
+
+        // 4. GUARANTEED INSTANT TRANSITION TO NEXT LEVEL (Level 1.2)
+        const catData = SPEAKING_MODULE_DATA[catId];
+        const mod = catData ? catData.modules[modIdx] : null;
+
+        if (mod && lvlIdx + 1 < mod.levels.length) {
+            // Open Level 1.2 directly!
+            startPracticeLevel(catId, modIdx, lvlIdx + 1);
+        } else {
+            // All 10 levels completed in module -> return to Level Path view
+            openModuleLevels(catId, modIdx);
         }
     }
 
