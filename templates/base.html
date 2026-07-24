@@ -20,36 +20,8 @@
         <aside class="app-sidebar" id="sidebar-container">
             <!-- Brand Logo -->
             <a href="{{ url_for('dashboard.home') }}" class="sidebar-logo">
-                <div class="nav-bujji-logo" id="nav-bujji-logo" style="width:32px; height:32px;">
-                    <svg viewBox="0 0 200 200" class="mascot-svg-sidebar">
-                        <defs>
-                            <linearGradient id="metal-grad-nav" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#FDE7B9"/>
-                                <stop offset="50%" stop-color="#EBAD45"/>
-                                <stop offset="100%" stop-color="#9C7026"/>
-                            </linearGradient>
-                            <filter id="neon-glow-nav" x="-20%" y="-20%" width="140%" height="140%">
-                                <feGaussianBlur stdDeviation="3" result="blur" />
-                                <feMerge>
-                                    <feMergeNode in="blur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        <ellipse cx="100" cy="180" rx="55" ry="10" fill="#E2E8F0"/>
-                        <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#5E400B" />
-                        <rect x="75" y="165" width="50" height="10" rx="5" fill="#EBAD45" />
-                        <circle cx="100" cy="100" r="65" fill="url(#metal-grad-nav)" stroke="#5E400B" stroke-width="4" />
-                        <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#5E400B" stroke-width="2" />
-                        <g class="bujji-eyes">
-                            <polygon points="52,100 85,100 81,108 55,108" fill="#61D3D5" filter="url(#neon-glow-nav)" />
-                            <polygon points="54,101 83,101 80,107 56,107" fill="#E6FAFF" />
-                            <polygon points="115,100 148,100 145,108 119,108" fill="#61D3D5" filter="url(#neon-glow-nav)" />
-                            <polygon points="117,101 146,101 144,107 119,107" fill="#E6FAFF" />
-                        </g>
-                        <circle cx="100" cy="65" r="7" fill="#5E400B" />
-                        <circle cx="100" cy="65" r="4" fill="#FFC800" />
-                    </svg>
+                <div class="sidebar-logo-icon" style="width:34px; height:34px; background: linear-gradient(135deg, #6366F1, #4F46E5); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 800; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+                    🎓
                 </div>
                 <span class="logo-text" style="font-size: 19px; font-weight: 800;">English Winglish</span>
             </a>
@@ -190,8 +162,7 @@
         {% endif %}
     </div>
     
-    <!-- Mascot js and other script files -->
-    <script src="{{ url_for('static', filename='js/bujji-companion.js') }}"></script>
+    <!-- Script files -->
     {% block scripts %}{% endblock %}
 </body>
 </html>

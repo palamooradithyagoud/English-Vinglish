@@ -2631,7 +2631,7 @@
     let elapsedSpeakingSeconds = 0;
     let currentSpeakingPromptIndex = 0;
     let speakingProgress = {{ speaking_progress | tojson | safe }} || {};
-    class BujjiAudioRecorder {
+    class SpeechAudioRecorder {
         constructor() {
             this.audioContext = null;
             this.mediaStream = null;
@@ -2760,7 +2760,7 @@
         }
     }
 
-    let speechManager = new BujjiAudioRecorder();
+    let speechManager = new SpeechAudioRecorder();
     let fullTranscript = '';   // Module-level: persists across restarts
 
     function initSpeakingOverlay() {
@@ -3312,7 +3312,7 @@
                 resultsPanel.innerHTML = `
                     <div style="background:#FFFFFF; padding:40px 20px; border-radius:16px; border:1px solid #E2E8F0; text-align:center; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
                         <div class="spinner" style="font-size:2.5rem; display:inline-block; animation:spin 1s linear infinite; margin-bottom:16px; color:#4F46E5;">🔄</div>
-                        <h4 style="font-size:1.1rem; font-weight:800; color:#0F172A; margin:0 0 6px 0;">Bujji AI is evaluating your speech</h4>
+                        <h4 style="font-size:1.1rem; font-weight:800; color:#0F172A; margin:0 0 6px 0;">AI is evaluating your speech</h4>
                         <p style="font-size:0.85rem; color:#64748B; margin:0;">Analyzing coherence, fluency, and matching context. Please wait...</p>
                     </div>
                 `;
@@ -3399,7 +3399,7 @@
                                 <div style="display:flex; align-items:flex-start; gap:12px;">
                                     <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
                                     <div>
-                                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
+                                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">AI Coach Tip</div>
                                         <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
                                     </div>
                                 </div>
@@ -3437,7 +3437,7 @@
                 resultsPanel.innerHTML = `
                     <div style="background:#FFFFFF; padding:40px 20px; border-radius:16px; border:1px solid #E2E8F0; text-align:center; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
                         <div class="spinner" style="font-size:2.5rem; display:inline-block; animation:spin 1s linear infinite; margin-bottom:16px; color:#4F46E5;">🔄</div>
-                        <h4 style="font-size:1.1rem; font-weight:800; color:#0F172A; margin:0 0 6px 0;">Bujji AI is analyzing your speech</h4>
+                        <h4 style="font-size:1.1rem; font-weight:800; color:#0F172A; margin:0 0 6px 0;">AI is analyzing your speech</h4>
                         <p style="font-size:0.85rem; color:#64748B; margin:0;">Checking relevance, flow, and sentence structure. Please wait...</p>
                     </div>
                 `;
@@ -3529,7 +3529,7 @@
                                 <div style="display:flex; align-items:flex-start; gap:12px;">
                                     <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
                                     <div>
-                                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
+                                        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">AI Coach Tip</div>
                                         <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
                                     </div>
                                 </div>
@@ -3701,7 +3701,7 @@
                             <div style="display:flex; align-items:flex-start; gap:12px;">
                                 <span style="font-size:22px; flex-shrink:0;">${gradeEmoji}</span>
                                 <div>
-                                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">Bujji Coach Tip</div>
+                                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#1D4ED8; letter-spacing:0.4px; margin-bottom:4px;">AI Coach Tip</div>
                                     <p style="font-size:0.82rem; color:#1E40AF; margin:0; line-height:1.5; font-style:italic;">"${tip}"</p>
                                 </div>
                             </div>
