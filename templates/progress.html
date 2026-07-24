@@ -3667,18 +3667,21 @@
                             </div>
                             <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
                                 <div style="font-size:18px; font-weight:900; color:#7C3AED;">${wordCount}</div>
-                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Words</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action buttons -->
+                     <!-- Action buttons -->
                     <div style="background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px;">
-                        ${isPassed
-                            ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">Claim XP & Next Level</button>
-                               <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`
-                            : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`
-                        }
+                        ${(() => {
+                            const levelClaimedKey = `speaking_claimed_${id}_mod_${(window.currentModuleIndex || 0) + 1}_lvl_${(window.currentLevelIndex || 0) + 1}`;
+                            const isAlreadyClaimed = localStorage.getItem(levelClaimedKey) === 'true';
+                            if (isAlreadyClaimed) {
+                                return `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#2563EB;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex + 1)">Next Level</button>
+                                       <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>`;
+                            } else if (isPassed) {
+                                return `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">Claim XP & Next Level</button>
+                                       <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>`;
+                            } else {
+                                return `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>`;
+                            }
+                        })()}
                     </div>
                 </div>
             `;
@@ -3804,12 +3807,29 @@
 
                 const reportCard = resultsPanel.querySelector('div > div');
                 if (reportCard) {
+                    const levelClaimedKey = `speaking_claimed_${id}_mod_${(window.currentModuleIndex || 0) + 1}_lvl_${(window.currentLevelIndex || 0) + 1}`;
+                    const isAlreadyClaimed = localStorage.getItem(levelClaimedKey) === 'true';
+
                     const actionFooter = document.createElement('div');
                     actionFooter.style.cssText = 'background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px; border-top:1px solid #F1F5F9;';
-                    actionFooter.innerHTML = isPassed
-                        ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${evalResult.metrics.accuracy}, ${evalResult.metrics.speechClarity}, ${evalResult.metrics.fluency}, ${evalResult.metrics.totalSpokenWords})">Claim XP & Next Level</button>
-                           <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`
-                        : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`;
+                    
+                    if (isAlreadyClaimed) {
+                        actionFooter.innerHTML = `
+                            <button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#2563EB;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex + 1)">Next Level</button>
+                            <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>
+                        `;
+                    } else if (isPassed) {
+                        actionFooter.innerHTML = `
+                            <button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${evalResult.metrics.accuracy}, ${evalResult.metrics.speechClarity}, ${evalResult.metrics.fluency}, ${evalResult.metrics.totalSpokenWords})">Claim XP & Next Level</button>
+                            <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>
+                        `;
+                    } else {
+                        actionFooter.innerHTML = `
+                            <button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>
+                        `;
+                    }
+                    reportCard.appendChild(actionFooter);
+                }ackground:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`;
                     reportCard.appendChild(actionFooter);
                 }
 
@@ -3878,8 +3898,9 @@
             localStorage.setItem(progressKey, String(nextLevelNum));
         }
 
-        // Save level score record
+        // Save level score record & claimed status
         const levelScoreKey = `speaking_score_${catId}_mod_${modIdx + 1}_lvl_${lvlIdx + 1}`;
+        const levelClaimedKey = `speaking_claimed_${catId}_mod_${modIdx + 1}_lvl_${lvlIdx + 1}`;
         const levelRecord = {
             completed: true,
             accuracy: accuracy,
@@ -3889,6 +3910,7 @@
             completedAt: new Date().toISOString()
         };
         localStorage.setItem(levelScoreKey, JSON.stringify(levelRecord));
+        localStorage.setItem(levelClaimedKey, 'true');
 
         // 2. UNLOCK NEXT MODULE IF LEVEL 1.10 FINISHED
         if (nextLevelNum > 10) {
