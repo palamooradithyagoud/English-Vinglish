@@ -630,51 +630,12 @@
 {% endblock %}
 
 {% block content %}
-{% if session.pop('show_greeting', None) %}
-<div id="bujji-greeting-overlay" class="bujji-greeting-overlay">
-    <div class="greeting-mascot-container">
-        <svg viewBox="0 0 200 200" class="mascot-svg-greeting" id="greeting-bujji">
-            <defs>
-                <linearGradient id="metal-grad-greeting" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#FDE7B9"/>
-                    <stop offset="50%" stop-color="#EBAD45"/>
-                    <stop offset="100%" stop-color="#9C7026"/>
-                </linearGradient>
-                <filter id="neon-glow-greeting" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feMerge>
-                        <feMergeNode in="blur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-            </defs>
-            <ellipse cx="100" cy="180" rx="55" ry="10" fill="#E2E8F0"/>
-            <path d="M70 140 L130 140 L120 170 L80 170 Z" fill="#5E400B" />
-            <rect x="75" y="165" width="50" height="10" rx="5" fill="#EBAD45" />
-            <circle cx="100" cy="100" r="65" fill="url(#metal-grad-greeting)" stroke="#5E400B" stroke-width="4" />
-            <path d="M37 92 C 50 85, 150 85, 163 92 L161 115 C 150 122, 50 122, 39 115 Z" fill="#0D1117" stroke="#5E400B" stroke-width="2" />
-            <g class="bujji-eyes">
-                <polygon points="52,100 85,100 81,108 55,108" fill="#61D3D5" filter="url(#neon-glow-greeting)" />
-                <polygon points="54,101 83,101 80,107 56,107" fill="#E6FAFF" />
-                <polygon points="115,100 148,100 145,108 119,108" fill="#61D3D5" filter="url(#neon-glow-greeting)" />
-                <polygon points="117,101 146,101 144,107 119,107" fill="#E6FAFF" />
-            </g>
-            <circle cx="100" cy="65" r="7" fill="#5E400B" />
-            <circle cx="100" cy="65" r="4" fill="#FFC800" />
-        </svg>
-        <div class="greeting-speech-bubble" id="greeting-bubble">
-            <p>Welcome back, {{ student.full_name }}! Ready to level up your English skills?</p>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 <main class="saas-dashboard-container">
-    <!-- Welcome Header SaaS Hero Banner -->
-    <div class="saas-hero-banner">
+    <!-- Welcome Header SaaS Hero Banner (Animated) -->
+    <div class="saas-hero-banner animated-hero" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
         <div class="hero-left-content">
-            <div class="hero-badge">🎯 Learning Journey</div>
-            <h1 class="hero-title">Welcome back, {{ student.full_name.split(' ')[0] }}! 👋</h1>
+            <div class="hero-badge">Learning Journey</div>
+            <h1 class="hero-title">Welcome back, {{ student.full_name.split(' ')[0] }}</h1>
             <p class="hero-subtitle">You're making great progress. Continue your learning path to level up your communication skills!</p>
             <div class="hero-actions">
                 {% if student.current_level == 1 %}
@@ -734,7 +695,7 @@
                     <span class="hero-progress-val">Lvl {{ student.current_level }} ({{ student.xp }} XP)</span>
                 </div>
                 <div class="hero-progress-bar-track">
-                    <div class="hero-progress-bar-fill" style="width: {{ (student.levels_completed / 5 * 100) | int }}%;"></div>
+                    <div class="hero-progress-bar-fill" style="width: {{ (student.levels_completed / 5 * 100) | int }}%; animation: progressExpand 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;"></div>
                 </div>
             </div>
         </div>
@@ -745,7 +706,9 @@
         <div class="saas-stat-card stat-lvl">
             <div class="stat-header">
                 <span class="saas-stat-label">Current Level</span>
-                <span class="saas-stat-icon-bg bg-blue">🎯</span>
+                <span class="saas-stat-icon-bg bg-blue">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                </span>
             </div>
             <div class="saas-stat-value val-blue">Level {{ student.current_level }}</div>
             <p class="stat-card-desc">Active study path level</p>
@@ -754,7 +717,9 @@
         <div class="saas-stat-card stat-xp">
             <div class="stat-header">
                 <span class="saas-stat-label">Total XP Points</span>
-                <span class="saas-stat-icon-bg bg-amber">⚡</span>
+                <span class="saas-stat-icon-bg bg-amber">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
             </div>
             <div class="saas-stat-value val-amber">{{ student.xp }} XP</div>
             <p class="stat-card-desc">Total experience earned</p>
@@ -763,7 +728,9 @@
         <div class="saas-stat-card stat-streak">
             <div class="stat-header">
                 <span class="saas-stat-label">Active Streak</span>
-                <span class="saas-stat-icon-bg bg-orange">🔥</span>
+                <span class="saas-stat-icon-bg bg-orange">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                </span>
             </div>
             <div class="saas-stat-value val-orange">{{ student.streak }} Days</div>
             <p class="stat-card-desc">Consecutive active days</p>
@@ -772,7 +739,9 @@
         <div class="saas-stat-card stat-miles">
             <div class="stat-header">
                 <span class="saas-stat-label">Milestones Cleared</span>
-                <span class="saas-stat-icon-bg bg-green">🏆</span>
+                <span class="saas-stat-icon-bg bg-green">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                </span>
             </div>
             <div class="saas-stat-value val-green">{{ student.levels_completed }} / 5</div>
             <p class="stat-card-desc">Unique levels completed</p>
@@ -783,11 +752,11 @@
     <div class="saas-split-layout">
         <!-- Main Column (Left) -->
         <div class="saas-main-col">
-
             <!-- Campus Announcements -->
             <div class="saas-card">
                 <h2 class="saas-card-title">
-                    <span>📢</span> Campus Announcements
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-10 4a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2z"/></svg>
+                    <span>Campus Announcements</span>
                 </h2>
                 {% if announcements %}
                     <div class="saas-list">
@@ -816,48 +785,14 @@
         <!-- Sidebar Column (Right) -->
         <div class="saas-side-col">
             <!-- Learning Tip Box -->
-            <div class="learning-tip-card">
-                <div class="tip-icon-box">💡</div>
-                <div class="tip-content-box">
-                    <h4>Learning Tip of the Day</h4>
-                    <p>Try reading a short story aloud. It builds vocal muscle memory, helps you notice pronunciation patterns, and boosts spoken confidence!</p>
-                </div>
-            </div>
-
-            <!-- Achievements Box -->
-            <div class="achievements-card">
-                <h3 class="saas-card-title" style="border-bottom: none; padding-bottom: 0; margin-bottom: 16px;">
-                    <span>🏆</span> Recent Achievements
-                </h3>
-                <div class="achievements-list">
-                    <div class="achievement-row">
-                        <div class="achievement-icon-circle badge-blue">🔥</div>
-                        <div class="achievement-info">
-                            <div class="achievement-title">Consistent Learner</div>
-                            <div class="achievement-subtitle">Completed 3 day streak</div>
-                        </div>
-                        <span class="achievement-xp-badge">+50 XP</span>
+            <div class="learning-tip-card" style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <div style="width: 36px; height: 36px; background: #FEF3C7; color: #D97706; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.55.6 2.8 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
                     </div>
-                    <div class="achievement-row">
-                        <div class="achievement-icon-circle badge-purple">🎯</div>
-                        <div class="achievement-info">
-                            <div class="achievement-title">Perfect Score</div>
-                            <div class="achievement-subtitle">Scored 100% in any quiz</div>
-                        </div>
-                        <span class="achievement-xp-badge xp-purple">+100 XP</span>
-                    </div>
+                    <h4 style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0;">Learning Tip of the Day</h4>
                 </div>
-            </div>
-
-            <!-- Study Reminder Box -->
-            <div class="reminder-card">
-                <div class="reminder-header">
-                    <span>📅</span> Daily Study Reminder
-                </div>
-                <div class="reminder-body">
-                    <p class="reminder-text">Set aside 10 minutes today to keep your streak alive and make progress on your path!</p>
-                    <div class="reminder-illustration">⏰</div>
-                </div>
+                <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0;">Try reading a short story aloud. It builds vocal muscle memory, helps you notice pronunciation patterns, and boosts spoken confidence!</p>
             </div>
         </div>
     </div>
@@ -865,70 +800,21 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Bujji Welcome Glide Animation Logic
-        const overlay = document.getElementById("bujji-greeting-overlay");
-        const navBujji = document.getElementById("nav-bujji-logo");
-        
-        if (overlay && navBujji) {
-            if (typeof BujjiSynth !== 'undefined') {
-                BujjiSynth.playWelcomeTune();
-            }
-            // Hide the real navbar Bujji icon initially (make it invisible)
-            navBujji.style.opacity = "0";
-            
-            const mascot = overlay.querySelector(".greeting-mascot-container");
-            const bubble = overlay.querySelector(".greeting-speech-bubble");
-            
-            setTimeout(() => {
-                // 1. Fade out the greeting text bubble
-                if (bubble) {
-                    bubble.style.opacity = "0";
-                    bubble.style.transform = "scale(0.8)";
-                }
-                
-                // 2. Clear overlay background opacity
-                overlay.classList.add("fade-overlay");
-                
-                // 3. Get exact target landing bounding box (navbar logo)
-                const targetRect = navBujji.getBoundingClientRect();
-                
-                // 4. Get starting coordinates of the centered mascot
-                const startRect = mascot.getBoundingClientRect();
-                
-                // 5. Remove relative layout properties and set coordinates explicitly
-                mascot.style.transform = "none";
-                mascot.style.margin = "0";
-                mascot.style.top = startRect.top + "px";
-                mascot.style.left = startRect.left + "px";
-                mascot.style.width = startRect.width + "px";
-                mascot.style.height = startRect.height + "px";
-                
-                // Force a browser paint update
-                void mascot.offsetWidth;
-                
-                // 6. Transition mascot container to target coordinates and size
-                mascot.style.top = targetRect.top + "px";
-                mascot.style.left = targetRect.left + "px";
-                mascot.style.width = targetRect.width + "px";
-                mascot.style.height = targetRect.height + "px";
-                
-                // 7. Scale down the SVG inside the container synchronously
-                const svg = mascot.querySelector(".mascot-svg-greeting");
-                if (svg) {
-                    svg.style.width = targetRect.width + "px";
-                    svg.style.height = targetRect.height + "px";
-                    svg.style.animation = "none"; // disable hover floating during transition
-                }
-                
-                // 8. Swap the greeting overlay mascot for the actual navbar logo when transition ends
-                setTimeout(() => {
-                    navBujji.style.opacity = "1";
-                    overlay.remove();
-                }, 1200); // matches CSS transition duration
-            }, 2500); // greeting delay (2.5 seconds)
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
         }
-    });
-</script>
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @keyframes progressExpand {
+        from {
+            width: 0%;
+        }
+    }
+</style>
 {% endblock %}
