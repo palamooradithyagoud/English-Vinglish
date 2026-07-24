@@ -71,9 +71,9 @@
         transform: translateY(-4px);
     }
 
-    .dc-node-left { margin-right: 320px; }
-    .dc-node-center { margin: 0; }
-    .dc-node-right { margin-left: 320px; }
+    .dc-node-left { transform: translateX(-140px); }
+    .dc-node-center { transform: translateX(0); }
+    .dc-node-right { transform: translateX(140px); }
 
     .dc-node-card {
         background: #FFFFFF;
@@ -162,7 +162,7 @@
     }
 
     @media (max-width: 768px) {
-        .dc-node-left, .dc-node-right { margin: 0; }
+        .dc-node-left, .dc-node-right { transform: translateX(0); }
         .dc-header-card { flex-direction: column; text-align: center; gap: 16px; }
     }
 </style>
@@ -291,7 +291,7 @@
         document.getElementById('dc-total-xp').innerText = `⚡ ${totalEarnedXP} XP`;
 
         // Draw connecting SVG dashed lines between serpentine nodes
-        setTimeout(drawRoadmapLines, 50);
+        setTimeout(drawRoadmapLines, 100);
     }
 
     function drawRoadmapLines() {
@@ -314,21 +314,25 @@
 
         container.appendChild(svg);
 
+        const containerRect = container.getBoundingClientRect();
         const cards = container.querySelectorAll('.dc-node-card');
+
         for (let i = 0; i < cards.length - 1; i++) {
             const card1 = cards[i];
             const card2 = cards[i + 1];
 
-            const node1 = card1.closest('.dc-level-node');
-            const node2 = card2.closest('.dc-level-node');
+            const r1 = card1.getBoundingClientRect();
+            const r2 = card2.getBoundingClientRect();
 
-            const x1 = node1.offsetLeft + card1.offsetLeft + card1.offsetWidth / 2;
-            const y1 = node1.offsetTop + card1.offsetTop + card1.offsetHeight;
+            const x1 = r1.left + r1.width / 2 - containerRect.left;
+            const y1 = r1.bottom - containerRect.top;
 
-            const x2 = node2.offsetLeft + card2.offsetLeft + card2.offsetWidth / 2;
-            const y2 = node2.offsetTop + card2.offsetTop;
+            const x2 = r2.left + r2.width / 2 - containerRect.left;
+            const y2 = r2.top - containerRect.top;
 
-            const midY = (y1 + y2) / 2;
+            const deltaY = y2 - y1;
+            const midY1 = y1 + deltaY * 0.45;
+            const midY2 = y2 - deltaY * 0.45;
 
             const isDone = card1.classList.contains('completed') && card2.classList.contains('completed');
             const isCurrent = card1.classList.contains('completed') || card2.classList.contains('unlocked');
@@ -338,7 +342,7 @@
             const dashArray = isDone ? 'none' : '8 8';
 
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+            path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY1}, ${x2} ${midY2}, ${x2} ${y2}`);
             path.setAttribute('stroke', strokeColor);
             path.setAttribute('stroke-width', strokeWidth);
             path.setAttribute('stroke-dasharray', dashArray);
