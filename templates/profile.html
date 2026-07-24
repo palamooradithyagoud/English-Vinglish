@@ -1,0 +1,370 @@
+﻿{% extends "base.html" %}
+{% block title %}My Profile — English Winglish{% endblock %}
+
+{% block head %}
+<style>
+    .prof-page { padding: 28px 20px 100px; max-width: 720px; margin: 0 auto; }
+
+    /* Hero card */
+    .prof-hero {
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        border-radius: 28px;
+        padding: 36px 32px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(79,70,229,0.35);
+    }
+    .prof-hero::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 200px; height: 200px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 50%;
+    }
+    .prof-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: -30px;
+        width: 240px; height: 240px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 50%;
+    }
+    .prof-avatar {
+        width: 84px; height: 84px;
+        background: rgba(255,255,255,0.2);
+        border: 3px solid rgba(255,255,255,0.4);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; font-weight: 900;
+        flex-shrink: 0;
+        backdrop-filter: blur(8px);
+        z-index: 1;
+    }
+    .prof-hero-info { z-index: 1; }
+    .prof-hero-name { font-size: 24px; font-weight: 900; margin: 0 0 6px; letter-spacing: -0.5px; }
+    .prof-hero-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .prof-badge {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 12px; font-weight: 700;
+        backdrop-filter: blur(8px);
+    }
+
+    /* XP stats row */
+    .prof-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .prof-stat-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 20px 16px;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .prof-stat-val { font-size: 28px; font-weight: 900; color: #0F172A; line-height: 1; }
+    .prof-stat-lbl { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+
+    /* Section card */
+    .prof-section {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .prof-section-title {
+        font-size: 11px; font-weight: 900; color: #6366F1;
+        text-transform: uppercase; letter-spacing: 1.5px;
+        margin: 0 0 18px; display: flex; align-items: center; gap: 8px;
+    }
+    .prof-section-title::after {
+        content: ''; flex: 1; height: 1px; background: #F1F5F9;
+    }
+
+    /* Info rows */
+    .prof-info-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #F8FAFC;
+        font-size: 14px;
+    }
+    .prof-info-row:last-child { border-bottom: none; }
+    .prof-info-label { color: #64748B; font-weight: 600; }
+    .prof-info-val { color: #0F172A; font-weight: 800; text-align: right; max-width: 60%; word-break: break-all; }
+
+    /* Chips */
+    .prof-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .prof-chip {
+        background: #EEF2FF; color: #4F46E5;
+        border-radius: 20px; padding: 6px 14px;
+        font-size: 12px; font-weight: 700;
+    }
+    .prof-chip-green { background: #F0FDF4; color: #16A34A; }
+    .prof-chip-amber { background: #FEF3C7; color: #D97706; }
+    .prof-chip-pink  { background: #FDF2F8; color: #DB2777; }
+    .prof-chip-slate { background: #F1F5F9; color: #475569; }
+
+    /* Skill bars */
+    .prof-skill-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .prof-skill-row:last-child { margin-bottom: 0; }
+    .prof-skill-name { font-size: 13px; font-weight: 700; color: #475569; width: 90px; flex-shrink: 0; }
+    .prof-skill-bar-wrap { flex: 1; height: 8px; background: #F1F5F9; border-radius: 4px; overflow: hidden; }
+    .prof-skill-bar { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+    .prof-skill-pct { font-size: 12px; font-weight: 900; color: #0F172A; width: 36px; text-align: right; flex-shrink: 0; }
+
+    /* CEFR dial */
+    .prof-cefr-row { display: flex; align-items: center; gap: 20px; }
+    .prof-cefr-dial {
+        width: 80px; height: 80px;
+        background: linear-gradient(135deg, #6366F1, #4F46E5);
+        border-radius: 50%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: white; flex-shrink: 0;
+        box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+    }
+    .prof-cefr-code { font-size: 22px; font-weight: 900; line-height: 1; }
+    .prof-cefr-sub { font-size: 9px; font-weight: 700; opacity: 0.8; }
+    .prof-cefr-desc h4 { font-size: 16px; font-weight: 900; color: #0F172A; margin: 0 0 4px; }
+    .prof-cefr-desc p { font-size: 13px; color: #64748B; font-weight: 500; margin: 0; line-height: 1.5; }
+
+    /* Logout button */
+    .prof-logout {
+        display: block; width: 100%; padding: 15px;
+        background: #FEF2F2; color: #DC2626;
+        border: 2px solid #FECACA; border-radius: 16px;
+        text-align: center; font-size: 15px; font-weight: 800;
+        text-decoration: none; margin-top: 24px;
+        transition: all 0.2s;
+    }
+    .prof-logout:hover { background: #DC2626; color: white; }
+
+    /* Edit onboarding button */
+    .prof-edit-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 16px; border-radius: 20px;
+        background: #EEF2FF; color: #4F46E5;
+        font-size: 12px; font-weight: 800; border: none;
+        cursor: pointer; text-decoration: none;
+        transition: all 0.2s;
+    }
+    .prof-edit-btn:hover { background: #4F46E5; color: white; }
+
+    @media (max-width: 480px) {
+        .prof-hero { flex-direction: column; text-align: center; padding: 28px 20px; }
+        .prof-hero-badges { justify-content: center; }
+        .prof-stats { grid-template-columns: repeat(3, 1fr); }
+        .prof-stat-val { font-size: 22px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prof-page">
+
+    <!-- Hero Banner -->
+    <div class="prof-hero">
+        <div class="prof-avatar">
+            {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
+        </div>
+        <div class="prof-hero-info">
+            <h1 class="prof-hero-name">{{ student.full_name }}</h1>
+            <div class="prof-hero-badges">
+                <span class="prof-badge">Level {{ student.current_level }}</span>
+                {% if onboarding_profile %}
+                <span class="prof-badge">{{ onboarding_profile.perceived_level or 'Beginner' }}</span>
+                {% if onboarding_profile.assessment_results %}
+                <span class="prof-badge">{{ onboarding_profile.assessment_results.get('cefr','') }}</span>
+                {% endif %}
+                {% endif %}
+                <span class="prof-badge">{{ student.branch or 'General' }} - Year {{ student.year or 1 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- XP / Streak / Level stats -->
+    <div class="prof-stats">
+        <div class="prof-stat-card">
+            <div class="prof-stat-val" style="color:#4F46E5;">{{ student.xp or 0 }}</div>
+            <div class="prof-stat-lbl">Total XP</div>
+        </div>
+        <div class="prof-stat-card">
+            <div class="prof-stat-val" style="color:#D97706;">{{ student.streak or 0 }}</div>
+            <div class="prof-stat-lbl">Day Streak 🔥</div>
+        </div>
+        <div class="prof-stat-card">
+            <div class="prof-stat-val" style="color:#22C55E;">{{ student.current_level or 1 }}</div>
+            <div class="prof-stat-lbl">Current Level</div>
+        </div>
+    </div>
+
+    <!-- Account Info -->
+    <div class="prof-section">
+        <div class="prof-section-title">Account Info</div>
+        <div class="prof-info-row">
+            <span class="prof-info-label">Full Name</span>
+            <span class="prof-info-val">{{ student.full_name }}</span>
+        </div>
+        <div class="prof-info-row">
+            <span class="prof-info-label">Roll Number</span>
+            <span class="prof-info-val">{{ student.roll_number or '—' }}</span>
+        </div>
+        <div class="prof-info-row">
+            <span class="prof-info-label">Branch &amp; Year</span>
+            <span class="prof-info-val">{{ student.branch or 'General' }} — Year {{ student.year or 1 }}</span>
+        </div>
+        <div class="prof-info-row">
+            <span class="prof-info-label">Email</span>
+            <span class="prof-info-val">{{ student.email }}</span>
+        </div>
+    </div>
+
+    {% if onboarding_profile %}
+
+    <!-- English Assessment Results -->
+    {% if onboarding_profile.assessment_results %}
+    {% set ar = onboarding_profile.assessment_results %}
+    <div class="prof-section">
+        <div class="prof-section-title">English Level Assessment</div>
+        <div class="prof-cefr-row" style="margin-bottom:24px;">
+            <div class="prof-cefr-dial">
+                <div class="prof-cefr-code">{{ ar.get('cefr','A2').split(' ')[0] }}</div>
+                <div class="prof-cefr-sub">CEFR</div>
+            </div>
+            <div class="prof-cefr-desc">
+                <h4>{{ ar.get('cefr','A2 (Elementary)') }}</h4>
+                <p>
+                    {% set overall = ar.get('overall', 50) %}
+                    {% if overall >= 80 %}
+                    You have an advanced command of English. Keep refining your fluency and nuance.
+                    {% elif overall >= 65 %}
+                    You communicate effectively in most situations. Focus on natural speech and advanced vocabulary.
+                    {% elif overall >= 50 %}
+                    You can handle familiar topics well. Practice speaking more spontaneously every day.
+                    {% elif overall >= 35 %}
+                    You understand basic English. Consistent practice will accelerate your growth rapidly.
+                    {% else %}
+                    You are just getting started! Every expert was once a beginner. Let's build together.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Skill Bars -->
+        {% set skills = [
+            ('Speaking',      ar.get('speaking', 55),      '#6366F1'),
+            ('Grammar',       ar.get('grammar', 60),       '#22C55E'),
+            ('Vocabulary',    ar.get('vocabulary', 65),    '#F59E0B'),
+            ('Pronunciation', ar.get('pronunciation', 50), '#EC4899'),
+            ('Confidence',    ar.get('confidence', 50),    '#8B5CF6')
+        ] %}
+        {% for name, val, color in skills %}
+        <div class="prof-skill-row">
+            <div class="prof-skill-name">{{ name }}</div>
+            <div class="prof-skill-bar-wrap">
+                <div class="prof-skill-bar" style="width:{{ val }}%; background:{{ color }};"></div>
+            </div>
+            <div class="prof-skill-pct">{{ val }}%</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Learning Goals -->
+    {% if onboarding_profile.goals %}
+    <div class="prof-section">
+        <div class="prof-section-title">My Learning Goals</div>
+        <div class="prof-chips">
+            {% for goal in onboarding_profile.goals %}
+            <span class="prof-chip">{{ goal }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Learning Profile -->
+    <div class="prof-section">
+        <div class="prof-section-title">Learning Profile</div>
+        {% if onboarding_profile.reason %}
+        <div class="prof-info-row">
+            <span class="prof-info-label">Why Learning</span>
+            <span class="prof-info-val">{{ onboarding_profile.reason }}</span>
+        </div>
+        {% endif %}
+        {% if onboarding_profile.perceived_level %}
+        <div class="prof-info-row">
+            <span class="prof-info-label">Self-Assessed Level</span>
+            <span class="prof-info-val">{{ onboarding_profile.perceived_level }}</span>
+        </div>
+        {% endif %}
+        {% if onboarding_profile.daily_time_mins %}
+        <div class="prof-info-row">
+            <span class="prof-info-label">Daily Practice Goal</span>
+            <span class="prof-info-val">{{ onboarding_profile.daily_time_mins }} minutes / day</span>
+        </div>
+        {% endif %}
+        {% if onboarding_profile.preferred_accent %}
+        <div class="prof-info-row">
+            <span class="prof-info-label">Preferred Accent</span>
+            <span class="prof-info-val">{{ onboarding_profile.preferred_accent }}</span>
+        </div>
+        {% endif %}
+        {% if onboarding_profile.notification_time %}
+        <div class="prof-info-row">
+            <span class="prof-info-label">Reminder Time</span>
+            <span class="prof-info-val">{{ onboarding_profile.notification_time }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Challenges -->
+    {% if onboarding_profile.biggest_challenges %}
+    <div class="prof-section">
+        <div class="prof-section-title">My Challenges</div>
+        <div class="prof-chips">
+            {% for ch in onboarding_profile.biggest_challenges %}
+            <span class="prof-chip prof-chip-amber">{{ ch }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Learning Style -->
+    {% if onboarding_profile.learning_style %}
+    <div class="prof-section">
+        <div class="prof-section-title">Preferred Learning Style</div>
+        <div class="prof-chips">
+            {% for ls in onboarding_profile.learning_style %}
+            <span class="prof-chip prof-chip-green">{{ ls }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No onboarding completed -->
+    <div class="prof-section" style="text-align:center; padding:36px;">
+        <div style="font-size:40px; margin-bottom:12px;">📋</div>
+        <h3 style="font-size:18px; font-weight:900; color:#0F172A; margin:0 0 8px;">Complete Your Profile</h3>
+        <p style="font-size:14px; color:#64748B; margin:0 0 20px;">Take the quick onboarding quiz to unlock your personalised English roadmap, CEFR level, and skill snapshot.</p>
+        <a href="{{ url_for('dashboard.onboarding') }}" style="display:inline-block; padding:12px 28px; background:linear-gradient(135deg,#6366F1,#4F46E5); color:white; font-size:14px; font-weight:800; border-radius:14px; text-decoration:none; box-shadow:0 4px 14px rgba(79,70,229,0.3);">Take Assessment →</a>
+    </div>
+    {% endif %}
+
+    <!-- Logout -->
+    <a href="{{ url_for('auth.logout') }}" class="prof-logout">Sign Out</a>
+
+</div>
+{% endblock %}

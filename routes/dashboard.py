@@ -73,6 +73,21 @@ def api_daily_checkin_status():
     checkin = get_today_checkin(student_id)
     return jsonify({'done': checkin is not None, 'checkin': checkin})
 
+@dashboard_bp.route('/profile')
+@login_required
+def profile():
+    student_id = session.get('student_id')
+    student = get_student_by_id(student_id)
+    if not student:
+        session.clear()
+        return redirect(url_for('auth.login'))
+    streak = calculate_streak(student_id)
+    student['streak'] = streak
+    onboarding_profile = get_student_onboarding_profile(student_id)
+    return render_template('profile.html', student=student, onboarding_profile=onboarding_profile)
+
+
+
 @dashboard_bp.route('/api/daily-challenge/log', methods=['POST'])
 @login_required
 def api_log_daily_challenge():
