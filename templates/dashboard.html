@@ -479,6 +479,38 @@
         </div>
     </div>
 
+    {% if onboarding_profile and onboarding_profile.assessment_results %}
+    {% set ar = onboarding_profile.assessment_results %}
+    <!-- English Snapshot Card -->
+    <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:20px; padding:24px 28px; box-shadow:0 4px 20px rgba(0,0,0,0.04); margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <div>
+                <div style="font-size:11px; font-weight:800; color:#6366F1; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Your English Snapshot</div>
+                <div style="font-size:18px; font-weight:900; color:#0F172A;">{{ ar.get('cefr','A2 (Elementary)') }}</div>
+            </div>
+            <div style="background:#EEF2FF; color:#4F46E5; font-size:12px; font-weight:800; padding:6px 14px; border-radius:20px;">🎓 CEFR Level</div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px;">
+            {% set metrics = [('Speaking', ar.get('speaking',55), '#6366F1'), ('Grammar', ar.get('grammar',60), '#22C55E'), ('Vocabulary', ar.get('vocabulary',65), '#F59E0B'), ('Pronunciation', ar.get('pronunciation',50), '#EC4899'), ('Confidence', ar.get('confidence',50), '#8B5CF6')] %}
+            {% for label, val, color in metrics %}
+            <div style="text-align:center;">
+                <div style="position:relative; width:52px; height:52px; margin:0 auto 8px;">
+                    <svg width="52" height="52" viewBox="0 0 52 52">
+                        <circle cx="26" cy="26" r="20" fill="none" stroke="#F1F5F9" stroke-width="5"/>
+                        <circle cx="26" cy="26" r="20" fill="none" stroke="{{ color }}" stroke-width="5"
+                            stroke-dasharray="{{ 2 * 3.14159 * 20 | round(1) }}"
+                            stroke-dashoffset="{{ ((100 - val) / 100 * (2 * 3.14159 * 20)) | round(1) }}"
+                            stroke-linecap="round" transform="rotate(-90 26 26)"/>
+                    </svg>
+                    <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; font-weight:900; color:#0F172A;">{{ val }}%</span>
+                </div>
+                <div style="font-size:11px; font-weight:700; color:#64748B;">{{ label }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Overall Metrics Bar -->
     <div class="ew-metrics-bar">
         <div class="ew-metric-item">

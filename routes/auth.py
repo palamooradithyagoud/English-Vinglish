@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import get_student_by_email_or_roll, create_student, log_student_activity
+from database import get_student_by_email_or_roll, create_student, log_student_activity, get_student_onboarding_profile
 import functools
 
 auth_bp = Blueprint('auth', __name__)
@@ -100,6 +100,11 @@ def login():
                      session['student_name'] = student['full_name']
                      session['show_greeting'] = True
                      log_student_activity(student['id'], 'LOGIN', f"Student {student['full_name']} logged in successfully")
+                     # Check if student has completed onboarding
+                     profile = get_student_onboarding_profile(student['id'])
+                     if not profile:
+                         flash(f"Welcome, {student['full_name']}! Let's personalise your learning journey.", "success")
+                         return redirect(url_for('dashboard.onboarding'))
                      flash(f"Welcome back, {student['full_name']}!", "success")
                      return redirect(url_for('dashboard.home'))
             

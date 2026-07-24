@@ -21,15 +21,16 @@ def create_app():
     @app.context_processor
     def inject_student_global():
         from flask import session
-        from database import get_student_by_id
+        from database import get_student_by_id, get_student_onboarding_profile
         if 'student_id' in session:
             student = get_student_by_id(session['student_id'])
             if student:
                 from routes.dashboard import calculate_streak
                 streak = calculate_streak(session['student_id'])
                 student['streak'] = streak
-                return {'student': student, 'student_streak': streak}
-        return {'student': None, 'student_streak': 0}
+                onboarding_profile = get_student_onboarding_profile(session['student_id'])
+                return {'student': student, 'student_streak': streak, 'onboarding_profile': onboarding_profile}
+        return {'student': None, 'student_streak': 0, 'onboarding_profile': None}
         
     return app
 

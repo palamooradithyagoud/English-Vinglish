@@ -1672,6 +1672,90 @@ def get_student_daily_challenge_progress(student_id):
         return {}
 
 
+def save_student_onboarding_profile(student_id, profile_data):
+    """
+    Upserts a student's onboarding profile in Supabase (creates or updates).
+    """
+    try:
+        data = {
+            "student_id": int(student_id),
+            "goals": profile_data.get("goals", []),
+            "reason": profile_data.get("reason", ""),
+            "perceived_level": profile_data.get("perceived_level", "Beginner"),
+            "daily_time_mins": int(profile_data.get("daily_time_mins", 15)),
+            "biggest_challenges": profile_data.get("biggest_challenges", []),
+            "learning_style": profile_data.get("learning_style", []),
+            "preferred_accent": profile_data.get("preferred_accent", "Indian English"),
+            "notification_time": profile_data.get("notification_time", "Morning"),
+            "assessment_results": profile_data.get("assessment_results", {}),
+            "onboarding_completed": True
+        }
+        response = supabase.table("student_onboarding_profiles").upsert(data, on_conflict="student_id").execute()
+        return response.data
+    except Exception as e:
+        print(f"Error saving student onboarding profile: {e}")
+        return None
+
+
+def get_student_onboarding_profile(student_id):
+    """
+    Retrieves student onboarding profile from Supabase.
+    Returns None if not yet completed.
+    """
+    try:
+        response = supabase.table("student_onboarding_profiles") \
+            .select("*") \
+            .eq("student_id", int(student_id)) \
+            .execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting student onboarding profile: {e}")
+        return None
+
+
+def save_daily_checkin(student_id, mood, target_activity, available_mins):
+    """
+    Upserts a daily check-in record for the student (one per day).
+    """
+    try:
+        from datetime import date
+        data = {
+            "student_id": int(student_id),
+            "mood": mood,
+            "target_activity": target_activity,
+            "available_mins": int(available_mins),
+            "checkin_date": date.today().isoformat()
+        }
+        response = supabase.table("daily_checkins").upsert(data, on_conflict="student_id,checkin_date").execute()
+        log_student_activity(student_id, "DAILY_CHECKIN", f"Daily check-in: mood={mood}, activity={target_activity}")
+        return response.data
+    except Exception as e:
+        print(f"Error saving daily checkin: {e}")
+        return None
+
+
+def get_today_checkin(student_id):
+    """
+    Returns today's check-in record for the student, or None.
+    """
+    try:
+        from datetime import date
+        response = supabase.table("daily_checkins") \
+            .select("*") \
+            .eq("student_id", int(student_id)) \
+            .eq("checkin_date", date.today().isoformat()) \
+            .execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting today checkin: {e}")
+        return None
+
+
+
 
 
 

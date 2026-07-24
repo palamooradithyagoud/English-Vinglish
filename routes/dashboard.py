@@ -22,13 +22,56 @@ from database import (
     get_speaking_activities,
     get_questions_for_level,
     log_daily_challenge_attempt,
-    get_student_daily_challenge_progress
+    get_student_daily_challenge_progress,
+    save_student_onboarding_profile,
+    get_student_onboarding_profile,
+    save_daily_checkin,
+    get_today_checkin
 )
 from routes.practice_data import PRACTICE_QUESTIONS, GRAMMAR_LESSONS, SHORT_STORIES, WORD_SCRAMBLE_WORDS, WORD_CONNECT_LEVELS
 from routes.auth import login_required
 from datetime import datetime, timedelta
 
 dashboard_bp = Blueprint('dashboard', __name__)
+
+@dashboard_bp.route('/onboarding', methods=['GET'])
+@login_required
+def onboarding():
+    student_id = session.get('student_id')
+    student = get_student_by_id(student_id)
+    if not student:
+        return redirect(url_for('auth.login'))
+    # If already completed, go to home
+    profile = get_student_onboarding_profile(student_id)
+    if profile:
+        return redirect(url_for('dashboard.home'))
+    return render_template('onboarding.html', student=student)
+
+@dashboard_bp.route('/api/onboarding/complete', methods=['POST'])
+@login_required
+def api_onboarding_complete():
+    student_id = session.get('student_id')
+    data = request.json or {}
+    result = save_student_onboarding_profile(student_id, data)
+    return jsonify({'success': True, 'data': result})
+
+@dashboard_bp.route('/api/daily-checkin', methods=['POST'])
+@login_required
+def api_daily_checkin():
+    student_id = session.get('student_id')
+    data = request.json or {}
+    mood = data.get('mood', 'Normal')
+    target = data.get('target_activity', 'Speaking')
+    mins = data.get('available_mins', 15)
+    result = save_daily_checkin(student_id, mood, target, mins)
+    return jsonify({'success': True, 'data': result})
+
+@dashboard_bp.route('/api/daily-checkin/status', methods=['GET'])
+@login_required
+def api_daily_checkin_status():
+    student_id = session.get('student_id')
+    checkin = get_today_checkin(student_id)
+    return jsonify({'done': checkin is not None, 'checkin': checkin})
 
 @dashboard_bp.route('/api/daily-challenge/log', methods=['POST'])
 @login_required
@@ -125,7 +168,8 @@ def home():
     }
     
     announcements = get_notifications(limit=5)
-    return render_template('dashboard.html', student=student_data, history=history, announcements=announcements)
+    onboarding_profile = get_student_onboarding_profile(student_id)
+    return render_template('dashboard.html', student=student_data, history=history, announcements=announcements, onboarding_profile=onboarding_profile)
 
 @dashboard_bp.route('/progress')
 @login_required

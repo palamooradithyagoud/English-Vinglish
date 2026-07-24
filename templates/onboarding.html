@@ -1,0 +1,399 @@
+﻿{% extends "base.html" %}
+{% block title %}Welcome to English Winglish{% endblock %}
+
+{% block head %}
+<style>
+    body { background: #F8FAFC; }
+    .ob-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px 80px; }
+    .ob-card {
+        background: #FFFFFF;
+        border-radius: 28px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        width: 100%;
+        max-width: 640px;
+        overflow: hidden;
+    }
+    .ob-progress-bar { height: 5px; background: #E2E8F0; }
+    .ob-progress-fill { height: 100%; background: linear-gradient(90deg,#6366F1,#4F46E5); transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .ob-step { display: none; padding: 44px 40px 40px; animation: obFadeIn 0.4s ease; }
+    .ob-step.active { display: block; }
+    @keyframes obFadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .ob-step-label { font-size:11px; font-weight:800; color:#6366F1; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 10px 0; }
+    .ob-title { font-size:28px; font-weight:900; color:#0F172A; margin:0 0 8px 0; letter-spacing:-0.5px; }
+    .ob-subtitle { font-size:15px; color:#64748B; font-weight:500; margin:0 0 32px 0; line-height:1.6; }
+    .ob-chips { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+    .ob-chip { padding:10px 16px; border-radius:50px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:14px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; user-select:none; }
+    .ob-chip:hover, .ob-chip.selected { border-color:#6366F1; color:#4F46E5; background:#EEF2FF; }
+    .ob-level-cards { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
+    .ob-level-card { border:2px solid #E2E8F0; border-radius:18px; padding:18px 20px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+    .ob-level-card:hover, .ob-level-card.selected { border-color:#6366F1; background:#F5F3FF; }
+    .ob-level-dot { width:16px; height:16px; border-radius:50%; flex-shrink:0; }
+    .ob-level-card h4 { font-size:16px; font-weight:800; color:#0F172A; margin:0 0 2px; }
+    .ob-level-card p { font-size:13px; color:#64748B; font-weight:500; margin:0; }
+    .ob-slider { width:100%; -webkit-appearance:none; height:6px; border-radius:3px; background:#E2E8F0; outline:none; }
+    .ob-slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#6366F1; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.4); }
+    .ob-slider-label { font-size:22px; font-weight:900; color:#4F46E5; text-align:center; margin-top:16px; }
+    .ob-slider-wrap { margin-bottom:28px; }
+    .ob-accent-cards { display:flex; gap:12px; margin-bottom:28px; flex-wrap:wrap; }
+    .ob-accent-card { flex:1; min-width:120px; border:2px solid #E2E8F0; border-radius:16px; padding:18px 12px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:13px; font-weight:700; color:#475569; }
+    .ob-accent-card:hover, .ob-accent-card.selected { border-color:#6366F1; background:#EEF2FF; color:#4F46E5; }
+    .ob-accent-card .flag { font-size:28px; margin-bottom:8px; }
+    .ob-notif-cards { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+    .ob-notif-card { flex:1; min-width:100px; border:2px solid #E2E8F0; border-radius:16px; padding:16px 10px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:13px; font-weight:700; color:#475569; }
+    .ob-notif-card:hover, .ob-notif-card.selected { border-color:#6366F1; background:#EEF2FF; color:#4F46E5; }
+    .ob-notif-card .icon { font-size:24px; margin-bottom:6px; }
+    .ob-question-text { font-size:16px; font-weight:800; color:#0F172A; margin:0 0 14px; }
+    .ob-options { display:flex; flex-direction:column; gap:8px; }
+    .ob-option { padding:12px 16px; border-radius:12px; border:2px solid #E2E8F0; font-size:14px; font-weight:600; color:#475569; cursor:pointer; transition:all 0.2s; }
+    .ob-option:hover, .ob-option.selected { border-color:#6366F1; background:#EEF2FF; color:#4F46E5; }
+    .ob-text-input { width:100%; padding:12px 16px; border-radius:12px; border:2px solid #E2E8F0; font-size:15px; font-weight:600; color:#0F172A; box-sizing:border-box; outline:none; transition:border-color 0.2s; font-family:inherit; }
+    .ob-text-input:focus { border-color:#6366F1; }
+    .ob-nav { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+    .ob-btn { padding:13px 28px; border-radius:50px; font-size:15px; font-weight:800; border:none; cursor:pointer; transition:all 0.2s; }
+    .ob-btn-primary { background:linear-gradient(135deg,#6366F1,#4F46E5); color:#FFFFFF; box-shadow:0 4px 14px rgba(79,70,229,0.3); }
+    .ob-btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(79,70,229,0.4); }
+    .ob-btn-secondary { background:#F1F5F9; color:#64748B; }
+    .ob-welcome-hero { text-align:center; padding:16px 0 32px; }
+    .ob-welcome-emoji { font-size:72px; line-height:1; margin-bottom:20px; }
+    .ob-assess-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .ob-assess-badge { background:#EEF2FF; color:#4F46E5; font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; }
+    .ob-assess-bar { height:4px; background:#E2E8F0; border-radius:2px; overflow:hidden; margin-bottom:20px; }
+    .ob-assess-bar-fill { height:100%; background:linear-gradient(90deg,#6366F1,#22C55E); border-radius:2px; transition:width 0.4s; }
+    .ob-confidence-wrap { text-align:center; margin-bottom:24px; }
+    .ob-confidence-val { font-size:48px; font-weight:900; color:#4F46E5; margin:12px 0 4px; }
+    .ob-confidence-desc { font-size:13px; color:#64748B; font-weight:600; }
+    .ob-loading { text-align:center; padding:40px 20px; }
+    .ob-loading-spinner { font-size:48px; animation:spin 1s linear infinite; display:inline-block; margin-bottom:16px; }
+    @keyframes spin { 100%{transform:rotate(360deg)} }
+    @media(max-width:480px){.ob-step{padding:32px 20px 28px}.ob-title{font-size:22px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ob-page">
+<div class="ob-card">
+<div class="ob-progress-bar"><div class="ob-progress-fill" id="ob-progress" style="width:10%"></div></div>
+
+<!-- Step 1 -->
+<div class="ob-step active" id="ob-step-1">
+  <div class="ob-welcome-hero">
+    <div class="ob-welcome-emoji">👋</div>
+    <div class="ob-step-label">Step 1 of 10</div>
+    <h1 class="ob-title">Welcome to English Winglish</h1>
+    <p class="ob-subtitle">Let us personalise your learning journey so you can speak English with confidence faster than ever.</p>
+  </div>
+  <div class="ob-nav" style="justify-content:center"><button class="ob-btn ob-btn-primary" onclick="nextStep()">Start My Journey →</button></div>
+</div>
+
+<!-- Step 2 -->
+<div class="ob-step" id="ob-step-2">
+  <div class="ob-step-label">Step 2 of 10</div>
+  <h2 class="ob-title">What is your goal?</h2>
+  <p class="ob-subtitle">Choose all that apply.</p>
+  <div class="ob-chips" id="goals-chips">
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">🗣 Speak English Fluently</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">💼 Crack Job Interviews</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">🎓 IELTS Preparation</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">🇺🇸 TOEFL Preparation</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">📚 Improve Grammar</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">📖 Improve Vocabulary</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">👂 Improve Listening</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">✍ Improve Writing</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">🌍 Travel English</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">🏢 Business English</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">🎤 Public Speaking</div>
+    <div class="ob-chip" onclick="toggleChip(this,'goals')">💻 College Placement</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 3 -->
+<div class="ob-step" id="ob-step-3">
+  <div class="ob-step-label">Step 3 of 10</div>
+  <h2 class="ob-title">Why are you learning English?</h2>
+  <p class="ob-subtitle">Choose one.</p>
+  <div class="ob-chips" id="reason-chips">
+    <div class="ob-chip" onclick="selectSingle(this)">🎓 College</div>
+    <div class="ob-chip" onclick="selectSingle(this)">💼 Job</div>
+    <div class="ob-chip" onclick="selectSingle(this)">📈 Promotion</div>
+    <div class="ob-chip" onclick="selectSingle(this)">✈ Study Abroad</div>
+    <div class="ob-chip" onclick="selectSingle(this)">💬 Daily Conversation</div>
+    <div class="ob-chip" onclick="selectSingle(this)">🌱 Personal Growth</div>
+    <div class="ob-chip" onclick="selectSingle(this)">📝 Competitive Exams</div>
+    <div class="ob-chip" onclick="selectSingle(this)">💻 Freelancing</div>
+    <div class="ob-chip" onclick="selectSingle(this)">🎬 Content Creation</div>
+    <div class="ob-chip" onclick="selectSingle(this)">🔮 Other</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 4 -->
+<div class="ob-step" id="ob-step-4">
+  <div class="ob-step-label">Step 4 of 10</div>
+  <h2 class="ob-title">What is your current English level?</h2>
+  <p class="ob-subtitle">Pick the example that sounds most like you.</p>
+  <div class="ob-level-cards" id="level-cards">
+    <div class="ob-level-card" onclick="selectLevel(this,'Beginner')"><div class="ob-level-dot" style="background:#22C55E"></div><div><h4>Beginner</h4><p>I know only basic English. Simple words and greetings.</p></div></div>
+    <div class="ob-level-card" onclick="selectLevel(this,'Intermediate')"><div class="ob-level-dot" style="background:#3B82F6"></div><div><h4>Intermediate</h4><p>I can understand English but hesitate while speaking.</p></div></div>
+    <div class="ob-level-card" onclick="selectLevel(this,'Advanced')"><div class="ob-level-dot" style="background:#8B5CF6"></div><div><h4>Advanced</h4><p>I speak comfortably but want to improve fluency and accent.</p></div></div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 5 -->
+<div class="ob-step" id="ob-step-5">
+  <div class="ob-step-label">Step 5 of 10</div>
+  <h2 class="ob-title">Daily practice time</h2>
+  <p class="ob-subtitle">How long can you practice every day?</p>
+  <div class="ob-slider-wrap">
+    <input type="range" class="ob-slider" id="time-slider" min="0" max="5" step="1" value="1" oninput="updateTimeLabel(this.value)">
+    <div class="ob-slider-label" id="time-label">15 minutes</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 6 -->
+<div class="ob-step" id="ob-step-6">
+  <div class="ob-step-label">Step 6 of 10</div>
+  <h2 class="ob-title">Biggest challenge</h2>
+  <p class="ob-subtitle">Select all that apply.</p>
+  <div class="ob-chips" id="challenges-chips">
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">📘 I do not know vocabulary</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">😨 I fear speaking</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">📝 My grammar is weak</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">🗣 I cannot pronounce words</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">🔄 I translate from my native language</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">❓ I do not know what to say</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">😓 I lose confidence</div>
+    <div class="ob-chip" onclick="toggleChip(this,'challenges')">🐢 I speak too slowly</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 7 -->
+<div class="ob-step" id="ob-step-7">
+  <div class="ob-step-label">Step 7 of 10</div>
+  <h2 class="ob-title">Preferred learning style</h2>
+  <p class="ob-subtitle">Select all formats you enjoy.</p>
+  <div class="ob-chips" id="style-chips">
+    <div class="ob-chip" onclick="toggleChip(this,'style')">🤖 AI Conversation</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">🎥 Videos</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">📝 Quizzes</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">🎙 Speaking Practice</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">🎮 Games</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">🃏 Flashcards</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">💼 Mock Interviews</div>
+    <div class="ob-chip" onclick="toggleChip(this,'style')">🏆 Daily Challenges</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 8 -->
+<div class="ob-step" id="ob-step-8">
+  <div class="ob-step-label">Step 8 of 10</div>
+  <h2 class="ob-title">Preferred accent</h2>
+  <p class="ob-subtitle">Which accent would you like to practise with?</p>
+  <div class="ob-accent-cards" id="accent-cards">
+    <div class="ob-accent-card" onclick="selectAccent(this,'Indian English')"><div class="flag">🇮🇳</div>Indian English</div>
+    <div class="ob-accent-card" onclick="selectAccent(this,'American English')"><div class="flag">🇺🇸</div>American English</div>
+    <div class="ob-accent-card" onclick="selectAccent(this,'British English')"><div class="flag">🇬🇧</div>British English</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 9 -->
+<div class="ob-step" id="ob-step-9">
+  <div class="ob-step-label">Step 9 of 10</div>
+  <h2 class="ob-title">When should we remind you?</h2>
+  <p class="ob-subtitle">We will send you a daily practice nudge at this time.</p>
+  <div class="ob-notif-cards" id="notif-cards">
+    <div class="ob-notif-card" onclick="selectNotif(this,'Morning')"><div class="icon">🌅</div>Morning</div>
+    <div class="ob-notif-card" onclick="selectNotif(this,'Afternoon')"><div class="icon">☀️</div>Afternoon</div>
+    <div class="ob-notif-card" onclick="selectNotif(this,'Evening')"><div class="icon">🌙</div>Evening</div>
+    <div class="ob-notif-card" onclick="selectNotif(this,'No Reminder')"><div class="icon">🔕</div>No Reminder</div>
+  </div>
+  <div class="ob-nav"><button class="ob-btn ob-btn-secondary" onclick="prevStep()">Back</button><button class="ob-btn ob-btn-primary" onclick="nextStep()">Continue →</button></div>
+</div>
+
+<!-- Step 10: Assessment -->
+<div class="ob-step" id="ob-step-10">
+  <div class="ob-step-label">Step 10 of 10</div>
+  <h2 class="ob-title">Build your personalised roadmap</h2>
+  <p class="ob-subtitle">Let us begin with a quick 3-minute assessment to personalise your dashboard and today's plan.</p>
+  <div id="ob-assessment-container">
+    <div style="text-align:center;padding:20px 0 16px">
+      <button class="ob-btn ob-btn-primary" style="font-size:16px;padding:16px 36px" onclick="startAssessment()">Start Assessment →</button>
+    </div>
+  </div>
+  <div class="ob-nav" id="ob-assess-nav" style="display:none">
+    <button class="ob-btn ob-btn-secondary" onclick="prevAssessQuestion()">← Prev</button>
+    <button class="ob-btn ob-btn-primary" id="ob-assess-next-btn" onclick="nextAssessQuestion()">Next →</button>
+  </div>
+  <div style="margin-top:12px"><button class="ob-btn ob-btn-secondary" style="font-size:13px;padding:8px 16px" onclick="prevStep()">← Back</button></div>
+</div>
+
+<!-- Loading -->
+<div class="ob-step" id="ob-step-done">
+  <div class="ob-loading">
+    <div class="ob-loading-spinner">⚙️</div>
+    <h2 class="ob-title" style="text-align:center">Building your roadmap...</h2>
+    <p class="ob-subtitle" style="text-align:center">Personalising your learning journey based on your responses.</p>
+  </div>
+</div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const OBData = { goals:[], reason:'', perceived_level:'', daily_time_mins:15, biggest_challenges:[], learning_style:[], preferred_accent:'Indian English', notification_time:'Morning', assessment_results:{} };
+const timeMins=[10,15,20,30,45,60];
+const timeLabels=['10 minutes','15 minutes','20 minutes','30 minutes','45 minutes','60+ minutes'];
+let currentStep=1;
+let assessIdx=0;
+let assessAnswers={};
+
+function nextStep(){if(currentStep===10)return;currentStep++;showStep(currentStep);}
+function prevStep(){if(currentStep<=1)return;currentStep--;showStep(currentStep);}
+function showStep(n){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('ob-step-'+n);
+  if(el){el.classList.add('active'); el.scrollIntoView({behavior:'smooth',block:'center'});}
+  document.getElementById('ob-progress').style.width=(Math.round(n/10*100))+'%';
+}
+
+function toggleChip(el,key){
+  el.classList.toggle('selected');
+  const text=el.textContent.trim();
+  const map={goals:'goals',challenges:'biggest_challenges',style:'learning_style'};
+  const arr=OBData[map[key]];
+  if(el.classList.contains('selected')){arr.push(text);}
+  else{const i=arr.indexOf(text);if(i>-1)arr.splice(i,1);}
+}
+function selectSingle(el){
+  document.querySelectorAll('#reason-chips .ob-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  OBData.reason=el.textContent.trim();
+}
+function selectLevel(el,val){
+  document.querySelectorAll('#level-cards .ob-level-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  OBData.perceived_level=val;
+}
+function updateTimeLabel(v){
+  OBData.daily_time_mins=timeMins[parseInt(v)];
+  document.getElementById('time-label').textContent=timeLabels[parseInt(v)];
+}
+function selectAccent(el,val){
+  document.querySelectorAll('#accent-cards .ob-accent-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  OBData.preferred_accent=val;
+}
+function selectNotif(el,val){
+  document.querySelectorAll('#notif-cards .ob-notif-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  OBData.notification_time=val;
+}
+
+const assessQs=[
+  {id:'vocabulary',label:'1. Vocabulary',q:'Choose the synonym of "Happy".',type:'mcq',opts:['Joyful','Angry','Tired','Confused'],correct:0},
+  {id:'grammar',label:'2. Grammar',q:'He _____ going to school.',type:'mcq',opts:['am','is','are','be'],correct:1},
+  {id:'word_order',label:'3. Sentence Order',q:'Rearrange: school / goes / every day / she / to',type:'text'},
+  {id:'reading',label:'4. Reading',q:'"Maria works at a hospital. She helps patients." What does Maria do?',type:'mcq',opts:['She is a teacher','She works at a hospital','She runs a restaurant','She studies science'],correct:1},
+  {id:'fill_blank',label:'5. Fill in the Blank',q:'She _____ her homework before dinner.',type:'mcq',opts:['finish','finished','finishing','finishes'],correct:1},
+  {id:'grammar2',label:'6. Choose Correct Sentence',q:'Which sentence is grammatically correct?',type:'mcq',opts:["She don't like coffee.","She doesn't likes coffee.","She doesn't like coffee.","She not like coffee."],correct:2},
+  {id:'vocabulary2',label:'7. Vocabulary',q:'Antonym of "Expand"?',type:'mcq',opts:['Grow','Shrink','Spread','Increase'],correct:1},
+  {id:'grammar3',label:'8. Tense',q:'By tomorrow, I _____ this book.',type:'mcq',opts:['read','will have read','am reading','was reading'],correct:1},
+  {id:'conversation',label:'9. Speaking Prompt',q:'What did you do yesterday? (Write 1-2 sentences)',type:'text'},
+  {id:'confidence',label:'10. Confidence Rating',q:'How confident are you while speaking English?',type:'slider'}
+];
+
+function startAssessment(){
+  assessIdx=0; assessAnswers={};
+  renderAssessQ(0);
+  document.getElementById('ob-assess-nav').style.display='flex';
+}
+
+function renderAssessQ(idx){
+  const q=assessQs[idx];
+  const pct=Math.round((idx+1)/assessQs.length*100);
+  let html=`<div class="ob-assess-header"><span class="ob-assess-badge">${q.label}</span><span style="font-size:12px;font-weight:700;color:#94A3B8">${idx+1} / ${assessQs.length}</span></div>
+  <div class="ob-assess-bar"><div class="ob-assess-bar-fill" style="width:${pct}%"></div></div>
+  <div class="ob-question-text">${q.q}</div>`;
+
+  if(q.type==='mcq'){
+    html+=`<div class="ob-options">`;
+    q.opts.forEach((o,i)=>{html+=`<div class="ob-option ${assessAnswers[q.id]===i?'selected':''}" onclick="pickOpt(this,${i},'${q.id}')">${o}</div>`;});
+    html+=`</div>`;
+  } else if(q.type==='text'){
+    html+=`<textarea class="ob-text-input" rows="3" placeholder="Type your answer..." oninput="assessAnswers['${q.id}']=this.value">${assessAnswers[q.id]||''}</textarea>`;
+  } else if(q.type==='slider'){
+    const v=assessAnswers[q.id]||50;
+    html+=`<div class="ob-confidence-wrap">
+      <input type="range" class="ob-slider" min="1" max="100" value="${v}" oninput="updateConf(this.value)">
+      <div class="ob-confidence-val" id="conf-val">${v}</div>
+      <div class="ob-confidence-desc" id="conf-desc">${confLabel(v)}</div>
+    </div>`;
+    assessAnswers[q.id]=v;
+  }
+
+  document.getElementById('ob-assessment-container').innerHTML=html;
+  document.getElementById('ob-assess-next-btn').textContent=idx===assessQs.length-1?'Submit Assessment':'Next →';
+}
+
+function pickOpt(el,i,qid){
+  document.querySelectorAll('#ob-assessment-container .ob-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  assessAnswers[qid]=i;
+}
+function updateConf(v){
+  assessAnswers['confidence']=parseInt(v);
+  document.getElementById('conf-val').textContent=v;
+  document.getElementById('conf-desc').textContent=confLabel(v);
+}
+function confLabel(v){
+  v=parseInt(v);
+  if(v<=30)return 'Low confidence — let us build it up!';
+  if(v<=60)return 'Getting there — keep practising!';
+  if(v<=80)return 'Good confidence — let us push further!';
+  return 'High confidence — let us master fluency!';
+}
+function nextAssessQuestion(){
+  if(assessIdx<assessQs.length-1){assessIdx++;renderAssessQ(assessIdx);}
+  else{finishAssessment();}
+}
+function prevAssessQuestion(){if(assessIdx>0){assessIdx--;renderAssessQ(assessIdx);}}
+
+function finishAssessment(){
+  const mcqQs=assessQs.filter(q=>q.type==='mcq');
+  let correct=0;
+  mcqQs.forEach(q=>{if(assessAnswers[q.id]===q.correct)correct++;});
+  const mcqScore=Math.round(correct/mcqQs.length*100);
+  const conf=assessAnswers['confidence']||50;
+  const vocab=mcqScore>=60?Math.min(mcqScore+10,100):Math.max(mcqScore-5,30);
+  const grammar=mcqScore>=60?Math.min(mcqScore+8,100):Math.max(mcqScore-8,25);
+  const speaking=Math.round(conf*0.6+mcqScore*0.4);
+  const pron=Math.round(conf*0.7);
+  const total=Math.round((vocab+grammar+speaking)/3);
+  let cefr='A1 (Beginner)';
+  if(total>=80)cefr='C1 (Advanced)';
+  else if(total>=65)cefr='B2 (Upper Intermediate)';
+  else if(total>=50)cefr='B1 (Intermediate)';
+  else if(total>=35)cefr='A2 (Elementary)';
+  OBData.assessment_results={cefr,speaking,grammar,vocabulary:vocab,pronunciation:pron,confidence:conf,overall:total};
+  submitOnboarding();
+}
+
+async function submitOnboarding(){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('ob-step-done').classList.add('active');
+  document.getElementById('ob-progress').style.width='100%';
+  try{
+    const res=await fetch('/api/onboarding/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(OBData)});
+    const data=await res.json();
+    setTimeout(()=>{window.location.href='/';},1800);
+  } catch(e){window.location.href='/';}
+}
+</script>
+{% endblock %}

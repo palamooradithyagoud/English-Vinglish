@@ -398,28 +398,38 @@
     <!-- Global Student Profile Modal -->
     {% if student %}
     <div id="global-profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-        <div style="background:#FFFFFF; border-radius:20px; width:90%; max-width:440px; padding:32px; box-shadow:0 20px 40px rgba(0,0,0,0.2); position:relative; font-family:'Outfit', sans-serif;">
+        <div style="background:#FFFFFF; border-radius:24px; width:90%; max-width:460px; max-height:90vh; overflow-y:auto; padding:32px; box-shadow:0 20px 60px rgba(0,0,0,0.2); position:relative; font-family:'Outfit',sans-serif;">
             <button onclick="closeProfileModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:24px; color:#64748B; cursor:pointer;">&times;</button>
-            <div style="text-align:center; margin-bottom:24px;">
-                <div style="width:72px; height:72px; background:linear-gradient(135deg, #6366F1, #4F46E5); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; margin:0 auto 12px auto; box-shadow:0 8px 20px rgba(99,102,241,0.3);">
+            <!-- Avatar & Name -->
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="width:72px; height:72px; background:linear-gradient(135deg,#6366F1,#4F46E5); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; margin:0 auto 12px; box-shadow:0 8px 20px rgba(99,102,241,0.3);">
                     {{ student.full_name[0] }}{% if ' ' in student.full_name %}{{ student.full_name.split(' ')[1][0] }}{% endif %}
                 </div>
-                <h3 style="font-size:20px; font-weight:800; color:#0F172A; margin:0 0 4px 0;">{{ student.full_name }}</h3>
-                <span style="background:#EEF2FF; color:#4F46E5; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; text-transform:uppercase;">Level {{ student.current_level }} Student</span>
+                <h3 style="font-size:20px; font-weight:800; color:#0F172A; margin:0 0 6px;">{{ student.full_name }}</h3>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                    <span style="background:#EEF2FF; color:#4F46E5; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px;">Level {{ student.current_level }} Student</span>
+                    {% if onboarding_profile %}
+                    <span style="background:#F0FDF4; color:#16A34A; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px;">{{ onboarding_profile.perceived_level or 'Learner' }}</span>
+                    {% if onboarding_profile.assessment_results %}
+                    <span style="background:#FEF3C7; color:#D97706; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px;">{{ onboarding_profile.assessment_results.get('cefr','') }}</span>
+                    {% endif %}
+                    {% endif %}
+                </div>
             </div>
-            
-            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; margin-bottom:24px; font-size:14px;">
+
+            <!-- Core Info -->
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:10px; margin-bottom:16px; font-size:14px;">
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
                     <span style="color:#64748B; font-weight:500;">Roll Number</span>
                     <span style="color:#0F172A; font-weight:700;">{{ student.roll_number or 'N/A' }}</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
-                    <span style="color:#64748B; font-weight:500;">Branch & Year</span>
+                    <span style="color:#64748B; font-weight:500;">Branch &amp; Year</span>
                     <span style="color:#0F172A; font-weight:700;">{{ student.branch or 'General' }} - Year {{ student.year or 1 }}</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
                     <span style="color:#64748B; font-weight:500;">Email</span>
-                    <span style="color:#0F172A; font-weight:700;">{{ student.email or 'N/A' }}</span>
+                    <span style="color:#0F172A; font-weight:700; font-size:12px;">{{ student.email or 'N/A' }}</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
                     <span style="color:#64748B; font-weight:500;">Total XP Earned</span>
@@ -427,10 +437,67 @@
                 </div>
                 <div style="display:flex; justify-content:space-between;">
                     <span style="color:#64748B; font-weight:500;">Active Streak</span>
-                    <span style="color:#D97706; font-weight:800;">{{ student_streak or student.streak or 0 }} Days</span>
+                    <span style="color:#D97706; font-weight:800;">{{ student_streak or student.streak or 0 }} Days 🔥</span>
                 </div>
             </div>
-            
+
+            {% if onboarding_profile %}
+            <!-- Onboarding Profile Details -->
+            {% if onboarding_profile.goals %}
+            <div style="margin-bottom:14px;">
+                <div style="font-size:11px; font-weight:800; color:#6366F1; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">My Goals</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                    {% for goal in (onboarding_profile.goals or [])[:5] %}
+                    <span style="background:#EEF2FF; color:#4F46E5; font-size:11px; font-weight:700; padding:4px 10px; border-radius:14px;">{{ goal }}</span>
+                    {% endfor %}
+                    {% if (onboarding_profile.goals or [])|length > 5 %}
+                    <span style="background:#F1F5F9; color:#64748B; font-size:11px; font-weight:700; padding:4px 10px; border-radius:14px;">+{{ (onboarding_profile.goals|length) - 5 }} more</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if onboarding_profile.assessment_results %}
+            {% set ar = onboarding_profile.assessment_results %}
+            <!-- Skills snapshot -->
+            <div style="margin-bottom:14px;">
+                <div style="font-size:11px; font-weight:800; color:#6366F1; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">English Skills</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    {% for skill, val, color in [('Speaking', ar.get('speaking',55), '#6366F1'), ('Grammar', ar.get('grammar',60), '#22C55E'), ('Vocabulary', ar.get('vocabulary',65), '#F59E0B')] %}
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="font-size:12px; font-weight:700; color:#475569; width:80px;">{{ skill }}</div>
+                        <div style="flex:1; height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden;">
+                            <div style="width:{{ val }}%; height:100%; background:{{ color }}; border-radius:3px; transition:width 0.8s;"></div>
+                        </div>
+                        <div style="font-size:12px; font-weight:800; color:#0F172A; width:32px; text-align:right;">{{ val }}%</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; font-size:12px;">
+                {% if onboarding_profile.reason %}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:8px 12px;">
+                    <div style="color:#64748B; font-weight:600; margin-bottom:2px;">Reason</div>
+                    <div style="font-weight:800; color:#0F172A;">{{ onboarding_profile.reason }}</div>
+                </div>
+                {% endif %}
+                {% if onboarding_profile.preferred_accent %}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:8px 12px;">
+                    <div style="color:#64748B; font-weight:600; margin-bottom:2px;">Accent</div>
+                    <div style="font-weight:800; color:#0F172A;">{{ onboarding_profile.preferred_accent }}</div>
+                </div>
+                {% endif %}
+                {% if onboarding_profile.daily_time_mins %}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:8px 12px;">
+                    <div style="color:#64748B; font-weight:600; margin-bottom:2px;">Daily Goal</div>
+                    <div style="font-weight:800; color:#0F172A;">{{ onboarding_profile.daily_time_mins }} min</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <div style="display:flex; gap:12px;">
                 <button onclick="closeProfileModal()" style="flex:1; padding:12px; background:#F1F5F9; color:#475569; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Close</button>
                 <a href="{{ url_for('auth.logout') }}" style="flex:1; padding:12px; background:#EF4444; color:white; border:none; border-radius:10px; font-weight:700; text-align:center; text-decoration:none;">Logout</a>
@@ -448,6 +515,95 @@
             if (modal) modal.style.display = 'none';
         }
     </script>
+
+    {% if session.get('student_id') %}
+    <!-- Daily Check-in Modal -->
+    <div id="daily-checkin-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(10px); z-index:200000; align-items:center; justify-content:center;">
+        <div style="background:#FFFFFF; border-radius:28px; width:92%; max-width:440px; padding:36px 32px; box-shadow:0 24px 60px rgba(0,0,0,0.18); position:relative; animation:obFadeIn 0.4s ease;">
+            <div style="text-align:center; margin-bottom:28px;">
+                <div style="font-size:40px; margin-bottom:10px;">☀️</div>
+                <h2 style="font-size:22px; font-weight:900; color:#0F172A; margin:0 0 6px;">Good morning!</h2>
+                <p style="font-size:14px; color:#64748B; font-weight:600; margin:0;">Quick check-in before you start today</p>
+            </div>
+
+            <!-- Q1: Mood -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:13px; font-weight:800; color:#475569; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">How are you feeling today?</div>
+                <div style="display:flex; gap:10px;" id="ci-mood-btns">
+                    <button onclick="ciSelect(this,'mood','Confident')" style="flex:1; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">😊 Confident</button>
+                    <button onclick="ciSelect(this,'mood','Normal')" style="flex:1; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">😐 Normal</button>
+                    <button onclick="ciSelect(this,'mood','Nervous')" style="flex:1; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">😟 Nervous</button>
+                </div>
+            </div>
+
+            <!-- Q2: Activity -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:13px; font-weight:800; color:#475569; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">What do you want to practice?</div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;" id="ci-activity-btns">
+                    <button onclick="ciSelect(this,'activity','Speaking')" style="padding:8px 14px; border-radius:20px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">🗣 Speaking</button>
+                    <button onclick="ciSelect(this,'activity','Grammar')" style="padding:8px 14px; border-radius:20px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">📝 Grammar</button>
+                    <button onclick="ciSelect(this,'activity','Vocabulary')" style="padding:8px 14px; border-radius:20px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">📖 Vocabulary</button>
+                    <button onclick="ciSelect(this,'activity','Listening')" style="padding:8px 14px; border-radius:20px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">👂 Listening</button>
+                    <button onclick="ciSelect(this,'activity','Interview')" style="padding:8px 14px; border-radius:20px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">💼 Interview</button>
+                    <button onclick="ciSelect(this,'activity','Pronunciation')" style="padding:8px 14px; border-radius:20px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">🎙 Pronunciation</button>
+                </div>
+            </div>
+
+            <!-- Q3: Time -->
+            <div style="margin-bottom:28px;">
+                <div style="font-size:13px; font-weight:800; color:#475569; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">How much time do you have today?</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;" id="ci-time-btns">
+                    <button onclick="ciSelect(this,'time',5)" style="flex:1; min-width:60px; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">5 min</button>
+                    <button onclick="ciSelect(this,'time',10)" style="flex:1; min-width:60px; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">10 min</button>
+                    <button onclick="ciSelect(this,'time',20)" style="flex:1; min-width:60px; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">20 min</button>
+                    <button onclick="ciSelect(this,'time',30)" style="flex:1; min-width:60px; padding:10px 6px; border-radius:14px; border:2px solid #E2E8F0; background:#F8FAFC; font-size:13px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.2s;">30+ min</button>
+                </div>
+            </div>
+
+            <button onclick="submitCheckin()" style="width:100%; padding:14px; background:linear-gradient(135deg,#6366F1,#4F46E5); color:#FFFFFF; font-size:15px; font-weight:800; border:none; border-radius:16px; cursor:pointer; box-shadow:0 4px 14px rgba(79,70,229,0.3);">Start Practising →</button>
+            <button onclick="skipCheckin()" style="width:100%; padding:10px; background:none; color:#94A3B8; font-size:13px; font-weight:700; border:none; cursor:pointer; margin-top:8px;">Skip for now</button>
+        </div>
+    </div>
+    <style>
+        @keyframes obFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        #daily-checkin-modal button.ci-active { border-color:#6366F1 !important; background:#EEF2FF !important; color:#4F46E5 !important; }
+    </style>
+    <script>
+    const ciState = { mood:'Normal', activity:'Speaking', time:15 };
+    function ciSelect(el, type, val) {
+        const groupMap = { mood:'ci-mood-btns', activity:'ci-activity-btns', time:'ci-time-btns' };
+        document.querySelectorAll('#'+groupMap[type]+' button').forEach(b => b.classList.remove('ci-active'));
+        el.classList.add('ci-active');
+        ciState[type === 'time' ? 'time' : type === 'activity' ? 'activity' : 'mood'] = val;
+    }
+    async function submitCheckin() {
+        document.getElementById('daily-checkin-modal').style.display = 'none';
+        try {
+            await fetch('/api/daily-checkin', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({mood: ciState.mood, target_activity: ciState.activity, available_mins: ciState.time})
+            });
+        } catch(e) {}
+    }
+    function skipCheckin() {
+        document.getElementById('daily-checkin-modal').style.display = 'none';
+    }
+    async function initDailyCheckin() {
+        try {
+            const res = await fetch('/api/daily-checkin/status');
+            const data = await res.json();
+            if (!data.done) {
+                setTimeout(() => {
+                    document.getElementById('daily-checkin-modal').style.display = 'flex';
+                }, 1200);
+            }
+        } catch(e) {}
+    }
+    document.addEventListener('DOMContentLoaded', initDailyCheckin);
+    </script>
+    {% endif %}
+
     <!-- Script files -->
     {% block scripts %}{% endblock %}
 </body>

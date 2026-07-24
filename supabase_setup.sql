@@ -155,6 +155,36 @@ CREATE TABLE IF NOT EXISTS public.daily_challenge_attempts (
     CONSTRAINT unique_student_level UNIQUE (student_id, level_id)
 );
 
+-- 14. Create student_onboarding_profiles table
+CREATE TABLE IF NOT EXISTS public.student_onboarding_profiles (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER UNIQUE REFERENCES students(id) ON DELETE CASCADE,
+    goals JSONB NOT NULL,
+    reason TEXT NOT NULL,
+    perceived_level TEXT NOT NULL,
+    daily_time_mins INTEGER NOT NULL,
+    biggest_challenges JSONB NOT NULL,
+    learning_style JSONB NOT NULL,
+    preferred_accent TEXT NOT NULL,
+    notification_time TEXT NOT NULL,
+    assessment_results JSONB NOT NULL,
+    onboarding_completed BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 15. Create daily_checkins table
+CREATE TABLE IF NOT EXISTS public.daily_checkins (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+    mood TEXT NOT NULL,
+    target_activity TEXT NOT NULL,
+    available_mins INTEGER NOT NULL,
+    checkin_date DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT unique_student_daily_checkin UNIQUE (student_id, checkin_date)
+);
+
 
 -- ==========================================
 -- SECURITY HARDENING: ROW LEVEL SECURITY (RLS)
@@ -174,6 +204,8 @@ ALTER TABLE public.speaking_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.game_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.speaking_prompts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_challenge_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_onboarding_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_checkins ENABLE ROW LEVEL SECURITY;
 
 -- 2. Revoke all direct public/anonymous API access
 -- Note: The python Flask backend uses the `service_role` key, which automatically
@@ -191,6 +223,8 @@ REVOKE ALL ON public.speaking_attempts FROM anon, public;
 REVOKE ALL ON public.game_attempts FROM anon, public;
 REVOKE ALL ON public.speaking_prompts FROM anon, public;
 REVOKE ALL ON public.daily_challenge_attempts FROM anon, public;
+REVOKE ALL ON public.student_onboarding_profiles FROM anon, public;
+REVOKE ALL ON public.daily_checkins FROM anon, public;
 
 
 -- ==========================================
@@ -296,3 +330,104 @@ INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, 
 INSERT INTO public.speaking_prompts (activity_id, activity_name, activity_icon, difficulty, reward_xp, activity_description, prompt_index, prompt_text) VALUES
 ('news_speaking', 'News Speaking', '📰', 'medium', 20, 'Read the short news snippet aloud and summarize it verbally.', 0, 'Global tech firms are investing billions in eco-friendly data centers to achieve carbon neutrality by 2030.'),
 ('news_speaking', 'News Speaking', '📰', 'medium', 20, 'Read the short news snippet aloud and summarize it verbally.', 1, 'Researchers discover that regular exercise combined with language studies accelerates cognitive function.');
+
+
+-- ============================================================
+-- ONBOARDING & DAILY CHECK-IN TABLES (NEW)
+-- Run this in Supabase SQL Editor → New Query → Run
+-- ============================================================
+
+-- 13. Student Onboarding Profiles
+CREATE TABLE IF NOT EXISTS public.student_onboarding_profiles (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL UNIQUE REFERENCES public.students(id) ON DELETE CASCADE,
+
+    -- Step 2: Goals (array of selected goal strings)
+    goals JSONB DEFAULT '[]'::jsonb,
+
+    -- Step 3: Reason
+    reason TEXT DEFAULT '',
+
+    -- Step 4: Self-assessed level
+    perceived_level TEXT DEFAULT 'Beginner',
+
+    -- Step 5: Daily practice time in minutes
+    daily_time_mins INTEGER DEFAULT 15,
+
+    -- Step 6: Biggest challenges (array)
+    biggest_challenges JSONB DEFAULT '[]'::jsonb,
+
+    -- Step 7: Preferred learning styles (array)
+    learning_style JSONB DEFAULT '[]'::jsonb,
+
+    -- Step 8: Preferred accent
+    preferred_accent TEXT DEFAULT 'Indian English',
+
+    -- Step 9: Preferred notification time
+    notification_time TEXT DEFAULT 'Morning',
+
+    -- Step 10: Assessment results (JSON object with skill scores)
+    assessment_results JSONB DEFAULT '{}'::jsonb,
+
+    -- Completion flag
+    onboarding_completed BOOLEAN DEFAULT FALSE,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Auto-update updated_at timestamp on any update
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = timezone('utc'::text, now());
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_onboarding_updated_at ON public.student_onboarding_profiles;
+CREATE TRIGGER trg_onboarding_updated_at
+    BEFORE UPDATE ON public.student_onboarding_profiles
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- Enable Row-Level Security
+ALTER TABLE public.student_onboarding_profiles ENABLE ROW LEVEL SECURITY;
+
+-- RLS: Students can only read/write their own profile
+CREATE POLICY IF NOT EXISTS "Students access own onboarding profile"
+    ON public.student_onboarding_profiles
+    FOR ALL USING (TRUE);
+
+-- 14. Daily Check-ins (one per student per day)
+CREATE TABLE IF NOT EXISTS public.daily_checkins (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
+    checkin_date DATE NOT NULL DEFAULT CURRENT_DATE,
+
+    -- How the student is feeling
+    mood TEXT DEFAULT 'Normal',          -- 'Confident' | 'Normal' | 'Nervous'
+
+    -- What the student wants to practice
+    target_activity TEXT DEFAULT 'Speaking',
+
+    -- How many minutes available today
+    available_mins INTEGER DEFAULT 15,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+
+    UNIQUE(student_id, checkin_date)
+);
+
+ALTER TABLE public.daily_checkins ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Students access own daily checkins"
+    ON public.daily_checkins
+    FOR ALL USING (TRUE);
+
+-- 15. Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_onboarding_student_id
+    ON public.student_onboarding_profiles(student_id);
+
+CREATE INDEX IF NOT EXISTS idx_daily_checkins_student_date
+    ON public.daily_checkins(student_id, checkin_date);
+
