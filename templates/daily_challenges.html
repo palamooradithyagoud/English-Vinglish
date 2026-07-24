@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Daily Challenge Path - English Winglish{% endblock %}
+
+{% block head %}
+<style>
+    /* Serpentine Road Map Styles (Inspired by Duolingo / Codecademy) */
+    .dc-page-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 20px 80px 20px;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+    }
+
+    .dc-header-card {
+        background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 50%, #F3E8FF 100%);
+        border: 1px solid rgba(199, 210, 254, 0.8);
+        border-radius: 28px;
+        padding: 32px 40px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.08);
+    }
+
+    .dc-header-title {
+        font-size: 32px;
+        font-weight: 900;
+        color: #0F172A;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .dc-header-desc {
+        font-size: 14.5px;
+        color: #475569;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    /* Serpentine Path Container */
+    .dc-roadmap-container {
+        position: relative;
+        padding: 40px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 60px;
+    }
+
+    /* SVG Connecting Spline Curve Line */
+    .dc-path-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .dc-level-node {
+        z-index: 2;
+        width: 100%;
+        max-width: 320px;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dc-level-node:hover {
+        transform: translateY(-4px);
+    }
+
+    .dc-node-left { margin-right: 320px; }
+    .dc-node-center { margin: 0; }
+    .dc-node-right { margin-left: 320px; }
+
+    .dc-node-card {
+        background: #FFFFFF;
+        border: 2px solid #E2E8F0;
+        border-radius: 22px;
+        padding: 22px 24px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+        position: relative;
+        text-align: center;
+    }
+
+    .dc-node-card.unlocked {
+        border-color: #6366F1;
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.18);
+        animation: nodePulse 2.5s infinite;
+    }
+
+    .dc-node-card.completed {
+        border-color: #22C55E;
+        background: #F0FDF4;
+    }
+
+    .dc-node-card.locked {
+        opacity: 0.65;
+        background: #F8FAFC;
+    }
+
+    .dc-node-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #4F46E5;
+        color: #FFFFFF;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .dc-node-badge.completed-badge {
+        background: #22C55E;
+    }
+
+    .dc-node-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 8px 0 4px 0;
+    }
+
+    .dc-node-desc {
+        font-size: 12.5px;
+        color: #64748B;
+        margin: 0 0 16px 0;
+        font-weight: 500;
+    }
+
+    .dc-start-btn {
+        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+        color: #FFFFFF !important;
+        font-size: 13.5px;
+        font-weight: 800;
+        padding: 10px 24px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .dc-start-btn:hover {
+        transform: scale(1.04);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    }
+
+    @keyframes nodePulse {
+        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        70% { box-shadow: 0 0 0 16px rgba(99, 102, 241, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+
+    @media (max-width: 768px) {
+        .dc-node-left, .dc-node-right { margin: 0; }
+        .dc-header-card { flex-direction: column; text-align: center; gap: 16px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dc-page-container">
+    
+    <!-- Top Header -->
+    <div class="dc-header-card">
+        <div>
+            <h1 class="dc-header-title">🎯 Daily Challenge Path</h1>
+            <p class="dc-header-desc">Complete 3-5 minute daily interactive practice sessions (Level 1 to 20)</p>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px 20px; border-radius:16px; text-align:center;">
+            <div style="font-size:20px; font-weight:900; color:#4F46E5;" id="dc-total-xp">⚡ 0 XP</div>
+            <div style="font-size:11px; font-weight:700; color:#64748B;">DAILY PRACTICE XP</div>
+        </div>
+    </div>
+
+    <!-- Serpentine Roadmap Container -->
+    <div class="dc-roadmap-container" id="dc-roadmap-nodes">
+        <!-- Rendered dynamically via JavaScript -->
+    </div>
+
+</div>
+
+<!-- Interactive Practice Modal -->
+<div id="daily-challenge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.7); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center;">
+    <div style="background:#FFFFFF; border-radius:24px; width:92%; max-width:560px; padding:32px; box-shadow:0 24px 50px rgba(0,0,0,0.3); position:relative; max-height:90vh; overflow-y:auto;">
+        
+        <!-- Modal Top Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div style="font-size:20px;" id="dc-lives-container">❤️❤️❤️</div>
+            </div>
+            <div style="font-size:13px; font-weight:800; color:#64748B;" id="dc-ex-counter">Question 1 of 5</div>
+            <button onclick="DailyChallengeEngine.closeModal()" style="background:none; border:none; font-size:24px; color:#94A3B8; cursor:pointer;">&times;</button>
+        </div>
+
+        <!-- Progress Bar Track -->
+        <div style="background:#E2E8F0; height:8px; border-radius:4px; margin-bottom:24px; overflow:hidden;">
+            <div id="dc-progress-bar" style="background:linear-gradient(90deg, #6366F1, #4F46E5); height:100%; width:0%; transition:width 0.3s ease;"></div>
+        </div>
+
+        <h3 id="dc-modal-title" style="font-size:18px; font-weight:900; color:#0F172A; margin:0 0 16px 0;"></h3>
+
+        <!-- Exercise Content Body -->
+        <div id="dc-exercise-body"></div>
+
+        <!-- Feedback Box -->
+        <div id="dc-feedback-box" style="display:none; border:2px solid; border-radius:14px; padding:14px; margin-top:20px;"></div>
+
+        <!-- Footer Action Buttons -->
+        <div style="display:flex; justify-content:flex-end; margin-top:24px; gap:12px;">
+            <button id="dc-btn-submit" onclick="DailyChallengeEngine.submitAnswer()" style="background:linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); color:#FFFFFF; font-size:14.5px; font-weight:800; padding:12px 28px; border-radius:24px; border:none; cursor:pointer; box-shadow:0 4px 14px rgba(79,70,229,0.3);">
+                Check Answer
+            </button>
+            <button id="dc-btn-next" onclick="DailyChallengeEngine.nextExercise()" style="display:none; background:linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color:#FFFFFF; font-size:14.5px; font-weight:800; padding:12px 28px; border-radius:24px; border:none; cursor:pointer; box-shadow:0 4px 14px rgba(34,197,94,0.3);">
+                Continue →
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/daily_challenge_data.js') }}"></script>
+<script src="{{ url_for('static', filename='js/daily_challenge_engine.js') }}"></script>
+<script>
+    function renderRoadmap() {
+        const container = document.getElementById('dc-roadmap-nodes');
+        if (!container) return;
+        container.innerHTML = '';
+
+        let totalEarnedXP = 0;
+        const positions = ['dc-node-center', 'dc-node-right', 'dc-node-center', 'dc-node-left'];
+
+        window.DAILY_CHALLENGE_DATA.forEach((lvl, idx) => {
+            const unlocked = DailyChallengeProgressManager.isUnlocked(lvl.id);
+            const details = DailyChallengeProgressManager.getLevelDetails(lvl.id);
+            const posClass = positions[idx % 4];
+
+            if (details.completed) {
+                totalEarnedXP += lvl.xp;
+            }
+
+            const node = document.createElement('div');
+            node.className = `dc-level-node ${posClass}`;
+
+            let cardStateClass = 'locked';
+            let badgeText = `Level ${lvl.id}`;
+            let badgeClass = '';
+            let btnText = '🔒 Locked';
+            let btnDisabled = 'disabled';
+
+            if (details.completed) {
+                cardStateClass = 'completed';
+                badgeText = `✓ Level ${lvl.id} Done`;
+                badgeClass = 'completed-badge';
+                btnText = `Re-practice (⭐ ${details.stars || 1})`;
+                btnDisabled = '';
+            } else if (unlocked) {
+                cardStateClass = 'unlocked';
+                badgeText = `⚡ Current Level ${lvl.id}`;
+                btnText = 'Start Practice →';
+                btnDisabled = '';
+            }
+
+            node.innerHTML = `
+                <div class="dc-node-card ${cardStateClass}">
+                    <div class="dc-node-badge ${badgeClass}">${badgeText}</div>
+                    <h3 class="dc-node-title">${lvl.title}</h3>
+                    <p class="dc-node-desc">${lvl.desc}</p>
+                    <div style="font-size:12px; font-weight:800; color:#D97706; margin-bottom:12px;">+${lvl.xp} XP • ${lvl.difficulty}</div>
+                    <button class="dc-start-btn" ${btnDisabled} onclick="DailyChallengeEngine.startLevel(${lvl.id})">
+                        ${btnText}
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(node);
+        });
+
+        document.getElementById('dc-total-xp').innerText = `⚡ ${totalEarnedXP} XP`;
+    }
+
+    document.addEventListener('DOMContentLoaded', renderRoadmap);
+    window.renderRoadmap = renderRoadmap;
+</script>
+{% endblock %}

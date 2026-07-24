@@ -151,6 +151,15 @@ def progress():
         speaking_activities=speaking_activities
     )
 
+@dashboard_bp.route('/daily-challenges')
+@login_required
+def daily_challenges():
+    student_id = session.get('student_id')
+    student = get_student_by_id(student_id)
+    if not student:
+        return redirect(url_for('auth.login'))
+    return render_template('daily_challenges.html', student=student)
+
 @dashboard_bp.route('/api/practice/questions')
 @login_required
 def get_practice_questions():
