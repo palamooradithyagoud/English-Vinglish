@@ -4,792 +4,614 @@
 
 {% block head %}
 <style>
-    /* Premium SaaS Dashboard variables & style rules */
-    .saas-dashboard-container {
+    /* English Winglish Premium App Palette & Dashboard Styles */
+    :root {
+        --ew-purple-main: #6366F1;
+        --ew-purple-dark: #4F46E5;
+        --ew-purple-light: #EEF2FF;
+        --ew-bg: #F8FAFC;
+        --ew-card-bg: #FFFFFF;
+        --ew-text-dark: #0F172A;
+        --ew-text-muted: #64748B;
+    }
+
+    body {
+        background-color: #F8FAFC !important;
+    }
+
+    .ew-dashboard-wrapper {
         width: 100%;
-        max-width: 1200px;
+        max-width: 1120px;
         margin: 0 auto;
-        padding: 40px 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 32px;
-        background-color: #FAFAFA;
-        color: #1E293B;
-    }
-
-    /* SaaS Hero Banner card style */
-    .saas-hero-banner {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-radius: 20px;
-        padding: 32px 40px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: #ffffff;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
-    }
-    
-    .hero-left-content {
-        z-index: 2;
-    }
-    
-    .hero-badge {
-        background: rgba(59, 130, 246, 0.15);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-        color: #60a5fa;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 20px;
-        display: inline-block;
-        margin-bottom: 16px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-    
-    .hero-title {
-        font-size: 32px !important;
-        font-weight: 800 !important;
-        color: #ffffff !important;
-        letter-spacing: -0.5px;
-        margin: 0 0 10px 0;
-    }
-    
-    .hero-subtitle {
-        font-size: 15px !important;
-        color: #94a3b8 !important;
-        max-width: 520px;
-        line-height: 1.6;
-        margin: 0 0 24px 0;
-    }
-    
-    .hero-actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-    
-    .hero-btn-main {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
-        border: none !important;
-        padding: 12px 24px !important;
-        font-size: 14px !important;
-        border-radius: 10px !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    .hero-btn-main:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
-        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
-    }
-    
-    .hero-btn-sub {
-        background: rgba(255, 255, 255, 0.08) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        padding: 12px 24px !important;
-        font-size: 14px !important;
-        border-radius: 10px !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    .hero-btn-sub:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
-        transform: translateY(-2px);
-    }
-    
-    .hero-mascot-illustration {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 20px;
-        z-index: 2;
-    }
-    
-    .hero-glow-bubble {
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-        right: -50px;
-        top: -50px;
-        pointer-events: none;
-        z-index: 1;
-    }
-    
-    .hero-stats-quick {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 16px 24px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-    
-    .quick-stat-item {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-    
-    .q-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .q-val {
-        font-size: 16px;
-        font-weight: 800;
-        color: #3b82f6;
-    }
-    
-    .quick-stat-divider {
-        width: 1px;
-        height: 30px;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Grid layout for stats cards */
-    .saas-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-
-    .saas-stat-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-top: 4px solid #cbd5e1;
-        border-radius: 16px;
-        padding: 20px 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .saas-stat-card:hover {
-        transform: translateY(-4px);
-    }
-
-    .saas-stat-card.stat-lvl { border-top-color: #3b82f6; }
-    .saas-stat-card.stat-lvl:hover { border-color: #3b82f6; box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.15); }
-    
-    .saas-stat-card.stat-xp { border-top-color: #fbbf24; }
-    .saas-stat-card.stat-xp:hover { border-color: #fbbf24; box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.15); }
-    
-    .saas-stat-card.stat-streak { border-top-color: #f97316; }
-    .saas-stat-card.stat-streak:hover { border-color: #f97316; box-shadow: 0 10px 20px -5px rgba(249, 115, 22, 0.15); }
-    
-    .saas-stat-card.stat-miles { border-top-color: #10b981; }
-    .saas-stat-card.stat-miles:hover { border-color: #10b981; box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.15); }
-
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-    }
-
-    .saas-stat-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .saas-stat-icon-bg {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-    }
-
-    .bg-blue { background-color: #eff6ff; }
-    .bg-amber { background-color: #fefbeb; }
-    .bg-orange { background-color: #fff7ed; }
-    .bg-green { background-color: #f0fdf4; }
-
-    .saas-stat-value {
-        font-size: 26px;
-        font-weight: 800;
-        color: #0f172a;
-        margin-top: 4px;
-    }
-
-    .val-blue { color: #2563eb; }
-    .val-amber { color: #d97706; }
-    .val-orange { color: #ea580c; }
-    .val-green { color: #16a34a; }
-
-    .stat-card-desc {
-        font-size: 12px;
-        color: #94a3b8;
-        margin: 0;
-        font-weight: 500;
-    }
-
-    /* Two-column split layout */
-    .saas-split-layout {
-        display: grid;
-        grid-template-columns: 2fr 1.1fr;
-        gap: 24px;
-        align-items: start;
-    }
-
-    .saas-main-col {
+        padding: 24px 20px 60px 20px;
         display: flex;
         flex-direction: column;
         gap: 24px;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
     }
 
-    .saas-side-col {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        position: sticky;
-        top: 96px;
-    }
-
-    .saas-card {
-        background: #FFFFFF;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .saas-card:hover {
-        border-color: rgba(203, 213, 225, 0.9);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-    }
-
-    .saas-card-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #0F172A;
-        margin-bottom: 18px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border-bottom: 1px solid #F1F5F9;
-        padding-bottom: 12px;
-    }
-
-    .saas-btn-primary {
-        background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%);
-        color: #FFFFFF;
-        border: none;
-        padding: 10px 18px;
-        font-size: 13.5px;
-        font-weight: 600;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .saas-btn-primary:hover {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        color: #FFFFFF;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-    }
-
-    .saas-btn-secondary {
-        background-color: #FFFFFF;
-        color: #334155;
-        border: 1px solid #D1D5DB;
-        padding: 9px 17px;
-        font-size: 13.5px;
-        font-weight: 600;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .saas-btn-secondary:hover {
-        background-color: #F8FAFC;
-        border-color: #94A3B8;
-        color: #1E293B;
-        transform: translateY(-1px);
-    }
-
-    /* List layouts */
-    .saas-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .saas-list-item {
+    /* Top Brand Header Bar */
+    .ew-top-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 20px;
-        background-color: #F8FAFC;
-        border: 1px solid #F1F5F9;
-        border-radius: 12px;
-        transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+        padding: 4px 0;
     }
 
-    .saas-list-item:hover {
-        border-color: #E2E8F0;
-        background-color: #F1F5F9;
-        transform: translateX(2px);
-    }
-
-    .saas-item-title {
-        font-weight: 700;
-        color: #0F172A;
-        font-size: 15px;
-    }
-
-    .saas-item-subtitle {
-        font-size: 13px;
-        color: #64748B;
-        margin-top: 4px;
-        font-weight: 500;
-    }
-
-    .saas-badge {
-        font-size: 11.5px;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 6px;
-    }
-
-    .saas-badge-success {
-        background-color: #e0f2fe;
-        color: #0369a1;
-        border: 1px solid #bae6fd;
-    }
-
-    .saas-badge-warning {
-        background-color: #fef3c7;
-        color: #d97706;
-        border: 1px solid #fde68a;
-    }
-
-    .saas-badge-info {
-        background-color: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #dbeafe;
-    }
-
-    /* Profile Sidecard Upgrade styles */
-    .saas-profile-card {
-        background: #ffffff;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        border-radius: 16px;
-        position: relative;
-        overflow: hidden;
-        padding: 0 !important;
-        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-    }
-    
-    .profile-cover-accent {
-        height: 80px;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        position: relative;
-    }
-    
-    .profile-card-body {
-        padding: 24px;
-        position: relative;
-        margin-top: -36px;
-    }
-    
-    .student-avatar-banner {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 12px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    
-    .student-avatar-circle {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: #ffffff;
-        font-weight: 800;
-        font-size: 22px;
+    .ew-brand-group {
         display: flex;
         align-items: center;
-        justify-content: center;
-        border: 4px solid #ffffff;
-        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.2);
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-    
-    .student-avatar-details {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .student-profile-name {
-        font-size: 17px;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0;
-    }
-    
-    .student-profile-email {
-        font-size: 13px;
-        color: #64748b;
-        margin: 4px 0 0 0;
-        font-weight: 500;
-    }
-    
-    .profile-row-icon {
-        margin-right: 6px;
-        font-size: 14px;
-        opacity: 0.8;
-    }
-
-    .saas-profile-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 20px;
-    }
-
-    .saas-profile-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 14px;
-        background: #f8fafc;
-        border: 1px solid #f1f5f9;
-        border-radius: 10px;
-        font-size: 13.5px;
-        align-items: center;
-        transition: border-color 0.2s ease, background-color 0.2s ease;
-    }
-    
-    .saas-profile-row:hover {
-        border-color: #e2e8f0;
-        background-color: #f1f5f9;
-    }
-
-    .saas-profile-label {
-        color: #64748B;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-    }
-
-    .saas-profile-value {
-        color: #0F172A;
-        font-weight: 700;
-        text-align: right;
-    }
-
-    /* Performance card styling */
-    .saas-performance-card {
-        background: #ffffff;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-    }
-    
-    .performance-list {
-        display: flex;
-        flex-direction: column;
         gap: 14px;
     }
-    
-    .performance-item {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+
+    .ew-logo-badge {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #818CF8 0%, #4F46E5 100%);
+        color: #FFFFFF;
+        font-weight: 900;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+    }
+
+    .ew-brand-text {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+    }
+
+    .ew-brand-title {
+        font-size: 22px;
+        font-weight: 900;
+        color: #0F172A;
+        margin: 0;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+    }
+
+    .ew-brand-subtitle {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        margin-top: 2px;
+    }
+
+    .ew-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ew-icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #475569;
+        cursor: pointer;
         transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
-    
-    .performance-item:hover {
-        transform: translateY(-2px);
-        border-color: #cbd5e1;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.03);
+
+    .ew-icon-circle:hover {
+        background: #F1F5F9;
+        color: #4F46E5;
+        transform: translateY(-1px);
     }
-    
-    .perf-header {
+
+    .ew-streak-pill {
+        background: #FFFFFF;
+        border: 1px solid #FED7AA;
+        padding: 6px 14px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+    }
+
+    .ew-streak-num {
+        font-size: 14px;
+        font-weight: 800;
+        color: #C2410C;
+    }
+
+    .ew-streak-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #9A3412;
+        text-transform: uppercase;
+    }
+
+    .ew-user-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #C084FC 0%, #7E22CE 100%);
+        color: #FFFFFF;
+        font-weight: 800;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #FFFFFF;
+        box-shadow: 0 4px 10px rgba(126, 34, 206, 0.2);
+    }
+
+    /* Hero Banner Carousel Card */
+    .ew-hero-banner {
+        background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 40%, #F3E8FF 100%);
+        border: 1px solid rgba(224, 231, 255, 0.8);
+        border-radius: 28px;
+        padding: 36px 44px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-    
-    .perf-level-badge {
-        font-size: 13.5px;
-        font-weight: 700;
-        color: #0f172a;
-    }
-    
-    .perf-score-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12.5px;
-        color: #64748b;
-        font-weight: 500;
-    }
-    
-    .perf-score-value {
-        font-weight: 700;
-        color: #0f172a;
-    }
-    
-    .perf-progress-bar-track {
-        height: 8px;
-        background-color: #f1f5f9;
-        border-radius: 4px;
-        overflow: hidden;
         position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 36px rgba(79, 70, 229, 0.06);
     }
-    
-    .perf-progress-bar-fill {
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.3s ease;
+
+    .ew-hero-badge {
+        background: #FFFFFF;
+        color: #4F46E5;
+        font-size: 11.5px;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
     }
-    
-    .perf-progress-bar-fill.fill-success {
-        background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+
+    .ew-hero-title {
+        font-size: 34px;
+        font-weight: 900;
+        color: #0F172A;
+        margin: 0 0 10px 0;
+        line-height: 1.15;
+        letter-spacing: -0.5px;
     }
-    
-    .perf-progress-bar-fill.fill-warning {
-        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+
+    .ew-hero-title span {
+        color: #4F46E5;
+        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .ew-hero-subtitle {
+        font-size: 14.5px;
+        color: #475569;
+        font-weight: 600;
+        margin: 0 0 24px 0;
+    }
+
+    .ew-hero-btn {
+        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+        color: #FFFFFF !important;
+        font-size: 14.5px;
+        font-weight: 800;
+        padding: 12px 28px;
+        border-radius: 30px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        transition: all 0.25s ease;
+    }
+
+    .ew-hero-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(79, 70, 229, 0.4);
+    }
+
+    /* Overall Metrics Bar */
+    .ew-metrics-bar {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 18px 32px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    }
+
+    .ew-metric-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ew-metric-item:not(:last-child) {
+        border-right: 1px solid #F1F5F9;
+        padding-right: 16px;
+    }
+
+    .ew-metric-val {
+        font-size: 18px;
+        font-weight: 900;
+        color: #0F172A;
+    }
+
+    .ew-metric-lbl {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748B;
+    }
+
+    /* Featured Section Grid */
+    .ew-featured-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 20px;
+    }
+
+    .ew-card-speak {
+        background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+        border-radius: 24px;
+        padding: 32px;
+        color: #FFFFFF;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.25);
+        min-height: 220px;
+    }
+
+    .ew-speak-title {
+        font-size: 26px;
+        font-weight: 900;
+        color: #FFFFFF;
+        margin: 0 0 6px 0;
+        line-height: 1.2;
+    }
+
+    .ew-speak-desc {
+        font-size: 14px;
+        color: #E0E7FF;
+        font-weight: 500;
+        margin: 0 0 24px 0;
+    }
+
+    .ew-speak-btn {
+        background: #FFFFFF;
+        color: #4F46E5 !important;
+        font-size: 14px;
+        font-weight: 800;
+        padding: 12px 24px;
+        border-radius: 30px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+
+    .ew-speak-btn:hover {
+        transform: translateY(-2px);
+        background: #F8FAFC;
+    }
+
+    .ew-stacked-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .ew-card-side {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.02);
+    }
+
+    .ew-card-side:hover {
+        transform: translateY(-2px);
+        border-color: #C7D2FE;
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.08);
+    }
+
+    /* Quick Action 8-Grid */
+    .ew-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .ew-grid-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 22px 18px;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+    }
+
+    .ew-grid-card:hover {
+        transform: translateY(-3px);
+        border-color: #818CF8;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+    }
+
+    .ew-card-icon-wrapper {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 12px;
+    }
+
+    .ew-card-title {
+        font-size: 14.5px;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 0 0 4px 0;
+    }
+
+    .ew-card-subtitle {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #64748B;
+        margin: 0;
+    }
+
+    /* Premium Banner */
+    .ew-premium-banner {
+        background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+        border: 1px solid #C7D2FE;
+        border-radius: 20px;
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     @media (max-width: 991px) {
-        .saas-stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .saas-split-layout {
-            grid-template-columns: 1fr;
-        }
-        .saas-side-col {
-            position: static;
-        }
-        .saas-hero-banner {
-            flex-direction: column;
-            align-items: start;
-            gap: 24px;
-            padding: 28px 30px;
-        }
-        .hero-mascot-illustration {
-            align-items: start;
-            width: 100%;
-        }
-        .hero-stats-quick {
-            width: 100%;
-            justify-content: space-around;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .saas-stats-grid {
-            grid-template-columns: 1fr;
-        }
+        .ew-featured-grid { grid-template-columns: 1fr; }
+        .ew-quick-grid { grid-template-columns: repeat(2, 1fr); }
+        .ew-metrics-bar { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .ew-metric-item:not(:last-child) { border-right: none; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="saas-dashboard-container">
-    <!-- Redesigned SaaS Hero Banner (Glassmorphism & Radial Ambient Glow) -->
-    <div class="saas-hero-banner animated-hero" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 36px 44px; display: flex; justify-content: space-between; align-items: center; color: #ffffff; position: relative; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.5);">
-        
-        <!-- Ambient Glowing Orbs -->
-        <div style="position: absolute; top: -100px; right: -100px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, transparent 70%); pointer-events: none; z-index: 1;"></div>
-        <div style="position: absolute; bottom: -80px; left: 200px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, transparent 70%); pointer-events: none; z-index: 1;"></div>
-
-        <div class="hero-left-content" style="z-index: 2; max-width: 600px;">
-            <div class="hero-badge" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(96, 165, 250, 0.3); color: #60A5FA; padding: 6px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22C55E; display: inline-block; box-shadow: 0 0 10px #22C55E; animation: pulse 2s infinite;"></span>
-                <span>LEARNING JOURNEY • AI ENGINE ACTIVE</span>
+<div class="ew-dashboard-wrapper">
+    
+    <!-- Top Brand Header Bar -->
+    <header class="ew-top-header">
+        <div class="ew-brand-group">
+            <div class="ew-logo-badge">EW</div>
+            <div class="ew-brand-text">
+                <h1 class="ew-brand-title">English Winglish</h1>
+                <span class="ew-brand-subtitle">Speak Fluent, Live Confident.</span>
             </div>
-            <h1 class="hero-title" style="font-size: 34px !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: -0.5px; margin: 0 0 12px 0; line-height: 1.2;">
-                Welcome back, {{ student.full_name.split(' ')[0] }} 👋
-            </h1>
-            <p class="hero-subtitle" style="font-size: 15px !important; color: #94A3B8 !important; line-height: 1.6; margin: 0 0 28px 0; font-weight: 500;">
-                Continue your personalized English study path to master spoken fluency, expand vocabulary, and track real-time AI performance metrics.
+        </div>
+
+        <div class="ew-header-actions">
+            <button class="ew-icon-circle" title="Search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <div class="ew-streak-pill">
+                <span style="font-size: 16px;">🔥</span>
+                <span class="ew-streak-num">{{ student.streak }}</span>
+                <span class="ew-streak-label">Streak</span>
+            </div>
+            <button class="ew-icon-circle" title="Notifications">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <div class="ew-user-avatar">
+                {{ student.full_name[0] | upper }}
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Carousel Banner -->
+    <div class="ew-hero-banner">
+        <div style="z-index: 2; max-width: 580px;">
+            <div class="ew-hero-badge">
+                <span>✨ Your English Journey Starts Here</span>
+            </div>
+            <h2 class="ew-hero-title">
+                Practice. Speak.<br><span>Grow Every Day.</span>
+            </h2>
+            <p class="ew-hero-subtitle">
+                Learn with AI • Practice with Confidence • Speak like a Pro
             </p>
-            <div class="hero-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                {% if student.current_level == 1 %}
-                    <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="saas-btn-primary hero-btn-main" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important; color: #FFFFFF !important; font-weight: 800; padding: 13px 26px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); display: inline-flex; align-items: center; gap: 8px;">
-                        <span>🚀 Start Basic Learning</span>
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="saas-btn-primary hero-btn-main" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important; color: #FFFFFF !important; font-weight: 800; padding: 13px 26px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); display: inline-flex; align-items: center; gap: 8px;">
-                        <span>🚀 Continue Level {{ student.current_level }}</span>
-                    </a>
-                {% endif %}
-                <a href="{{ url_for('dashboard.progress') }}?activity=speaking" class="saas-btn-secondary hero-btn-sub" style="background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.18) !important; color: #FFFFFF !important; font-weight: 700; padding: 13px 22px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                    <span>🎙️ Speaking Arena</span>
-                </a>
-                <a href="{{ url_for('dashboard.progress') }}?activity=games" class="saas-btn-secondary hero-btn-sub" style="background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.18) !important; color: #FFFFFF !important; font-weight: 700; padding: 13px 22px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                    <span>🎮 Play Games</span>
-                </a>
-            </div>
+            <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="ew-hero-btn">
+                <span>Continue Learning</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
         </div>
 
-        <!-- Right Side Progress Card Ring -->
-        <div class="hero-right-content-wrapper" style="z-index: 2;">
-            <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); border-radius: 20px; padding: 24px 28px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); min-width: 220px;">
-                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;">
-                    <svg width="100" height="100" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
-                        <circle cx="50" cy="50" r="44" fill="none" stroke="#3B82F6" stroke-width="8" stroke-dasharray="276" stroke-dashoffset="${276 - (276 * ((student.levels_completed / 5 * 100) | int)) / 100}" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
-                    </svg>
-                    <div style="position: absolute; text-align: center;">
-                        <div style="font-size: 20px; font-weight: 900; color: #FFFFFF; line-height: 1;">{{ (student.levels_completed / 5 * 100) | int }}%</div>
-                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; margin-top: 2px;">PATH CLEAR</div>
-                    </div>
+        <!-- Hero Illustration -->
+        <div style="z-index: 2; display: flex; align-items: center; position: relative;">
+            <div style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center;">
+                <svg width="140" height="140" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(99,102,241,0.15)" stroke-width="8"/>
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="#6366F1" stroke-width="8" stroke-dasharray="276" stroke-dashoffset="${276 - (276 * ((student.levels_completed / 5 * 100) | int)) / 100}" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                </svg>
+                <div style="position: absolute; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 900; color: #4F46E5; line-height: 1;">{{ (student.levels_completed / 5 * 100) | int }}%</div>
+                    <div style="font-size: 10px; font-weight: 800; color: #64748B; margin-top: 2px;">PATH CLEAR</div>
                 </div>
-                <div style="font-size: 14px; font-weight: 800; color: #FFFFFF;">Level Progress</div>
-                <div style="font-size: 12px; font-weight: 700; color: #60A5FA; margin-top: 4px;">Level {{ student.current_level }} • ⚡ {{ student.xp }} XP</div>
             </div>
         </div>
     </div>
 
-    <!-- SaaS Stats Cards Grid (Only Streak and XP Score) -->
-    <div class="saas-stats-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+    <!-- Overall Metrics Bar -->
+    <div class="ew-metrics-bar">
+        <div class="ew-metric-item">
+            <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <svg width="44" height="44" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" stroke-width="10"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#6366F1" stroke-width="10" stroke-dasharray="251" stroke-dashoffset="${251 - (251 * ((student.levels_completed / 5 * 100) | int)) / 100}" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                </svg>
+                <span style="position: absolute; font-size: 11px; font-weight: 900; color: #4F46E5;">{{ (student.levels_completed / 5 * 100) | int }}%</span>
+            </div>
+            <div>
+                <div class="ew-metric-val">{{ (student.levels_completed / 5 * 100) | int }}%</div>
+                <div class="ew-metric-lbl">Overall Progress</div>
+            </div>
+        </div>
+
+        <div class="ew-metric-item">
+            <div style="font-size: 26px;">🔥</div>
+            <div>
+                <div class="ew-metric-val">{{ student.streak }}</div>
+                <div class="ew-metric-lbl">Day Streak</div>
+            </div>
+        </div>
+
+        <div class="ew-metric-item">
+            <div style="font-size: 26px;">⭐</div>
+            <div>
+                <div class="ew-metric-val">{{ student.xp }}</div>
+                <div class="ew-metric-lbl">XP Points</div>
+            </div>
+        </div>
+
+        <div class="ew-metric-item">
+            <div style="font-size: 26px;">📊</div>
+            <div>
+                <div class="ew-metric-val">Level {{ student.current_level }}</div>
+                <div class="ew-metric-lbl">Current Stage</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Section Grid -->
+    <div class="ew-featured-grid">
+        <!-- Speak Confidently Large Purple Card -->
+        <div class="ew-card-speak">
+            <div>
+                <h3 class="ew-speak-title">Speak<br>Confidently</h3>
+                <p class="ew-speak-desc">Practice speaking and get instant AI feedback</p>
+            </div>
+            <a href="{{ url_for('dashboard.progress') }}?activity=speaking" class="ew-speak-btn">
+                <span>Start Speaking</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+        </div>
+
+        <!-- Right Side Stacked Cards -->
+        <div class="ew-stacked-cards">
+            <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="ew-card-side">
+                <div>
+                    <h4 style="font-size: 17px; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Courses</h4>
+                    <p style="font-size: 12.5px; color: #64748B; margin: 0; font-weight: 500;">Learn grammar, vocabulary & more</p>
+                </div>
+                <div style="font-size: 32px;">📘</div>
+            </a>
+
+            <a href="{{ url_for('dashboard.progress') }}?activity=vocabulary" class="ew-card-side">
+                <div>
+                    <h4 style="font-size: 17px; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Vocabulary</h4>
+                    <p style="font-size: 12.5px; color: #64748B; margin: 0; font-weight: 500;">Expand your word power</p>
+                </div>
+                <div style="font-size: 32px;">📕</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick 8-Feature Grid -->
+    <div class="ew-quick-grid">
         
-        <!-- Stat Card 1: Total XP Points -->
-        <div class="saas-stat-card stat-xp" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; padding: 22px 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); transition: all 0.25s ease; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #D97706, #FBBF24);"></div>
-            <div class="stat-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span class="saas-stat-label" style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #64748B;">Total XP Points</span>
-                <span style="background: #FFFBEB; color: #D97706; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </span>
-            </div>
-            <div class="saas-stat-value" style="font-size: 28px; font-weight: 900; color: #B45309; letter-spacing: -0.5px; margin-bottom: 4px;">{{ student.xp }} XP</div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
-                <span style="font-size: 12px; font-weight: 600; color: #64748B;">Total skill points</span>
-                <span style="background: #FEF3C7; color: #92400E; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">+{{ student.xp }} Earned</span>
-            </div>
-        </div>
+        <a href="{{ url_for('dashboard.progress') }}?activity=practice" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #F0FDF4; color: #16A34A;">📋</div>
+            <h4 class="ew-card-title">Mock Tests</h4>
+            <p class="ew-card-subtitle">Test your English skills</p>
+        </a>
 
-        <!-- Stat Card 2: Active Streak -->
-        <div class="saas-stat-card stat-streak" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; padding: 22px 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); transition: all 0.25s ease; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #EA580C, #FB923C);"></div>
-            <div class="stat-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span class="saas-stat-label" style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #64748B;">Active Streak</span>
-                <span style="background: #FFEDD5; color: #EA580C; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-                </span>
-            </div>
-            <div class="saas-stat-value" style="font-size: 28px; font-weight: 900; color: #C2410C; letter-spacing: -0.5px; margin-bottom: 4px;">{{ student.streak }} Days 🔥</div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
-                <span style="font-size: 12px; font-weight: 600; color: #64748B;">Consecutive active days</span>
-                <span style="background: #FFEDD5; color: #9A3412; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">On Fire</span>
-            </div>
-        </div>
+        <a href="{{ url_for('dashboard.progress') }}?activity=grammar" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #EFF6FF; color: #2563EB;">📝</div>
+            <h4 class="ew-card-title">Assessments</h4>
+            <p class="ew-card-subtitle">AI-powered assessments</p>
+        </a>
+
+        <a href="{{ url_for('dashboard.progress') }}?activity=speaking" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #EEF2FF; color: #4F46E5;">🎙️</div>
+            <h4 class="ew-card-title">Practice</h4>
+            <p class="ew-card-subtitle">Daily speaking practice</p>
+        </a>
+
+        <a href="{{ url_for('dashboard.progress') }}?activity=read_aloud" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #FAF5FF; color: #9333EA;">🎧</div>
+            <h4 class="ew-card-title">Listening</h4>
+            <p class="ew-card-subtitle">Improve listening skills</p>
+        </a>
+
+        <a href="{{ url_for('dashboard.progress') }}?activity=games" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #FFFBEB; color: #D97706;">🏆</div>
+            <h4 class="ew-card-title">Competition</h4>
+            <p class="ew-card-subtitle">Compete & win rewards</p>
+        </a>
+
+        <a href="{{ url_for('dashboard.progress') }}?activity=one_question" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #ECFEFF; color: #0891B2;">👥</div>
+            <h4 class="ew-card-title">Interview Prep</h4>
+            <p class="ew-card-subtitle">Ace your next interview</p>
+        </a>
+
+        <a href="{{ url_for('dashboard.progress') }}?activity=tongue_twister" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #FDF2F8; color: #DB2777;">📊</div>
+            <h4 class="ew-card-title">Pronunciation</h4>
+            <p class="ew-card-subtitle">Speak clear & correct</p>
+        </a>
+
+        <a href="{{ url_for('dashboard.progress') }}?activity=picture_desc" class="ew-grid-card">
+            <div class="ew-card-icon-wrapper" style="background: #FFF1F2; color: #E11D48;">🎯</div>
+            <h4 class="ew-card-title">Daily Challenge</h4>
+            <p class="ew-card-subtitle">New challenge every day</p>
+        </a>
+
     </div>
 
-    <!-- Split Workspace -->
-    <div class="saas-split-layout">
-        <!-- Main Column (Left) -->
-        <div class="saas-main-col">
-            <!-- Campus Announcements -->
-            <div class="saas-card">
-                <h2 class="saas-card-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-10 4a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2z"/></svg>
-                    <span>Campus Announcements</span>
-                </h2>
-                {% if announcements %}
-                    <div class="saas-list">
-                        {% for ann in announcements %}
-                            <div class="saas-list-item" style="flex-direction: column; align-items: start; gap: 8px;">
-                                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                                    <div class="saas-item-title" style="font-size: 15px;">{{ ann.title }}</div>
-                                    <span class="saas-badge saas-badge-info" style="font-size: 10.5px;">Broadcast</span>
-                                </div>
-                                <p style="color: #475569; font-size: 13.5px; line-height: 1.5; white-space: pre-line;">{{ ann.message }}</p>
-                                <div style="display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: #94A3B8; margin-top: 4px;">
-                                    <span>By: {{ ann.faculty_name }}</span>
-                                    <span>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div style="text-align: center; padding: 24px; color: #64748B; font-size: 14px;">
-                        No active announcements from the faculty.
-                    </div>
-                {% endif %}
+    <!-- Go Premium Banner -->
+    <div class="ew-premium-banner">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div class="ew-logo-badge" style="width: 44px; height: 44px; font-size: 18px;">EW</div>
+            <div>
+                <h4 style="font-size: 16px; font-weight: 900; color: #0F172A; margin: 0 0 2px 0;">Go Premium 👑</h4>
+                <p style="font-size: 13px; color: #475569; margin: 0; font-weight: 500;">Unlock all courses, AI feedback, and premium features.</p>
             </div>
         </div>
-
-        <!-- Sidebar Column (Right) -->
-        <div class="saas-side-col">
-            <!-- Learning Tip Box -->
-            <div class="learning-tip-card" style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                    <div style="width: 36px; height: 36px; background: #FEF3C7; color: #D97706; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.55.6 2.8 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
-                    </div>
-                    <h4 style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0;">Learning Tip of the Day</h4>
-                </div>
-                <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0;">Try reading a short story aloud. It builds vocal muscle memory, helps you notice pronunciation patterns, and boosts spoken confidence!</p>
-            </div>
-        </div>
+        <a href="#" class="ew-hero-btn" style="padding: 10px 22px; font-size: 13.5px;">
+            <span>Upgrade Now</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
     </div>
-</main>
-{% endblock %}
 
-{% block scripts %}
-<style>
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(16px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    @keyframes progressExpand {
-        from {
-            width: 0%;
-        }
-    }
-</style>
+</div>
 {% endblock %}
