@@ -2863,6 +2863,11 @@
     let speechManager = new SpeechAudioRecorder();
     let fullTranscript = '';   // Module-level: persists across restarts
 
+    // Global active level tracker for unlock progression
+    window.currentCategoryKey = 'read_aloud';
+    window.currentModuleIndex = 0;
+    window.currentLevelIndex = 0;
+
     function initSpeakingOverlay() {
         // Load stats from database (passed via template) or fallback to LocalStorage
         speakingXp = parseInt("{{ speaking_stats.total_xp if speaking_stats else 0 }}") || parseInt(localStorage.getItem('speaking_xp') || '0');
@@ -3288,6 +3293,10 @@
         const mod = catData.modules[modIdx];
         const lvl = mod.levels[lvlIdx];
         if (!lvl) return;
+
+        window.currentCategoryKey = catId || 'read_aloud';
+        window.currentModuleIndex = (modIdx !== undefined && modIdx !== null) ? Number(modIdx) : 0;
+        window.currentLevelIndex = (lvlIdx !== undefined && lvlIdx !== null) ? Number(lvlIdx) : 0;
 
         activeSpeakingPrompt = typeof lvl.prompt === 'object' ? lvl.prompt.text : lvl.prompt;
 
@@ -3833,9 +3842,9 @@
     }
 
     async function claimSpeakingXP(xpToEarn, catId, accuracy = 0, pronunciation = 0, fluency = 0, wordCount = 0) {
-        catId = catId || currentCategoryKey;
-        const modIdx = currentModuleIndex || 0;
-        const lvlIdx = currentLevelIndex !== undefined ? currentLevelIndex : 0;
+        catId = (catId && catId !== 'undefined') ? catId : (window.currentCategoryKey || 'read_aloud');
+        const modIdx = (window.currentModuleIndex !== undefined && window.currentModuleIndex !== null) ? Number(window.currentModuleIndex) : 0;
+        const lvlIdx = (window.currentLevelIndex !== undefined && window.currentLevelIndex !== null) ? Number(window.currentLevelIndex) : 0;
 
         // 1. UNLOCK NEXT LEVEL IN LOCAL STORAGE IMMEDIATELY
         const progressKey = `speaking_levels_${catId}_mod_${modIdx + 1}`;
