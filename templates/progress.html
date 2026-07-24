@@ -3816,6 +3816,7 @@
                     return res.json();
                 })
                 .then(aiResult => {
+                    SpeakingProgressManager.saveAttempt(id, window.currentModuleIndex, window.currentLevelIndex, aiResult, spokenText, durationSecs);
                     document.getElementById('speaking-status-text').textContent = 'Analysis Complete!';
                     const resultsPanel = document.getElementById('speaking-results-panel');
                     resultsPanel.style.display = 'block';
@@ -3866,6 +3867,7 @@
                     return res.json();
                 })
                 .then(aiResult => {
+                    SpeakingProgressManager.saveAttempt(id, window.currentModuleIndex, window.currentLevelIndex, aiResult, spokenText, durationSecs);
                     document.getElementById('speaking-status-text').textContent = 'Analysis Complete!';
                     const resultsPanel = document.getElementById('speaking-results-panel');
                     resultsPanel.style.display = 'block';
