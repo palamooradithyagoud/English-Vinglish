@@ -3832,7 +3832,11 @@
         }
     }
 
-    async function claimSpeakingXP(xpToEarn, activityId, accuracy = 0, pronunciation = 0, fluency = 0, wordCount = 0) {
+    async function claimSpeakingXP(xpToEarn, catId, accuracy = 0, pronunciation = 0, fluency = 0, wordCount = 0) {
+        catId = catId || currentCategoryKey;
+        const modIdx = currentModuleIndex || 0;
+        const lvlIdx = currentLevelIndex !== undefined ? currentLevelIndex : 0;
+
         try {
             // Post speaking attempt details to user database
             const response = await fetch('/api/speaking/log', {
@@ -3840,7 +3844,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     earned_xp: xpToEarn,
-                    activity_id: `${activityId}_${currentSpeakingPromptIndex}`,
+                    activity_id: `${catId}_m${modIdx + 1}_l${lvlIdx + 1}`,
                     accuracy: accuracy,
                     pronunciation: pronunciation,
                     fluency: fluency,
@@ -3851,61 +3855,65 @@
             
             if (data.success) {
                 if (data.speaking_stats) {
-                    // Update javascript memory state from DB metrics
                     speakingXp = data.speaking_stats.total_xp;
                     speakingSessions = data.speaking_stats.total_sessions;
                     averagePron = data.speaking_stats.average_pron;
                     averageFluency = data.speaking_stats.average_fluency;
 
-                    // Sync to local storage for local redundancy
                     localStorage.setItem('speaking_xp', String(speakingXp));
                     localStorage.setItem('speaking_sessions', String(speakingSessions));
                     localStorage.setItem('speaking_pron_score', String(averagePron));
                     localStorage.setItem('speaking_fluency_score', String(averageFluency));
                 } else {
-                    // Fallback to local updates
                     const currentXp = parseInt(localStorage.getItem('speaking_xp') || '0');
                     speakingXp = currentXp + xpToEarn;
                     localStorage.setItem('speaking_xp', String(speakingXp));
+                }
 
-                    const currentSessions = parseInt(localStorage.getItem('speaking_sessions') || '0');
-                    speakingSessions = currentSessions + 1;
-                    localStorage.setItem('speaking_sessions', String(speakingSessions));
+                // Update HUD XP counter
+                const studentXpEl = document.getElementById('student-xp-display');
+                if (studentXpEl) {
+                    studentXpEl.textContent = `${data.new_xp || speakingXp} XP`;
+                }
 
-                    averagePron = Math.min(99, Math.floor((parseInt(localStorage.getItem('speaking_pron_score') || '75') + pronunciation) / 2));
-                    localStorage.setItem('speaking_pron_score', String(averagePron));
+                // UNLOCK NEXT LEVEL IN LOCAL STORAGE FOR ZIG-ZAG PATH
+                const progressKey = `speaking_levels_${catId}_mod_${modIdx + 1}`;
+                const currentUnlocked = parseInt(localStorage.getItem(progressKey) || '1');
+                const nextLevelNum = lvlIdx + 2; // e.g. Level 1.1 (idx 0) -> unlocks Level 1.2 (levelNum 2)
 
-                    averageFluency = Math.min(99, Math.floor((parseInt(localStorage.getItem('speaking_fluency_score') || '80') + fluency) / 2));
-                    localStorage.setItem('speaking_fluency_score', String(averageFluency));
+                if (nextLevelNum > currentUnlocked) {
+                    localStorage.setItem(progressKey, String(nextLevelNum));
+                }
+
+                // UNLOCK NEXT MODULE IF LEVEL 1.10 FINISHED
+                if (nextLevelNum > 10) {
+                    const modProgressKey = `speaking_modules_${catId}`;
+                    const unlockedModules = parseInt(localStorage.getItem(modProgressKey) || '1');
+                    if (modIdx + 2 > unlockedModules) {
+                        localStorage.setItem(modProgressKey, String(modIdx + 2));
+                    }
                 }
 
                 if (typeof BujjiSynth !== 'undefined') {
                     BujjiSynth.playWelcomeTune();
                 }
 
-                // Update the main header student XP display if present
-                const studentXpEl = document.getElementById('student-xp-display');
-                if (studentXpEl && data.new_xp !== undefined) {
-                    studentXpEl.textContent = `${data.new_xp} XP`;
-                }
+                const catData = SPEAKING_MODULE_DATA[catId];
+                const mod = catData ? catData.modules[modIdx] : null;
 
-                currentSpeakingPromptIndex++;
-                if (currentSpeakingTask && currentSpeakingPromptIndex < currentSpeakingTask.prompts.length) {
-                    speakingProgress[activityId] = currentSpeakingPromptIndex;
-                    alert(`🎉 Congratulations! You earned +${xpToEarn} XP. Let's try the next sentence!`);
-                    selectSpeakingActivity(activityId, currentSpeakingPromptIndex);
+                if (mod && lvlIdx + 1 < mod.levels.length) {
+                    // Transition smoothly to next level (e.g. Level 1.2)
+                    startPracticeLevel(catId, modIdx, lvlIdx + 1);
                 } else {
-                    speakingProgress[activityId] = 0;
-                    alert(`🎉 Congratulations! You earned +${xpToEarn} XP and completed all speaking prompts for this activity!`);
-                    showSpeakingHome();
+                    // All levels complete in module, return to path view
+                    openModuleLevels(catId, modIdx);
                 }
             } else {
                 throw new Error("API return error");
             }
         } catch(e) {
             console.error("Error rewarding speaking XP:", e);
-            alert("Failed to sync XP. Returning to Speaking Dashboard.");
-            showSpeakingHome();
+            openModuleLevels(catId || 'read_aloud', 0);
         }
     }
 
