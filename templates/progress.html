@@ -4,6 +4,7 @@
 
 {% block head %}
 <script src="{{ url_for('static', filename='js/speaking_evaluation_engine.js') }}"></script>
+<script src="{{ url_for('static', filename='js/speaking_progress_manager.js') }}"></script>
 <style>
     @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -3180,17 +3181,12 @@
             const levelNum = idx + 1;
             const isUnlocked = levelNum <= highestUnlocked;
             const isActive = levelNum === highestUnlocked;
-            const isCompleted = levelNum < highestUnlocked;
 
-            // Check level record from local storage
-            const levelScoreKey = `speaking_score_${catId}_mod_${modIdx + 1}_lvl_${levelNum}`;
-            let levelRecord = null;
-            try {
-                const raw = localStorage.getItem(levelScoreKey);
-                if (raw) levelRecord = JSON.parse(raw);
-            } catch(e){}
-
-            const accuracyBadge = (levelRecord && levelRecord.accuracy !== undefined) ? `${levelRecord.accuracy}%` : null;
+            // Fetch clean level record from SpeakingProgressManager
+            const record = SpeakingProgressManager.getLevelRecord(catId, modIdx, idx);
+            const isCompleted = record.completed || record.xpClaimed || (levelNum < highestUnlocked);
+            const bestScoreDisplay = record.bestScore ? `${record.bestScore}%` : null;
+            const attemptsDisplay = record.attemptCount ? `${record.attemptCount} Attempt${record.attemptCount > 1 ? 's' : ''}` : null;
 
             nodesHtml += `
                 <div class="saas-zigzag-step" style="width: 100% !important; display: flex !important; justify-content: ${isLeft ? 'flex-start' : 'flex-end'} !important; margin-bottom: 30px !important; position: relative !important; z-index: 5 !important; box-sizing: border-box !important;">
@@ -3219,7 +3215,7 @@
                             ${isCompleted ? `
                                 <span style="display:inline-flex; align-items:center; gap:4px; background:#DCFCE7; color:#15803D; padding:3px 10px; border-radius:12px; font-size:10px; font-weight:800; text-transform:uppercase;">
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Completed ${accuracyBadge ? `• ${accuracyBadge}` : ''}
+                                    Completed ${bestScoreDisplay ? `• ${bestScoreDisplay}` : ''}
                                 </span>
                             ` : (isActive ? `
                                 <span style="width:8px; height:8px; border-radius:50%; background:${catData.color}; display:inline-block; box-shadow:0 0 10px ${catData.color};"></span>
@@ -3236,6 +3232,12 @@
                         <span style="font-size: 15px; font-weight: 800; color: ${isCompleted ? '#14532D' : (isUnlocked ? '#0F172A' : '#64748B')}; display: block; line-height: 1.3;">
                             ${lvl.title}
                         </span>
+
+                        ${isCompleted && attemptsDisplay ? `
+                            <div style="font-size:11px; font-weight:700; color:#166534; margin-top:4px;">
+                                🔁 ${attemptsDisplay}
+                            </div>
+                        ` : ''}
 
                         ${!isUnlocked ? `
                             <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-top:6px; font-size:11px; font-weight:600; color:#94A3B8;">
@@ -3309,7 +3311,7 @@
     // ==========================================================================
     // STEP 3: LEVEL PRACTICE SCREEN (MICROPHONE RECORDING)
     // ==========================================================================
-    function startPracticeLevel(catId, modIdx, lvlIdx) {
+    function startPracticeLevel(catId, modIdx, lvlIdx, forcePractice = false) {
         const catData = SPEAKING_MODULE_DATA[catId];
         if (!catData || !catData.modules[modIdx]) return;
 
@@ -3322,6 +3324,103 @@
         window.currentLevelIndex = (lvlIdx !== undefined && lvlIdx !== null) ? Number(lvlIdx) : 0;
 
         activeSpeakingPrompt = typeof lvl.prompt === 'object' ? lvl.prompt.text : lvl.prompt;
+        const panel = document.getElementById('speaking-main-panel');
+
+        // Check if level is already completed & claimed
+        const record = SpeakingProgressManager.getLevelRecord(catId, modIdx, lvlIdx);
+
+        if (!forcePractice && record && record.completed && record.latestAttempt) {
+            // RENDER SAVED RESULTS VIEW DIRECTLY
+            const attempt = record.latestAttempt;
+            const dateStr = record.completedAt ? new Date(record.completedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Completed';
+            const strokeDashOffset = 283 - (283 * (attempt.score || 95)) / 100;
+
+            panel.innerHTML = `
+                <!-- Top Return Navigation -->
+                <button onclick="openModuleLevels('${catId}', ${modIdx})" style="background:none; border:none; color:#64748B; font-weight:700; cursor:pointer; font-size:0.85rem; padding:0; display:flex; align-items:center; gap:6px; margin-bottom:20px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span>Back to Level Path</span>
+                </button>
+
+                <!-- Saved Results Container -->
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.06); overflow:hidden; text-align:left; max-width:680px; margin:0 auto;">
+                    
+                    <!-- Dark Header Banner with Grade & Standard Badges -->
+                    <div style="background:linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding:28px 32px; color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#4ADE80; background:rgba(34,197,94,0.15); padding:3px 10px; border-radius:12px;">
+                                    ✅ Completed Level ${lvl.id}
+                                </span>
+                                <span style="font-size:11px; font-weight:700; color:#94A3B8;">
+                                    +${record.xpEarned || lvl.xp} XP Earned
+                                </span>
+                            </div>
+                            <h2 style="font-size:22px; font-weight:800; color:#FFFFFF; margin:0 0 4px 0;">${lvl.title}</h2>
+                            <div style="display:flex; gap:10px; font-size:12px; font-weight:700; color:#CBD5E1; margin-top:8px;">
+                                <span style="background:rgba(255,255,255,0.08); padding:3px 10px; border-radius:8px;">Best Score: ${record.bestScore || attempt.score}%</span>
+                                <span style="background:rgba(255,255,255,0.08); padding:3px 10px; border-radius:8px;">Attempts: ${record.attemptCount || 1}</span>
+                                <span style="background:rgba(255,255,255,0.08); padding:3px 10px; border-radius:8px;">${dateStr}</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Ring Badge -->
+                        <div style="position:relative; width:90px; height:90px; display:flex; align-items:center; justify-content:center;">
+                            <svg width="90" height="90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#22C55E" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="${strokeDashOffset}" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <div style="position:absolute; text-align:center;">
+                                <div style="font-size:22px; font-weight:900; color:#FFFFFF; line-height:1;">${attempt.grade || 'A+'}</div>
+                                <div style="font-size:11px; font-weight:700; color:#94A3B8;">${attempt.score || 95}%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Response Transcript -->
+                    <div style="padding:24px 32px; border-bottom:1px solid #F1F5F9;">
+                        <h4 style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#64748B; margin:0 0 10px 0;">
+                            Saved Transcript
+                        </h4>
+                        <div style="line-height:1.6; color:#0F172A; font-weight:600; font-size:14.5px;">
+                            "${attempt.spokenText || activeSpeakingPrompt}"
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics Grid -->
+                    <div style="padding:24px 32px; background:#F8FAFC; border-bottom:1px solid #F1F5F9;">
+                        <h4 style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#64748B; margin:0 0 16px 0;">
+                            Performance Breakdown
+                        </h4>
+                        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#2563EB;">${attempt.metrics ? attempt.metrics.accuracy || attempt.score : attempt.score}%</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Accuracy</div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#059669;">${attempt.metrics ? attempt.metrics.speechClarity || 95 : 95}%</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Clarity</div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#D97706;">${attempt.metrics ? attempt.metrics.fluency || 90 : 90}%</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Fluency</div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:14px 10px; text-align:center;">
+                                <div style="font-size:18px; font-weight:900; color:#7C3AED;">${record.attemptCount || 1}</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; margin-top:2px;">Attempts</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Footer -->
+                    <div style="background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px;">
+                        <button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#2563EB;" onclick="startPracticeLevel('${catId}', ${modIdx}, ${lvlIdx + 1})">Next Level</button>
+                        <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${catId}', ${modIdx}, ${lvlIdx}, true)">Re-Practice Level</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         const panel = document.getElementById('speaking-main-panel');
 
@@ -3793,10 +3892,14 @@
                 });
             } else {
                 // ==========================================================================
+                // ==========================================================================
                 // PRODUCTION-GRADE AI EVALUATION PIPELINE (SpeakingEvaluationEngine)
                 // ==========================================================================
                 const evalResult = SpeakingEvaluationEngine.evaluateSpeech(activeSpeakingPrompt, spokenText, durationSecs);
                 
+                // Save attempt using SpeakingProgressManager
+                SpeakingProgressManager.saveAttempt(id, window.currentModuleIndex, window.currentLevelIndex, evalResult, spokenText, durationSecs);
+
                 // Render SaaS Report Container (without AI Feedback Box)
                 SpeakingEvaluationEngine.renderSaaSReport(evalResult, 'speaking-results-panel');
 
@@ -3807,8 +3910,7 @@
 
                 const reportCard = resultsPanel.querySelector('div > div');
                 if (reportCard) {
-                    const levelClaimedKey = `speaking_claimed_${id}_mod_${(window.currentModuleIndex || 0) + 1}_lvl_${(window.currentLevelIndex || 0) + 1}`;
-                    const isAlreadyClaimed = localStorage.getItem(levelClaimedKey) === 'true';
+                    const isAlreadyClaimed = SpeakingProgressManager.isLevelClaimed(id, window.currentModuleIndex, window.currentLevelIndex);
 
                     const actionFooter = document.createElement('div');
                     actionFooter.style.cssText = 'background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px; border-top:1px solid #F1F5F9;';
@@ -3816,16 +3918,16 @@
                     if (isAlreadyClaimed) {
                         actionFooter.innerHTML = `
                             <button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#2563EB;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex + 1)">Next Level</button>
-                            <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>
+                            <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex, true)">Re-Practice Level</button>
                         `;
                     } else if (isPassed) {
                         actionFooter.innerHTML = `
                             <button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${evalResult.metrics.accuracy}, ${evalResult.metrics.speechClarity}, ${evalResult.metrics.fluency}, ${evalResult.metrics.totalSpokenWords})">Claim XP & Next Level</button>
-                            <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>
+                            <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex, true)">Try Again</button>
                         `;
                     } else {
                         actionFooter.innerHTML = `
-                            <button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex)">Try Again</button>
+                            <button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', window.currentModuleIndex, window.currentLevelIndex, true)">Try Again</button>
                         `;
                     }
                     reportCard.appendChild(actionFooter);
@@ -3887,29 +3989,10 @@
         const modIdx = (window.currentModuleIndex !== undefined && window.currentModuleIndex !== null) ? Number(window.currentModuleIndex) : 0;
         const lvlIdx = (window.currentLevelIndex !== undefined && window.currentLevelIndex !== null) ? Number(window.currentLevelIndex) : 0;
 
-        // 1. UNLOCK NEXT LEVEL & SAVE LEVEL COMPLETION SCORE IN LOCAL STORAGE
-        const progressKey = `speaking_levels_${catId}_mod_${modIdx + 1}`;
-        const currentUnlocked = parseInt(localStorage.getItem(progressKey) || '1');
-        const nextLevelNum = lvlIdx + 2; // e.g. Level 1.1 (idx 0) -> unlocks levelNum = 2 (Level 1.2)
+        // Execute one-time XP claim via SpeakingProgressManager
+        SpeakingProgressManager.claimLevelXP(catId, modIdx, lvlIdx, xpToEarn);
 
-        if (nextLevelNum > currentUnlocked) {
-            localStorage.setItem(progressKey, String(nextLevelNum));
-        }
-
-        // Save level score record & claimed status
-        const levelScoreKey = `speaking_score_${catId}_mod_${modIdx + 1}_lvl_${lvlIdx + 1}`;
-        const levelClaimedKey = `speaking_claimed_${catId}_mod_${modIdx + 1}_lvl_${lvlIdx + 1}`;
-        const levelRecord = {
-            completed: true,
-            accuracy: accuracy,
-            pronunciation: pronunciation,
-            fluency: fluency,
-            score: accuracy,
-            completedAt: new Date().toISOString()
-        };
-        localStorage.setItem(levelScoreKey, JSON.stringify(levelRecord));
-        localStorage.setItem(levelClaimedKey, 'true');
-
+        const nextLevelNum = lvlIdx + 2;
         // 2. UNLOCK NEXT MODULE IF LEVEL 1.10 FINISHED
         if (nextLevelNum > 10) {
             const modProgressKey = `speaking_modules_${catId}`;
