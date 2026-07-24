@@ -1617,9 +1617,18 @@ def get_speaking_activities():
 def log_daily_challenge_attempt(student_id, level_id, score, stars, earned_xp):
     """
     Logs or updates a student's daily challenge attempt in Supabase.
-    Also updates the student's XP.
+    Adds earned Daily Challenge XP to total student XP in Supabase upon first completion.
     """
     try:
+        # Check if this level was previously completed by student
+        existing = supabase.table("daily_challenge_attempts") \
+            .select("*") \
+            .eq("student_id", int(student_id)) \
+            .eq("level_id", int(level_id)) \
+            .execute()
+            
+        is_first_completion = not bool(existing.data)
+
         data = {
             "student_id": int(student_id),
             "level_id": int(level_id),
@@ -1628,10 +1637,13 @@ def log_daily_challenge_attempt(student_id, level_id, score, stars, earned_xp):
             "earned_xp": int(earned_xp)
         }
         response = supabase.table("daily_challenge_attempts").upsert(data, on_conflict="student_id,level_id").execute()
-        if earned_xp > 0:
+        
+        # Award earned_xp to student total XP upon first completion
+        if is_first_completion and earned_xp > 0:
             student = get_student_by_id(student_id)
             if student:
-                new_xp = (student.get("xp") or 0) + earned_xp
+                current_xp = student.get("xp") or 0
+                new_xp = current_xp + earned_xp
                 update_student_xp_and_level(student_id, new_xp, student.get("current_level"))
                 log_student_activity(student_id, "DAILY_CHALLENGE", f"Completed Daily Challenge Level {level_id} (+{earned_xp} XP)")
         return response.data
