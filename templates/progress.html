@@ -3643,9 +3643,9 @@
                     <!-- Action buttons -->
                     <div style="background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px;">
                         ${isPassed
-                            ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">Claim XP & Next Level</button>
-                               <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="openCategoryModules('${id}')">Back to Path</button>`
-                            : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', 0, ${currentSpeakingPromptIndex})">Try Again</button>`
+                            ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${accuracy}, ${pronScore}, ${fluencyScore}, ${wordCount})">Claim XP & Next Level</button>
+                               <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`
+                            : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`
                         }
                     </div>
                 </div>
@@ -3775,9 +3775,9 @@
                     const actionFooter = document.createElement('div');
                     actionFooter.style.cssText = 'background:#FFFFFF; padding:20px 32px; display:flex; justify-content:center; gap:16px; border-top:1px solid #F1F5F9;';
                     actionFooter.innerHTML = isPassed
-                        ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${evalResult.metrics.accuracy}, ${evalResult.metrics.speechClarity}, ${evalResult.metrics.fluency}, ${evalResult.metrics.totalSpokenWords})">Claim XP & Next Level</button>
-                           <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="openCategoryModules('${id}')">Back to Path</button>`
-                        : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', 0, ${currentSpeakingPromptIndex})">Try Again</button>`;
+                        ? `<button class="btn-primary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer; background:#22C55E;" onclick="claimSpeakingXP(${earnedXp}, '${id}', ${evalResult.metrics.accuracy}, ${evalResult.metrics.speechClarity}, ${evalResult.metrics.fluency}, ${evalResult.metrics.totalSpokenWords})">Claim XP & Next Level</button>
+                           <button class="btn-secondary" style="padding:12px 24px; font-weight:800; border-radius:12px; font-size:14px; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`
+                        : `<button class="btn-secondary" style="padding:12px 28px; font-weight:800; border-radius:12px; font-size:14px; background:#EF4444; color:#FFFFFF; border:none; cursor:pointer;" onclick="startPracticeLevel('${id}', currentModuleIndex, currentLevelIndex)">Try Again</button>`;
                     reportCard.appendChild(actionFooter);
                 }
 
